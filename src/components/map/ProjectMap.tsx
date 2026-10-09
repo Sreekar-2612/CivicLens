@@ -9,6 +9,8 @@ import {
 import type { Project, Department } from '../../types'
 import { PROJECT_STATUS_LABELS } from '../../types'
 
+import { CURRENT_REGION, geocodeCity } from '../../config/regionConfig'
+
 // Status Solid Colors matching extraordinary aesthetic
 const statusColors: Record<string, { solid: string; glow: string; text: string; bg: string }> = {
   planned: { solid: '#0284C7', glow: 'rgba(2, 132, 199, 0.3)', text: '#0369A1', bg: '#E0F2FE' },
@@ -72,10 +74,6 @@ function createRealisticMarker(status: string, isSelected: boolean = false) {
   })
 }
 
-// Pune Center
-const PUNE_CENTER: [number, number] = [18.5204, 73.8567]
-const DEFAULT_ZOOM = 13
-
 interface ProjectMapProps {
   projects: Project[]
   departments: Department[]
@@ -90,13 +88,22 @@ interface ProjectMapProps {
 function MapController({
   projects,
   selectedProject,
+  customTarget,
   resetTrigger
 }: {
   projects: Project[]
   selectedProject?: Project | null
+  customTarget?: [number, number] | null
   resetTrigger: number
 }) {
   const map = useMap()
+
+  // Fly to custom searched target location
+  useEffect(() => {
+    if (customTarget) {
+      map.flyTo(customTarget, 14, { animate: true, duration: 1.2 })
+    }
+  }, [customTarget, map])
 
   // Fly to selected project
   useEffect(() => {
@@ -108,9 +115,9 @@ function MapController({
     }
   }, [selectedProject, map])
 
-  // Fit bounds when reset trigger changes
+  // Fit bounds when reset trigger changes or on initial load with projects
   useEffect(() => {
-    if (resetTrigger > 0 && projects.length > 0) {
+    if (projects.length > 0) {
       const bounds = L.latLngBounds(projects.map(p => [p.location.lat, p.location.lng]))
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
     }
@@ -125,22 +132,72 @@ export function ProjectMap({
   selectedProject,
   onSelectProject,
   height = '100%',
-  center = PUNE_CENTER,
-  zoom = DEFAULT_ZOOM,
+  center,
+  zoom = CURRENT_REGION.defaultZoom,
   showControls = true,
 }: ProjectMapProps) {
-  // Basemap style mode: 'satellite' | 'urban' | 'light'
   const [basemap, setBasemap] = useState<'satellite' | 'urban' | 'light'>('satellite')
   const [resetTrigger, setResetTrigger] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [customTarget, setCustomTarget] = useState<[number, number] | null>(null)
+
   const deptMap = new Map(departments.map(d => [d.id, d]))
 
+  // Calculate dynamic center if not passed
+  const initialCenter: [number, number] = center || (projects.length > 0
+    ? [
+        projects.reduce((acc, p) => acc + p.location.lat, 0) / projects.length,
+        projects.reduce((acc, p) => acc + p.location.lng, 0) / projects.length
+      ]
+    : [CURRENT_REGION.defaultLat, CURRENT_REGION.defaultLng])
+
   const handleResetView = () => {
+    setCustomTarget(null)
     setResetTrigger(prev => prev + 1)
+  }
+
+  const handleGlobalSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchQuery.trim()) return
+
+    setIsSearching(true)
+    const result = await geocodeCity(searchQuery.trim())
+    setIsSearching(false)
+
+    if (result) {
+      setCustomTarget([result.lat, result.lng])
+    } else {
+      alert(`Location "${searchQuery}" not found. Try entering a city, state, or region name.`)
+    }
   }
 
   return (
     <div style={{ height, width: '100%' }} className="relative font-sans overflow-hidden select-none">
-      {/* Floating Realistic Basemap Switcher (Top Right Glassmorphism) */}
+      {/* Global Location Search Bar (Top Left Overlay) */}
+      {showControls && (
+        <form
+          onSubmit={handleGlobalSearch}
+          className="absolute top-3 left-3 z-[1000] flex items-center bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-xl p-1 shadow-md max-w-xs sm:max-w-sm"
+        >
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search any city or region globally..."
+            className="px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 bg-transparent border-none outline-none flex-1 min-w-[140px]"
+          />
+          <button
+            type="submit"
+            disabled={isSearching}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border-none cursor-pointer flex items-center gap-1"
+          >
+            {isSearching ? 'Searching...' : 'Go'}
+          </button>
+        </form>
+      )}
+
+      {/* Floating Basemap Switcher (Top Right) */}
       {showControls && (
         <div className="absolute top-3 right-3 z-[1000] bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl p-1 shadow-md flex items-center gap-1 text-xs">
           <button
@@ -151,10 +208,10 @@ export function ProjectMap({
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
-            title="Ultra-realistic aerial satellite photography with street overlays"
+            title="Ultra-realistic aerial satellite photography"
           >
             <Globe className="w-3.5 h-3.5" />
-            <span>Realistic Satellite</span>
+            <span>Satellite</span>
           </button>
 
           <button
@@ -168,7 +225,7 @@ export function ProjectMap({
             title="Lush detailed urban street cartography"
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>Urban Street</span>
+            <span>Street</span>
           </button>
 
           <button
@@ -182,7 +239,7 @@ export function ProjectMap({
             title="High contrast clean cartographic canvas"
           >
             <Compass className="w-3.5 h-3.5" />
-            <span>Civic Canvas</span>
+            <span>Canvas</span>
           </button>
 
           <div className="w-[1px] h-4 bg-slate-200 mx-0.5" />
@@ -191,7 +248,7 @@ export function ProjectMap({
             type="button"
             onClick={handleResetView}
             className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors border-none bg-transparent cursor-pointer"
-            title="Reset to Pune View"
+            title="Fit map to all active projects"
           >
             <MapPin className="w-4 h-4 text-blue-600" />
           </button>
@@ -200,7 +257,7 @@ export function ProjectMap({
 
       {/* The Leaflet Container */}
       <MapContainer
-        center={center}
+        center={initialCenter}
         zoom={zoom}
         style={{ height: '100%', width: '100%' }}
         scrollWheelZoom={true}
@@ -209,6 +266,7 @@ export function ProjectMap({
         <MapController
           projects={projects}
           selectedProject={selectedProject}
+          customTarget={customTarget}
           resetTrigger={resetTrigger}
         />
 
