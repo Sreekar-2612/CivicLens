@@ -1,0 +1,155 @@
+// ============================================================
+// CivicLens — Authentication & Authorization Context
+// Integrates with Supabase Auth when configured,
+// and provides a clearly labelled role-switch simulator for testing
+// ============================================================
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { supabase, isSupabaseConfigured } from '../services/supabaseClient'
+import type { UserRole } from '../types'
+
+export interface AuthUser {
+  id: string
+  email?: string
+  displayName: string
+  role: UserRole
+  departmentId?: string
+  isDemoUser: boolean
+}
+
+interface AuthContextType {
+  user: AuthUser | null
+  loading: boolean
+  isSupabaseAuth: boolean
+  setDemoRole: (role: UserRole, departmentId?: string, displayName?: string) => void
+  signOut: () => Promise<void>
+}
+
+// Default initial user for development demo: Department Officer
+const DEFAULT_DEMO_USER: AuthUser = {
+  id: 'usr-demo-officer',
+  email: 'officer.roads@pune.gov.in',
+  displayName: 'Rajesh Patil (Roads Department)',
+  role: 'officer',
+  departmentId: 'dept-roads',
+  isDemoUser: true,
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: DEFAULT_DEMO_USER,
+  loading: false,
+  isSupabaseAuth: false,
+  setDemoRole: () => {},
+  signOut: async () => {},
+})
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<AuthUser | null>(DEFAULT_DEMO_USER)
+  const [loading, setLoading] = useState<boolean>(true)
+  const isSupabase = isSupabaseConfigured()
+
+  useEffect(() => {
+    async function initAuth() {
+      if (!isSupabase || !supabase) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          // Fetch user profile from database
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            displayName: profile?.display_name || session.user.email?.split('@')[0] || 'Authenticated User',
+            role: (profile?.role as UserRole) || 'resident',
+            departmentId: profile?.department_id,
+            isDemoUser: false,
+          })
+        } else {
+          // Not logged in to Supabase auth
+          setUser(DEFAULT_DEMO_USER)
+        }
+
+        // Listen for auth changes
+        const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+          if (session?.user) {
+            const { data: profile } = await supabase!
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+
+            setUser({
+              id: session.user.id,
+              email: session.user.email,
+              displayName: profile?.display_name || session.user.email?.split('@')[0] || 'User',
+              role: (profile?.role as UserRole) || 'resident',
+              departmentId: profile?.department_id,
+              isDemoUser: false,
+            })
+          } else {
+            setUser(DEFAULT_DEMO_USER)
+          }
+        })
+
+        return () => {
+          authListener.subscription.unsubscribe()
+        }
+      } catch (e) {
+        console.warn('Supabase auth initialization fallback:', e)
+        setUser(DEFAULT_DEMO_USER)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initAuth()
+  }, [isSupabase])
+
+  const setDemoRole = (role: UserRole, departmentId?: string, displayName?: string) => {
+    const titles: Record<UserRole, string> = {
+      officer: displayName || 'Rajesh Patil (Roads Officer)',
+      resident: displayName || 'Priya Sharma (Resident - Ward 14)',
+      admin: displayName || 'S. Deshmukh (Municipal Commissioner / Admin)',
+      public: displayName || 'Anonymous Citizen / Visitor',
+    }
+
+    setUser({
+      id: `usr-demo-${role}`,
+      displayName: titles[role] || 'User',
+      role,
+      departmentId: role === 'officer' ? (departmentId || 'dept-roads') : undefined,
+      isDemoUser: true,
+    })
+  }
+
+  const signOut = async () => {
+    if (isSupabase && supabase) {
+      await supabase.auth.signOut()
+    }
+    setUser(null)
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isSupabaseAuth: isSupabase && user !== null && !user.isDemoUser,
+        setDemoRole,
+        signOut,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => useContext(AuthContext)
