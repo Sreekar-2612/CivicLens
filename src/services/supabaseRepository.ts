@@ -1,6 +1,6 @@
 // ============================================================
 // CivicLens — Supabase Data Access Adapter
-// Implements DataRepository against real Supabase / PostgreSQL schema
+// Connects frontend actions directly to deployed Supabase Edge Functions
 // ============================================================
 import { supabase } from './supabaseClient'
 import type {
@@ -77,42 +77,46 @@ export function mapDbUpdateToDomain(row: any): ProjectUpdate {
 export function mapDbGrievanceToDomain(row: any): Report {
   return {
     id: row.id,
-    referenceId: row.reference_id,
+    referenceId: row.reference_id || `GRV-${row.id}`,
     projectId: row.project_id || undefined,
-    category: row.category,
+    category: (row.category || 'other') as any,
     title: row.title,
     description: row.description,
-    road: row.road_name,
-    locality: row.locality,
-    ward: row.ward,
-    status: row.status,
+    location: {
+      lat: row.latitude || 18.5204,
+      lng: row.longitude || 73.8567,
+    },
+    locationDescription: `${row.road_name || 'Road'}, ${row.locality || 'Locality'} (${row.ward || 'Ward 1'})`,
+    photoUrl: row.evidence_url || undefined,
+    status: row.status as any,
+    reporterName: row.reporter_name || undefined,
+    reporterContact: row.reporter_contact || undefined,
     officerResponse: row.officer_response || undefined,
-    upvotes: row.upvotes || 0,
-    evidenceUrl: row.evidence_url || undefined,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at || row.created_at,
   }
 }
 
 export function mapDbClashToDomain(row: any): CoordinationAlert {
   return {
     id: row.id,
-    title: row.title,
-    road: row.road_name,
     projectAId: row.project_a_id,
     projectBId: row.project_b_id,
-    departmentAId: row.department_a_id,
-    departmentBId: row.department_b_id,
-    conflictType: row.conflict_type,
-    severity: row.severity,
-    status: row.status,
-    suggestedResolution: row.suggested_resolution || undefined,
-    jointInspectionDate: row.joint_inspection_date || undefined,
+    score: row.severity === 'critical' ? 95 : row.severity === 'high' ? 80 : row.severity === 'medium' ? 60 : 30,
+    severity: row.severity as any,
+    reasons: [
+      {
+        type: (row.conflict_type as any) || 'same_road',
+        description: row.title || 'Inter-departmental scheduling conflict detected',
+        score: 80
+      }
+    ],
+    status: row.status as any,
     decisionNotes: row.decision_notes || undefined,
     createdAt: row.created_at,
+    updatedAt: row.created_at,
   }
 }
-
 
 export class SupabaseDataRepository {
   private get client() {
@@ -120,8 +124,18 @@ export class SupabaseDataRepository {
     return supabase
   }
 
-  // -- Departments --
+  // -- Departments (Edge Function: get-departments) --
   async getDepartments(): Promise<Department[]> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-departments')
+      if (!error && data?.success && Array.isArray(data.departments)) {
+        return data.departments.map(mapDbDepartmentToDomain)
+      }
+    } catch (e) {
+      console.warn('Edge function get-departments fallback to DB:', e)
+    }
+
+    // Direct DB Fallback
     const { data, error } = await this.client
       .from('departments')
       .select('*')
@@ -131,17 +145,24 @@ export class SupabaseDataRepository {
   }
 
   async getDepartment(id: string): Promise<Department | undefined> {
-    const { data, error } = await this.client
-      .from('departments')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error) return undefined
-    return data ? mapDbDepartmentToDomain(data) : undefined
+    const departments = await this.getDepartments()
+    return departments.find(d => d.id === id)
   }
 
-  // -- Projects --
+  // -- Projects (Edge Function: get-projects) --
   async getProjects(filters?: Partial<FilterState>): Promise<Project[]> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-projects', {
+        body: filters || {}
+      })
+      if (!error && data?.success && Array.isArray(data.projects)) {
+        return data.projects.map(mapDbProjectToDomain)
+      }
+    } catch (e) {
+      console.warn('Edge function get-projects fallback to DB:', e)
+    }
+
+    // Direct DB Fallback
     let query = this.client
       .from('projects')
       .select('*')
@@ -179,7 +200,19 @@ export class SupabaseDataRepository {
     return result
   }
 
+  // -- Project Details (Edge Function: get-project-detail) --
   async getProject(id: string): Promise<Project | undefined> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-project-detail', {
+        body: { id }
+      })
+      if (!error && data?.success && data.project) {
+        return mapDbProjectToDomain(data.project)
+      }
+    } catch (e) {
+      console.warn('Edge function get-project-detail fallback to DB:', e)
+    }
+
     const { data, error } = await this.client
       .from('projects')
       .select('*')
@@ -190,34 +223,33 @@ export class SupabaseDataRepository {
   }
 
   async getProjectsByRoad(road: string): Promise<Project[]> {
-    const { data, error } = await this.client
-      .from('projects')
-      .select('*')
-      .ilike('road_name', `%${road}%`)
-    if (error) throw error
-    return (data || []).map(mapDbProjectToDomain)
+    const projects = await this.getProjects()
+    return projects.filter(p => p.road.toLowerCase().includes(road.toLowerCase()))
   }
 
   async getProjectsByDepartment(departmentId: string): Promise<Project[]> {
-    const { data, error } = await this.client
-      .from('projects')
-      .select('*')
-      .eq('department_id', departmentId)
-    if (error) throw error
-    return (data || []).map(mapDbProjectToDomain)
+    const projects = await this.getProjects({ department: departmentId })
+    return projects
   }
 
   async getProjectsByWard(ward: string): Promise<Project[]> {
-    const { data, error } = await this.client
-      .from('projects')
-      .select('*')
-      .eq('ward', ward)
-    if (error) throw error
-    return (data || []).map(mapDbProjectToDomain)
+    const projects = await this.getProjects({ ward })
+    return projects
   }
 
-  // -- Project Updates --
+  // -- Project Updates (Edge Function: get-project-updates) --
   async getProjectUpdates(projectId: string): Promise<ProjectUpdate[]> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-project-updates', {
+        body: { projectId }
+      })
+      if (!error && data?.success && Array.isArray(data.updates)) {
+        return data.updates.map(mapDbUpdateToDomain)
+      }
+    } catch (e) {
+      console.warn('Edge function get-project-updates fallback to DB:', e)
+    }
+
     const { data, error } = await this.client
       .from('project_updates')
       .select('*')
@@ -228,14 +260,22 @@ export class SupabaseDataRepository {
   }
 
   async getMilestones(projectId: string): Promise<Milestone[]> {
-    // Milestones from seed or table
     return seedMilestones
       .filter(m => m.projectId === projectId)
       .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())
   }
 
-  // -- Reports (Grievances) --
+  // -- Reports / Grievances (Edge Function: get-grievances) --
   async getReports(): Promise<Report[]> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-grievances')
+      if (!error && data?.success && Array.isArray(data.grievances)) {
+        return data.grievances.map(mapDbGrievanceToDomain)
+      }
+    } catch (e) {
+      console.warn('Edge function get-grievances fallback to DB:', e)
+    }
+
     const { data, error } = await this.client
       .from('grievances')
       .select('*')
@@ -245,36 +285,31 @@ export class SupabaseDataRepository {
   }
 
   async getReport(id: string): Promise<Report | undefined> {
-    const { data, error } = await this.client
-      .from('grievances')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error || !data) return seedReports.find(r => r.id === id)
-    return mapDbGrievanceToDomain(data)
+    const reports = await this.getReports()
+    return reports.find(r => r.id === id)
   }
 
   async getReportByReference(referenceId: string): Promise<Report | undefined> {
-    const { data, error } = await this.client
-      .from('grievances')
-      .select('*')
-      .ilike('reference_id', referenceId)
-      .single()
-    if (error || !data) return seedReports.find(r => r.referenceId.toLowerCase() === referenceId.toLowerCase())
-    return mapDbGrievanceToDomain(data)
+    const reports = await this.getReports()
+    return reports.find(r => r.referenceId.toLowerCase() === referenceId.toLowerCase())
   }
 
   async getReportsByProject(projectId: string): Promise<Report[]> {
-    const { data, error } = await this.client
-      .from('grievances')
-      .select('*')
-      .eq('project_id', projectId)
-    if (error || !data || data.length === 0) return seedReports.filter(r => r.projectId === projectId)
-    return data.map(mapDbGrievanceToDomain)
+    const reports = await this.getReports()
+    return reports.filter(r => r.projectId === projectId)
   }
 
-  // -- Alerts (Clashes) --
+  // -- Alerts / Clashes (Edge Function: get-clashes) --
   async getAlerts(): Promise<CoordinationAlert[]> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-clashes')
+      if (!error && data?.success && Array.isArray(data.clashes)) {
+        return data.clashes.map(mapDbClashToDomain)
+      }
+    } catch (e) {
+      console.warn('Edge function get-clashes fallback to DB:', e)
+    }
+
     const { data, error } = await this.client
       .from('clashes')
       .select('*')
@@ -284,26 +319,26 @@ export class SupabaseDataRepository {
   }
 
   async getAlert(id: string): Promise<CoordinationAlert | undefined> {
-    const { data, error } = await this.client
-      .from('clashes')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error || !data) return seedAlerts.find(a => a.id === id)
-    return mapDbClashToDomain(data)
+    const alerts = await this.getAlerts()
+    return alerts.find(a => a.id === id)
   }
 
   async getAlertsByProject(projectId: string): Promise<CoordinationAlert[]> {
-    const { data, error } = await this.client
-      .from('clashes')
-      .select('*')
-      .or(`project_a_id.eq.${projectId},project_b_id.eq.${projectId}`)
-    if (error || !data || data.length === 0) return seedAlerts.filter(a => a.projectAId === projectId || a.projectBId === projectId)
-    return data.map(mapDbClashToDomain)
+    const alerts = await this.getAlerts()
+    return alerts.filter(a => a.projectAId === projectId || a.projectBId === projectId)
   }
 
-  // -- Summary Stats --
+  // -- Summary Stats (Edge Function: get-summary-stats) --
   async getSummaryStats(): Promise<SummaryStats> {
+    try {
+      const { data, error } = await this.client.functions.invoke('get-summary-stats')
+      if (!error && data?.success && data.stats) {
+        return data.stats
+      }
+    } catch (e) {
+      console.warn('Edge function get-summary-stats fallback to calculation:', e)
+    }
+
     const projects = await this.getProjects()
     const departments = await this.getDepartments()
     return {
@@ -317,14 +352,26 @@ export class SupabaseDataRepository {
     }
   }
 
-  // -- Mutations --
+  // -- Create Project (Edge Function: create-project) --
   async addProject(data: Partial<Project>): Promise<Project> {
-    // 1. Enforce validation rules
     const validation = validateProjectCreation(data)
     if (!validation.isValid) {
       throw new Error(`Project creation rejected: ${validation.errors.join(' ')}`)
     }
 
+    try {
+      const { data: res, error } = await this.client.functions.invoke('create-project', {
+        body: data
+      })
+      if (error) throw error
+      if (res?.success && res.project) {
+        return mapDbProjectToDomain(res.project)
+      }
+    } catch (e) {
+      console.warn('Edge function create-project fallback to DB:', e)
+    }
+
+    // DB Fallback
     const id = `proj-${Date.now().toString().slice(-6)}`
     const dbPayload = {
       id,
@@ -358,6 +405,7 @@ export class SupabaseDataRepository {
     return mapDbProjectToDomain(inserted)
   }
 
+  // -- Update Project (Edge Function: update-project) --
   async updateProject(
     id: string,
     updates: Partial<Project>,
@@ -367,7 +415,6 @@ export class SupabaseDataRepository {
     const current = await this.getProject(id)
     if (!current) throw new Error(`Project ${id} not found`)
 
-    // Check progress validation if provided
     if (updates.progressPercent !== undefined) {
       const pValidation = validateProgressUpdate(current, updates.progressPercent, updates.status)
       if (!pValidation.isValid) {
@@ -375,7 +422,6 @@ export class SupabaseDataRepository {
       }
     }
 
-    // Check deadline revision validation if revisedEndDate provided
     let hasDeadlineChange = false
     if (updates.revisedEndDate && updates.revisedEndDate !== (current.revisedEndDate || current.originalEndDate)) {
       hasDeadlineChange = true
@@ -385,6 +431,18 @@ export class SupabaseDataRepository {
       }
     }
 
+    try {
+      const { data: res, error } = await this.client.functions.invoke('update-project', {
+        body: { id, updates, delayReason, authorName }
+      })
+      if (!error && res?.success && res.project) {
+        return mapDbProjectToDomain(res.project)
+      }
+    } catch (e) {
+      console.warn('Edge function update-project fallback to DB:', e)
+    }
+
+    // DB Fallback
     const dbPayload: any = {}
     if (updates.status !== undefined) dbPayload.status = updates.status
     if (updates.progressPercent !== undefined) dbPayload.progress_percent = updates.progressPercent
@@ -392,9 +450,6 @@ export class SupabaseDataRepository {
     if (updates.contractor !== undefined) dbPayload.contractor_name = updates.contractor
     if (updates.budgetLakhs !== undefined) dbPayload.budget = updates.budgetLakhs
     if (hasDeadlineChange) dbPayload.revised_end_date = updates.revisedEndDate
-
-    // Explicitly guarantee original_end_date cannot be modified!
-    // (Notice dbPayload does not touch original_end_date)
 
     const { data: updated, error } = await this.client
       .from('projects')
@@ -405,7 +460,6 @@ export class SupabaseDataRepository {
 
     if (error) throw error
 
-    // If deadline was changed, record update in project_updates
     if (hasDeadlineChange) {
       await this.client.from('project_updates').insert({
         project_id: id,
@@ -423,10 +477,22 @@ export class SupabaseDataRepository {
     return mapDbProjectToDomain(updated)
   }
 
+  // -- Add Progress Update (Edge Function: add-project-update) --
   async addProjectUpdate(
     projectId: string,
     update: Partial<ProjectUpdate>
   ): Promise<ProjectUpdate> {
+    try {
+      const { data: res, error } = await this.client.functions.invoke('add-project-update', {
+        body: { projectId, update }
+      })
+      if (!error && res?.success && res.update) {
+        return mapDbUpdateToDomain(res.update)
+      }
+    } catch (e) {
+      console.warn('Edge function add-project-update fallback to DB:', e)
+    }
+
     const dbPayload = {
       project_id: projectId,
       update_type: update.type || 'progress',
@@ -449,15 +515,48 @@ export class SupabaseDataRepository {
     return mapDbUpdateToDomain(data)
   }
 
+  // -- Add Grievance / Report (Edge Function: create-grievance) --
   async addReport(data: Partial<Report>): Promise<Report> {
+    try {
+      const { data: res, error } = await this.client.functions.invoke('create-grievance', {
+        body: data
+      })
+      if (!error && res?.success && res.grievance) {
+        return mapDbGrievanceToDomain(res.grievance)
+      }
+    } catch (e) {
+      console.warn('Edge function create-grievance fallback:', e)
+    }
     return seedReports[0]
   }
 
+  // -- Update Grievance (Edge Function: update-grievance-status) --
   async updateReportStatus(id: string, status: ReportStatus, officerResponse?: string): Promise<Report | undefined> {
+    try {
+      const { data: res, error } = await this.client.functions.invoke('update-grievance-status', {
+        body: { id, status, officerResponse }
+      })
+      if (!error && res?.success && res.grievance) {
+        return mapDbGrievanceToDomain(res.grievance)
+      }
+    } catch (e) {
+      console.warn('Edge function update-grievance-status fallback:', e)
+    }
     return undefined
   }
 
+  // -- Resolve Clash (Edge Function: resolve-clash) --
   async updateAlertStatus(id: string, status: AlertStatus, decisionNotes?: string): Promise<CoordinationAlert | undefined> {
+    try {
+      const { data: res, error } = await this.client.functions.invoke('resolve-clash', {
+        body: { id, status, decisionNotes }
+      })
+      if (!error && res?.success && res.clash) {
+        return mapDbClashToDomain(res.clash)
+      }
+    } catch (e) {
+      console.warn('Edge function resolve-clash fallback:', e)
+    }
     return undefined
   }
 

@@ -21,6 +21,7 @@ interface AuthContextType {
   loading: boolean
   isSupabaseAuth: boolean
   setDemoRole: (role: UserRole, departmentId?: string, displayName?: string) => void
+  signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -39,6 +40,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: false,
   isSupabaseAuth: false,
   setDemoRole: () => {},
+  signInWithGoogle: async () => {},
   signOut: async () => {},
 })
 
@@ -130,6 +132,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
   }
 
+  const signInWithGoogle = async () => {
+    if (isSupabase && supabase) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      })
+      if (error) throw error
+    } else {
+      alert('Supabase client is not configured.')
+    }
+  }
+
   const signOut = async () => {
     if (isSupabase && supabase) {
       await supabase.auth.signOut()
@@ -144,6 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isSupabaseAuth: isSupabase && user !== null && !user.isDemoUser,
         setDemoRole,
+        signInWithGoogle,
         signOut,
       }}
     >
