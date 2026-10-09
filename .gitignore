@@ -7,6 +7,12 @@
 .env.*
 *.env
 
+# Graphify & Analysis Outputs
+graphify-out/
+graphify-out
+*.graphify
+.graphify
+
 # Logs
 logs
 *.log
@@ -32,3 +38,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.vercel

@@ -133,16 +133,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signInWithGoogle = async () => {
-    if (isSupabase && supabase) {
-      const { error } = await supabase.auth.signInWithOAuth({
+    try {
+      if (!supabase) {
+        alert('Supabase client is not initialized.')
+        return
+      }
+
+      console.log('Initiating Google OAuth via Supabase...')
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`,
         },
       })
-      if (error) throw error
-    } else {
-      alert('Supabase client is not configured.')
+
+      if (error) {
+        console.error('Google OAuth error:', error)
+        alert(`Google Sign-In Error: ${error.message}`)
+        return
+      }
+
+      if (data?.url) {
+        console.log('Redirecting to Google OAuth URL:', data.url)
+        window.location.href = data.url
+      } else {
+        alert('Could not retrieve Google OAuth redirect URL from Supabase.')
+      }
+    } catch (err: any) {
+      console.error('Google OAuth exception:', err)
+      alert(`OAuth Exception: ${err?.message || err}`)
     }
   }
 

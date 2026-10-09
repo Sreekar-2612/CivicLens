@@ -37,7 +37,7 @@ export function OfficerLayout() {
                 <div className="w-7 h-7 rounded-lg bg-[#2F6BFF] flex items-center justify-center text-white shadow-xs">
                   <Shield className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-base tracking-tight">CivicLens</span>
+                <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-base tracking-tight">SpadeWork</span>
                 <span className="hidden sm:inline text-xs px-2 py-0.5 rounded-full bg-[#EAF1FF] text-[#2F6BFF] font-bold border border-[#2F6BFF]/20">
                   Officer Desk
                 </span>

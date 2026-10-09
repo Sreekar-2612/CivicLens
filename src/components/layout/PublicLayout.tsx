@@ -32,7 +32,7 @@ export function PublicLayout() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-lg tracking-tight text-[#1E293B]">
-                    CivicLens
+                    SpadeWork
                   </span>
                   <span className="bg-[#E3F7F5] text-[#12B5A6] text-[10px] font-bold px-2 py-0.2 rounded-full uppercase tracking-wider border border-[#12B5A6]/20">
                     PMC LIVE
@@ -167,7 +167,7 @@ export function PublicLayout() {
                 <div className="w-6 h-6 rounded-lg bg-[#2F6BFF] flex items-center justify-center">
                   <Shield className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">CivicLens</span>
+                <span className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">SpadeWork</span>
               </div>
               <p className="text-xs leading-relaxed text-[#64748B]">
                 Improving transparency and coordination in public works projects.
