@@ -17,9 +17,14 @@ import { AdminPage } from './pages/AdminPage'
 import { AssistantPage } from './pages/AssistantPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
+import { FreshCivicMockPage } from './pages/FreshCivicMockPage'
+
 export default function App() {
   return (
     <Routes>
+      {/* Fresh Civic Design System Prototype Mock */}
+      <Route path="/mock-preview" element={<FreshCivicMockPage />} />
+
       {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />

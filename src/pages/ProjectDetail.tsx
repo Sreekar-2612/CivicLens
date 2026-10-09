@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft, MapPin, Calendar, Building2, User, Tag,
   DollarSign, TrendingUp, Clock, AlertTriangle, CheckCircle2,
-  FileText, Layers, ChevronRight, ExternalLink, History, PlusCircle, X
+  FileText, Layers, ChevronRight, ExternalLink, History, PlusCircle, X,
+  ShieldCheck, HardHat, Camera, AlertCircle
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { dataRepository } from '../services/dataRepository'
@@ -92,38 +93,37 @@ export function ProjectDetail() {
       return
     }
 
-    if (newStatus === 'delayed' && !updateDelayReason.trim()) {
-      setUpdateError('Please provide a brief delay reason description.')
-      return
-    }
-
     setSubmittingUpdate(true)
     try {
-      const createdUpdate = await dataRepository.addProjectUpdate(project.id, {
-        type: newStatus === 'delayed' ? 'status_change' : 'progress',
+      const created = await dataRepository.addProjectUpdate(project.id, {
         title: updateTitle.trim() || `Progress updated to ${newProgress}%`,
-        description: updateNotes.trim() || `Field progress reached ${newProgress}%. Status: ${PROJECT_STATUS_LABELS[newStatus]}.`,
-        previousValue: String(project.progressPercent),
-        newValue: String(newProgress),
-        delayReason: newStatus === 'delayed' ? updateDelayReason.trim() : undefined,
-        authorId: user?.id || 'officer-1',
+        description: updateNotes.trim() || `Field engineer updated status to ${newStatus}.`,
+        type: 'progress',
+        authorId: user?.id || 'officer-field',
         authorName: user?.displayName || 'Authorized Engineer',
+        previousValue: `${project.progressPercent}% (${project.status})`,
+        newValue: `${newProgress}% (${newStatus})`,
+        delayReason: newStatus === 'delayed' ? updateDelayReason.trim() : undefined,
       })
 
+      // Update local project model
       const updatedProject = await dataRepository.updateProject(project.id, {
         progressPercent: newProgress,
         status: newStatus,
+        confidenceIndicator: newStatus === 'delayed' ? 'delayed' : 'on_track',
       })
 
       if (updatedProject) {
         setProject(updatedProject)
       }
-      setUpdates(prev => [createdUpdate, ...prev])
+      setUpdates(prev => [created, ...prev])
       setShowUpdateModal(false)
-      setToastMsg('Progress update recorded to project timeline!')
-      setTimeout(() => setToastMsg(null), 3500)
+      setUpdateTitle('')
+      setUpdateNotes('')
+      setUpdateDelayReason('')
+      setToastMsg('Project timeline & progress update saved.')
     } catch (err: any) {
-      setUpdateError(err?.message || 'Failed to submit update')
+      setUpdateError(err?.message || 'Failed to submit progress update.')
     } finally {
       setSubmittingUpdate(false)
     }
@@ -138,7 +138,7 @@ export function ProjectDetail() {
           description="The project you're looking for doesn't exist or has been removed."
         />
         <div className="text-center mt-4">
-          <Link to="/projects" className="btn btn-primary">
+          <Link to="/projects" className="btn-primary no-underline">
             <ArrowLeft className="w-4 h-4" /> Back to Projects
           </Link>
         </div>
@@ -151,24 +151,32 @@ export function ProjectDetail() {
   const deadlineRevisions = updates.filter(u => u.type === 'deadline_revision')
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[var(--neutral-500)] mb-6">
-        <Link to="/projects" className="hover:text-[var(--teal-600)] no-underline text-[var(--neutral-500)] flex items-center gap-1">
-          <ArrowLeft className="w-4 h-4" /> Projects
+      <nav className="flex items-center gap-2 text-xs text-[#64748B]">
+        <Link to="/projects" className="hover:text-[#2F6BFF] no-underline text-[#64748B] flex items-center gap-1 font-semibold">
+          <ArrowLeft className="w-3.5 h-3.5" /> Permits Explorer
         </Link>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-[var(--navy-700)] font-medium truncate">{project.title}</span>
+        <ChevronRight className="w-3 h-3 text-[#94A3B8]" />
+        <span className="font-semibold text-[#1E293B] truncate">{project.title}</span>
       </nav>
 
-      {/* Header */}
-      <div className="card p-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
-          <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-[var(--navy-900)] leading-tight mb-2">
+      {/* Hero Header Card */}
+      <div className="bg-white border border-[#E3EAF2] rounded-xl p-5 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-[10px] font-mono font-bold text-[#64748B] bg-[#F6F9FC] border border-[#E3EAF2] px-2 py-0.5 rounded">
+                {project.id.toUpperCase()}
+              </span>
+              <span className="text-[10px] font-bold text-[#2F6BFF] bg-[#EAF1FF] px-2 py-0.5 rounded">
+                Ward: {project.ward}
+              </span>
+            </div>
+            <h1 className="font-['Plus_Jakarta_Sans'] text-xl sm:text-2xl font-extrabold text-[#1E293B] leading-tight mb-1.5">
               {project.title}
             </h1>
-            <p className="text-sm text-[var(--neutral-500)] leading-relaxed">
+            <p className="text-xs text-[#64748B] leading-relaxed">
               {project.purpose}
             </p>
           </div>
@@ -178,17 +186,17 @@ export function ProjectDetail() {
           </div>
         </div>
 
-        {/* Key details grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-[var(--neutral-100)]">
+        {/* Key details strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-3.5 border-t border-[#F1F5F9]">
           <DetailItem
             icon={Building2}
             label="Department"
             value={
               <span className="flex items-center gap-1.5">
                 {department && (
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: department.color }} />
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: department.color }} />
                 )}
-                {department?.name || 'Unknown'}
+                {department?.name || 'Municipal Agency'}
               </span>
             }
           />
@@ -204,32 +212,39 @@ export function ProjectDetail() {
           />
           <DetailItem
             icon={MapPin}
-            label="Location"
-            value={`${project.road}, ${project.locality} (${project.ward})`}
+            label="Road Corridor"
+            value={`${project.road}, ${project.locality}`}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Main column */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Progress */}
+        <div className="lg:col-span-2 space-y-5">
+          {/* Progress Card */}
           {(project.status === 'in_progress' || project.status === 'delayed') && (
-            <div className="card p-5">
-              <h2 className="text-base font-semibold text-[var(--navy-900)] mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4.5 h-4.5 text-[var(--teal-600)]" />
-                Progress
-              </h2>
-              <div className="flex items-end justify-between mb-2">
-                <span className="text-3xl font-bold text-[var(--navy-900)]">{project.progressPercent}%</span>
-                <span className="text-sm text-[var(--neutral-500)]">
-                  Last updated {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
+            <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-[#12B5A6]" />
+                  <span>Execution Progress</span>
+                </h2>
+                <span className="text-[11px] text-[#64748B]">
+                  Updated {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}
                 </span>
               </div>
-              <div className="h-3 bg-[var(--neutral-200)] rounded-full overflow-hidden">
+              <div className="flex items-baseline justify-between mb-1.5">
+                <span className="font-['Plus_Jakarta_Sans'] text-3xl font-extrabold text-[#1E293B]">
+                  {project.progressPercent}%
+                </span>
+                <span className={`text-xs font-semibold ${project.status === 'delayed' ? 'text-[#D13B41]' : 'text-[#12B5A6]'}`}>
+                  {project.status === 'delayed' ? 'Slippage Flagged' : 'On Schedule'}
+                </span>
+              </div>
+              <div className="h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${
-                    project.status === 'delayed' ? 'bg-red-400' : 'bg-teal-500'
+                    project.status === 'delayed' ? 'bg-[#FF5A5F]' : 'bg-[#12B5A6]'
                   }`}
                   style={{ width: `${project.progressPercent}%` }}
                 />
@@ -237,29 +252,35 @@ export function ProjectDetail() {
             </div>
           )}
 
-          {/* Dates and Deadlines */}
-          <div className="card p-5">
-            <h2 className="text-base font-semibold text-[var(--navy-900)] mb-4 flex items-center gap-2">
-              <Calendar className="w-4.5 h-4.5 text-[var(--teal-600)]" />
-              Timeline & Deadlines
-            </h2>
-            <div className="space-y-3">
-              <DateRow label="Start Date" date={project.startDate} />
+          {/* Dates and Deadlines (Immutable Baseline Locked) */}
+          <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#2F6BFF]" />
+                <span>Contractual Timeline &amp; Deadlines</span>
+              </h2>
+              <span className="badge bg-[#EAF1FF] text-[#2F6BFF] text-[10px] py-0 px-2 font-bold">
+                Baseline Locked
+              </span>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <DateRow label="Excavation Start Date" date={project.startDate} />
               <DateRow
-                label="Original Completion"
+                label="Original Baseline Deadline"
                 date={project.originalEndDate}
                 crossed={hasRevision}
               />
               {hasRevision && (
                 <DateRow
-                  label="Revised Completion"
+                  label="Revised Freeze Date"
                   date={project.revisedEndDate!}
                   highlight="amber"
                 />
               )}
               {project.actualEndDate && (
                 <DateRow
-                  label="Actual Completion"
+                  label="Actual Completion Date"
                   date={project.actualEndDate}
                   highlight="green"
                 />
@@ -268,30 +289,30 @@ export function ProjectDetail() {
 
             {/* Delay reasons */}
             {deadlineRevisions.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-[var(--neutral-100)]">
-                <h3 className="text-sm font-semibold text-[var(--navy-700)] mb-3 flex items-center gap-1.5">
-                  <History className="w-4 h-4 text-amber-500" />
-                  Deadline Revision History
+              <div className="mt-3 pt-3 border-t border-[#F1F5F9]">
+                <h3 className="text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-1">
+                  <History className="w-3.5 h-3.5 text-[#FFB020]" />
+                  <span>Immutable Revision Audit Log</span>
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {deadlineRevisions.map(rev => (
-                    <div key={rev.id} className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-amber-800">{rev.title}</span>
-                        <span className="text-xs text-amber-600">
+                    <div key={rev.id} className="bg-[#FFF4DB] border border-[#FFB020]/30 rounded-lg p-2.5 text-xs text-[#9A6200]">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="font-bold text-[11px] text-[#1E293B]">{rev.title}</span>
+                        <span className="text-[10px] text-[#64748B]">
                           {format(new Date(rev.createdAt), 'dd MMM yyyy')}
                         </span>
                       </div>
                       {rev.previousValue && rev.newValue && (
-                        <p className="text-xs text-amber-700 mb-1">
+                        <p className="text-[11px] text-[#9A6200] mb-0.5">
                           <span className="line-through">{format(new Date(rev.previousValue), 'dd MMM yyyy')}</span>
                           {' → '}
-                          <span className="font-semibold">{format(new Date(rev.newValue), 'dd MMM yyyy')}</span>
+                          <span className="font-bold">{format(new Date(rev.newValue), 'dd MMM yyyy')}</span>
                         </p>
                       )}
                       {rev.delayReason && (
-                        <p className="text-xs text-amber-800 mt-1">
-                          <strong>Reason:</strong> {rev.delayReason}
+                        <p className="text-[11px] mt-0.5">
+                          <strong>Justification:</strong> {rev.delayReason}
                         </p>
                       )}
                     </div>
@@ -301,43 +322,43 @@ export function ProjectDetail() {
             )}
           </div>
 
-          {/* Milestones */}
+          {/* Milestones Checklist */}
           {milestones.length > 0 && (
-            <div className="card p-5">
-              <h2 className="text-base font-semibold text-[var(--navy-900)] mb-4 flex items-center gap-2">
-                <CheckCircle2 className="w-4.5 h-4.5 text-[var(--teal-600)]" />
-                Milestones
+            <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] mb-3 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#12B5A6]" />
+                <span>Verification Milestones</span>
               </h2>
               <div className="space-y-0">
                 {milestones.map((ms, index) => (
-                  <div key={ms.id} className="flex gap-3">
+                  <div key={ms.id} className="flex gap-2.5">
                     {/* Timeline line */}
                     <div className="flex flex-col items-center">
-                      <div className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
-                        ms.status === 'completed' ? 'bg-teal-500 border-teal-500' :
-                        ms.status === 'overdue' ? 'bg-red-400 border-red-400' :
-                        'bg-white border-[var(--neutral-300)]'
+                      <div className={`w-2.5 h-2.5 rounded-full border-2 shrink-0 ${
+                        ms.status === 'completed' ? 'bg-[#12B5A6] border-[#12B5A6]' :
+                        ms.status === 'overdue' ? 'bg-[#FF5A5F] border-[#FF5A5F]' :
+                        'bg-white border-[#CBD5E1]'
                       }`} />
                       {index < milestones.length - 1 && (
-                        <div className={`w-0.5 flex-1 min-h-[2rem] ${
-                          ms.status === 'completed' ? 'bg-teal-300' : 'bg-[var(--neutral-200)]'
+                        <div className={`w-0.5 flex-1 min-h-[1.5rem] ${
+                          ms.status === 'completed' ? 'bg-[#12B5A6]/40' : 'bg-[#E3EAF2]'
                         }`} />
                       )}
                     </div>
-                    <div className="pb-4 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-[var(--navy-800)]">{ms.title}</span>
+                    <div className="pb-3 flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-semibold text-[#1E293B]">{ms.title}</span>
                         {ms.status === 'overdue' && (
-                          <span className="status-badge bg-red-100 text-red-700">Overdue</span>
+                          <span className="badge delayed text-[10px] py-0 px-1.5">Overdue</span>
                         )}
                         {ms.status === 'completed' && (
-                          <span className="status-badge bg-teal-100 text-teal-700">Completed</span>
+                          <span className="badge completed text-[10px] py-0 px-1.5">Completed</span>
                         )}
                       </div>
-                      <p className="text-xs text-[var(--neutral-500)] mt-0.5">
+                      <p className="text-[11px] text-[#64748B] mt-0.5">
                         Target: {format(new Date(ms.targetDate), 'dd MMM yyyy')}
                         {ms.completedDate && (
-                          <> · Completed: {format(new Date(ms.completedDate), 'dd MMM yyyy')}</>
+                          <> • Done: {format(new Date(ms.completedDate), 'dd MMM yyyy')}</>
                         )}
                       </p>
                     </div>
@@ -347,20 +368,12 @@ export function ProjectDetail() {
             </div>
           )}
 
-          {/* Toast Notification */}
-          {toastMsg && (
-            <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm border border-slate-700 animate-fade-in">
-              <CheckCircle2 className="w-4 h-4 text-teal-400" />
-              <span>{toastMsg}</span>
-            </div>
-          )}
-
-          {/* Update History */}
-          <div className="card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-[var(--navy-900)] flex items-center gap-2">
-                <FileText className="w-4.5 h-4.5 text-[var(--teal-600)]" />
-                Update History ({updates.length})
+          {/* Update History Card */}
+          <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-[#2F6BFF]" />
+                <span>Field Progress Audit Trail ({updates.length})</span>
               </h2>
               <button
                 type="button"
@@ -369,7 +382,7 @@ export function ProjectDetail() {
                   setNewStatus(project.status)
                   setShowUpdateModal(true)
                 }}
-                className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                className="btn-primary text-xs py-1.5 px-3"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>Post Progress Update</span>
@@ -378,32 +391,32 @@ export function ProjectDetail() {
 
             {/* Modal: Post Progress Update */}
             {showUpdateModal && (
-              <div className="mb-6 p-4 rounded-xl bg-teal-50/60 border border-teal-200 dark:border-teal-900/40 text-xs space-y-4">
-                <div className="flex items-center justify-between border-b border-teal-100 pb-2">
-                  <span className="font-bold uppercase tracking-wider text-teal-900">
-                    Submit New Field Progress Record
+              <div className="mb-4 p-3.5 rounded-xl bg-[#EAF1FF] border border-[#2F6BFF]/30 text-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-[#2F6BFF]/20 pb-1.5">
+                  <span className="font-bold uppercase tracking-wider text-[#2F6BFF] text-[11px]">
+                    Submit Official Progress Record
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowUpdateModal(false)}
-                    className="p-1 text-gray-400 hover:text-gray-700"
+                    className="p-1 text-[#64748B] hover:text-[#1E293B]"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 {updateError && (
-                  <div className="p-2.5 rounded bg-rose-100 border border-rose-300 text-rose-800 font-medium">
+                  <div className="p-2 rounded bg-[#FFE9EA] border border-[#FF5A5F]/30 text-[#D13B41] font-semibold">
                     {updateError}
                   </div>
                 )}
 
-                <form onSubmit={handlePostUpdate} className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <form onSubmit={handlePostUpdate} className="space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <div className="flex justify-between font-semibold text-gray-700 mb-1">
-                        <span>New Progress Percent</span>
-                        <span className="text-teal-700 font-bold">{newProgress}%</span>
+                      <div className="flex justify-between font-semibold text-[#1E293B] mb-1 text-[11px]">
+                        <span>Progress Percentage</span>
+                        <span className="text-[#2F6BFF] font-bold">{newProgress}%</span>
                       </div>
                       <input
                         type="range"
@@ -411,18 +424,18 @@ export function ProjectDetail() {
                         max="100"
                         value={newProgress}
                         onChange={(e) => setNewProgress(parseInt(e.target.value))}
-                        className="w-full accent-teal-600"
+                        className="w-full accent-[#2F6BFF]"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-gray-700 mb-1">
+                      <label className="block font-semibold text-[#1E293B] mb-1 text-[11px]">
                         Operational Status
                       </label>
                       <select
                         value={newStatus}
                         onChange={(e) => setNewStatus(e.target.value as ProjectStatus)}
-                        className="w-full px-2.5 py-1.5 rounded border border-gray-300 bg-white"
+                        className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-xs font-medium"
                       >
                         <option value="in_progress">In Progress</option>
                         <option value="delayed">Delayed</option>
@@ -432,35 +445,35 @@ export function ProjectDetail() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">
+                    <label className="block font-semibold text-[#1E293B] mb-1 text-[11px]">
                       Update Title / Headline
                     </label>
                     <input
                       type="text"
                       value={updateTitle}
                       onChange={(e) => setUpdateTitle(e.target.value)}
-                      placeholder={`e.g. Asphalting completed on Northbound lane`}
-                      className="w-full px-2.5 py-1.5 rounded border border-gray-300 bg-white"
+                      placeholder="e.g. Asphalting completed on Northbound lane"
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">
-                      Detailed Field Notes & Observations
+                    <label className="block font-semibold text-[#1E293B] mb-1 text-[11px]">
+                      Field Notes &amp; Observations
                     </label>
                     <textarea
                       rows={2}
                       value={updateNotes}
                       onChange={(e) => setUpdateNotes(e.target.value)}
                       placeholder="Describe work completed, machinery on site, or upcoming tasks."
-                      className="w-full px-2.5 py-1.5 rounded border border-gray-300 bg-white"
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-xs"
                     />
                   </div>
 
                   {newStatus === 'delayed' && (
                     <div>
-                      <label className="block font-semibold text-rose-700 mb-1">
-                        Delay Reason & Root Cause *
+                      <label className="block font-semibold text-[#D13B41] mb-1 text-[11px]">
+                        Delay Reason &amp; Root Cause *
                       </label>
                       <input
                         type="text"
@@ -468,7 +481,7 @@ export function ProjectDetail() {
                         value={updateDelayReason}
                         onChange={(e) => setUpdateDelayReason(e.target.value)}
                         placeholder="State reason: Rain stoppage, material supply bottleneck, utility clash, etc."
-                        className="w-full px-2.5 py-1.5 rounded border border-rose-300 bg-white"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[#FF5A5F] bg-white text-xs text-[#D13B41]"
                       />
                     </div>
                   )}
@@ -477,14 +490,14 @@ export function ProjectDetail() {
                     <button
                       type="button"
                       onClick={() => setShowUpdateModal(false)}
-                      className="px-3 py-1.5 rounded bg-white border border-gray-300 font-semibold text-gray-600 hover:bg-gray-50"
+                      className="px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] font-semibold text-[#64748B] hover:text-[#1E293B] text-xs"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={submittingUpdate}
-                      className="px-4 py-1.5 rounded bg-teal-600 hover:bg-teal-700 text-white font-bold transition-colors shadow disabled:opacity-50"
+                      className="btn-primary text-xs py-1.5 px-3 disabled:opacity-50"
                     >
                       {submittingUpdate ? 'Submitting...' : 'Record to Timeline'}
                     </button>
@@ -494,26 +507,26 @@ export function ProjectDetail() {
             )}
 
             {updates.length === 0 ? (
-              <p className="text-xs text-gray-400 italic">No historical updates recorded for this project yet.</p>
+              <p className="text-xs text-[#64748B] italic">No historical updates recorded for this project yet.</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {updates.map(update => (
-                  <div key={update.id} className="border-l-2 border-[var(--neutral-200)] pl-4 py-1">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-sm font-medium text-[var(--navy-800)]">{update.title}</span>
-                      <span className="text-xs text-[var(--neutral-400)] whitespace-nowrap">
+                  <div key={update.id} className="border-l-2 border-[#E3EAF2] pl-3 py-0.5">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="text-xs font-bold text-[#1E293B]">{update.title}</span>
+                      <span className="text-[10px] text-[#64748B] whitespace-nowrap">
                         {format(new Date(update.createdAt), 'dd MMM yyyy')}
                       </span>
                     </div>
-                    <p className="text-xs text-[var(--neutral-500)] leading-relaxed">
+                    <p className="text-xs text-[#64748B] leading-relaxed">
                       {update.description}
                     </p>
                     {update.delayReason && (
-                      <div className="mt-1 p-2 rounded bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                      <div className="mt-1 p-2 rounded-lg bg-[#FFF4DB] border border-[#FFB020]/30 text-xs text-[#9A6200]">
                         <strong>Delay Reason:</strong> {update.delayReason}
                       </div>
                     )}
-                    <p className="text-xs text-[var(--neutral-400)] mt-1">
+                    <p className="text-[10px] text-[#64748B] mt-0.5 font-medium">
                       — {update.authorName}
                     </p>
                   </div>
@@ -524,70 +537,74 @@ export function ProjectDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Budget */}
           {project.budgetLakhs && (
-            <div className="card p-5">
-              <h3 className="text-sm font-semibold text-[var(--navy-700)] mb-2 flex items-center gap-1.5">
-                <DollarSign className="w-4 h-4 text-[var(--teal-600)]" />
-                Estimated Budget
-              </h3>
-              <p className="text-2xl font-bold text-[var(--navy-900)]">
-                ₹{project.budgetLakhs.toLocaleString()} <span className="text-sm font-normal text-[var(--neutral-500)]">Lakhs</span>
+            <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] block mb-1">
+                Sanctioned Budget
+              </span>
+              <p className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#1E293B]">
+                ₹{project.budgetLakhs.toLocaleString()} <span className="text-xs font-normal text-[#64748B]">Lakhs</span>
               </p>
             </div>
           )}
 
           {/* Coordination Alerts */}
           {alerts.length > 0 && (
-            <div className="card p-5">
-              <h3 className="text-sm font-semibold text-[var(--navy-700)] mb-3 flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-amber-500" />
-                Coordination Alerts
-              </h3>
-              <div className="space-y-3">
-                {alerts.map(alert => (
-                  <div key={alert.id} className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <SeverityBadge severity={alert.severity} />
-                      <span className="text-xs text-amber-700">Score: {alert.score}</span>
+            <div className="border border-[#F0386B]/30 rounded-xl overflow-hidden shadow-2xs">
+              <div className="h-1.5 clash-hatch border-b border-[#F0386B]/20"></div>
+              <div className="p-3.5 bg-[#FFE6EE]">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#C41F4F] flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>Cross-Agency Clashes ({alerts.length})</span>
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {alerts.map(alert => (
+                    <div key={alert.id} className="bg-white/90 border border-[#F0386B]/20 rounded-lg p-2.5 text-xs">
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <SeverityBadge severity={alert.severity} />
+                        <span className="text-[10px] font-bold text-[#C41F4F]">Clash Score: {alert.score}/100</span>
+                      </div>
+                      <ul className="text-[11px] text-[#64748B] space-y-1 list-none pl-0">
+                        {alert.reasons.map((r, i) => (
+                          <li key={i} className="flex items-start gap-1">
+                            <span className="text-[#C41F4F]">•</span>
+                            <span>{r.description}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {alert.decisionNotes && (
+                        <p className="text-[10px] text-[#1E293B] mt-1 pt-1 border-t border-[#E3EAF2]">
+                          <strong>Decision:</strong> {alert.decisionNotes}
+                        </p>
+                      )}
                     </div>
-                    <ul className="text-xs text-amber-800 space-y-1 list-none">
-                      {alert.reasons.map((r, i) => (
-                        <li key={i} className="flex items-start gap-1.5">
-                          <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                          {r.description}
-                        </li>
-                      ))}
-                    </ul>
-                    {alert.decisionNotes && (
-                      <p className="text-xs text-amber-700 mt-2 pt-2 border-t border-amber-200">
-                        <strong>Decision:</strong> {alert.decisionNotes}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {/* Related Projects */}
           {relatedProjects.length > 0 && (
-            <div className="card p-5">
-              <h3 className="text-sm font-semibold text-[var(--navy-700)] mb-3 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-indigo-500" />
-                Related Projects on This Road
+            <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+              <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#2F6BFF]" />
+                <span>Other Works on {project.road}</span>
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {relatedProjects.map(rp => (
                   <Link
                     key={rp.id}
                     to={`/projects/${rp.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-[var(--neutral-50)] transition-colors no-underline"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-[#F6F9FC] border border-transparent hover:border-[#E3EAF2] transition-colors no-underline"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-[var(--navy-800)] truncate">{rp.title}</p>
-                      <p className="text-xs text-[var(--neutral-500)]">{rp.contractor}</p>
+                      <p className="text-xs font-bold text-[#1E293B] truncate">{rp.title}</p>
+                      <p className="text-[10px] text-[#64748B]">{rp.contractor}</p>
                     </div>
                     <StatusBadge status={rp.status} />
                   </Link>
@@ -598,20 +615,20 @@ export function ProjectDetail() {
 
           {/* Citizen Reports */}
           {reports.length > 0 && (
-            <div className="card p-5">
-              <h3 className="text-sm font-semibold text-[var(--navy-700)] mb-3 flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-red-400" />
-                Citizen Reports ({reports.length})
+            <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
+              <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-[#12B5A6]" />
+                <span>Citizen Reports ({reports.length})</span>
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {reports.map(rpt => (
-                  <div key={rpt.id} className="p-2.5 rounded-lg bg-[var(--neutral-50)]">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-xs font-mono text-[var(--neutral-400)]">{rpt.referenceId}</span>
+                  <div key={rpt.id} className="p-2 rounded-lg bg-[#F6F9FC] border border-[#E3EAF2]">
+                    <div className="flex items-center justify-between gap-1 mb-0.5">
+                      <span className="text-[10px] font-mono text-[#64748B] font-bold">{rpt.referenceId}</span>
                       <ReportStatusBadge status={rpt.status} />
                     </div>
-                    <p className="text-sm font-medium text-[var(--navy-800)] line-clamp-1">{rpt.title}</p>
-                    <p className="text-xs text-[var(--neutral-500)] mt-0.5">
+                    <p className="text-xs font-medium text-[#1E293B] line-clamp-1">{rpt.title}</p>
+                    <p className="text-[10px] text-[#64748B]">
                       {formatDistanceToNow(new Date(rpt.createdAt), { addSuffix: true })}
                     </p>
                   </div>
@@ -619,22 +636,19 @@ export function ProjectDetail() {
               </div>
             </div>
           )}
-
-          {/* Demo disclosure */}
-          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
-            <p className="text-xs text-amber-800">
-              <strong>Note:</strong> This project record is synthetic demonstration data
-              created for the CivicLens hackathon prototype. It does not represent
-              an actual municipal project.
-            </p>
-          </div>
         </div>
       </div>
+
+      {/* Floating Toast */}
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#1E293B] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-[#334155] animate-in slide-in-from-bottom duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#12B5A6]" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
     </div>
   )
 }
-
-// -- Helper components --
 
 function DetailItem({ icon: Icon, label, value }: {
   icon: React.ElementType
@@ -642,13 +656,13 @@ function DetailItem({ icon: Icon, label, value }: {
   value: React.ReactNode
 }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <div className="w-8 h-8 rounded-lg bg-[var(--neutral-50)] flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon className="w-4 h-4 text-[var(--neutral-400)]" />
+    <div className="flex items-start gap-2">
+      <div className="w-7 h-7 rounded-lg bg-[#F6F9FC] border border-[#E3EAF2] flex items-center justify-center shrink-0 mt-0.5 text-[#2F6BFF]">
+        <Icon className="w-3.5 h-3.5" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs text-[var(--neutral-400)] font-medium uppercase tracking-wide">{label}</p>
-        <p className="text-sm text-[var(--navy-800)] font-medium mt-0.5">{value}</p>
+        <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider">{label}</p>
+        <div className="text-xs text-[#1E293B] font-medium mt-0.5">{value}</div>
       </div>
     </div>
   )
@@ -661,16 +675,16 @@ function DateRow({ label, date, crossed, highlight }: {
   highlight?: 'amber' | 'green'
 }) {
   const highlightClasses = {
-    amber: 'text-amber-700 font-semibold',
-    green: 'text-green-700 font-semibold',
+    amber: 'text-[#9A6200] font-bold bg-[#FFF4DB] px-2 py-0.5 rounded',
+    green: 'text-[#0E7A55] font-bold bg-[#E1F8EF] px-2 py-0.5 rounded',
   }
   return (
-    <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-[var(--neutral-50)]">
-      <span className="text-sm text-[var(--neutral-600)]">{label}</span>
-      <span className={`text-sm ${
-        crossed ? 'line-through text-[var(--neutral-400)]' :
+    <div className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-[#F6F9FC] border border-[#E3EAF2]">
+      <span className="text-xs text-[#64748B]">{label}</span>
+      <span className={`text-xs ${
+        crossed ? 'line-through text-[#94A3B8]' :
         highlight ? highlightClasses[highlight] :
-        'text-[var(--navy-800)] font-medium'
+        'text-[#1E293B] font-semibold'
       }`}>
         {format(new Date(date), 'dd MMM yyyy')}
       </span>

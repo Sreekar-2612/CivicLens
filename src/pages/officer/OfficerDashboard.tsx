@@ -50,31 +50,30 @@ export function OfficerDashboard() {
   )
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[var(--bg)] font-sans p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       {/* Officer Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
+      <div className="bg-white rounded-xl border border-[var(--border)] p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-teal-100 text-teal-800">
-              Department Operations Center
+            <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--teal-soft)] text-[var(--teal)] border border-[var(--teal)]/20">
+              Department Operations Command
             </span>
-            <span className="text-xs text-gray-400">Authenticated as Field Engineer / Executive Officer</span>
+            <span className="text-xs text-[var(--muted)]">Authenticated Executive Officer</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text)] font-heading mt-1.5">
             {currentDept ? currentDept.name : 'Public Works Command'}
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-[var(--muted)] mt-0.5">
             Coordinate road digging permits, prevent cross-department collision, and audit ground-truth reports.
           </p>
         </div>
 
-        {/* Department Switcher */}
+        {/* Department Switcher & Primary Action */}
         <div className="flex items-center gap-3">
-          <label className="text-xs font-semibold text-gray-600">Active Jurisdiction:</label>
           <select
             value={selectedDeptId}
             onChange={(e) => setSelectedDeptId(e.target.value)}
-            className="text-xs sm:text-sm font-semibold rounded-xl border border-gray-300 bg-white text-gray-900 px-3 py-2 shadow-sm focus:ring-2 focus:ring-teal-500"
+            className="text-xs sm:text-sm font-semibold rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] px-3 py-2 shadow-xs focus:ring-2 focus:ring-[var(--primary)]"
           >
             {departments.map(d => (
               <option key={d.id} value={d.id}>
@@ -84,108 +83,104 @@ export function OfficerDashboard() {
           </select>
           <Link
             to="/officer/projects/new"
-            className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs sm:text-sm shadow flex items-center gap-1.5 transition-colors whitespace-nowrap"
+            className="btn-primary text-xs sm:text-sm flex items-center gap-1.5 whitespace-nowrap no-underline"
           >
             <FolderPlus className="w-4 h-4" />
-            New Work Order
+            <span>New Work Order</span>
           </Link>
         </div>
       </div>
 
-      {/* Critical Alert Warning Banner */}
+      {/* Critical Alert Warning Banner with Clash Hatch Accent */}
       {pendingAlerts.length > 0 && (
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-          <div className="flex items-start gap-3.5">
-            <div className="p-2 rounded-xl bg-amber-500 text-white shrink-0 mt-0.5 shadow">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-800">
-                  ACTION REQUIRED
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-bold">
-                  {pendingAlerts.length} Unresolved Conflict{pendingAlerts.length > 1 ? 's' : ''}
-                </span>
-              </div>
-              <h3 className="text-sm sm:text-base font-bold text-gray-900 mt-0.5">
+        <div className="bg-[#FFE6EE] border border-[#FFD0DE] rounded-xl overflow-hidden shadow-sm">
+          <div className="clash-hatch px-4 py-2 flex items-center justify-between border-b border-[#FFD0DE]">
+            <span className="text-[11px] font-bold text-[#C41F4F] uppercase tracking-wider flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-[#F0386B]" />
+              Action Required: {pendingAlerts.length} Unresolved Conflict{pendingAlerts.length > 1 ? 's' : ''} Flagged
+            </span>
+            <span className="text-xs font-bold text-[#C41F4F]">Automatic Pre-Emptive Radar</span>
+          </div>
+          <div className="p-4 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-[var(--text)] font-heading">
                 Overlapping Excavations Detected on Your Department's Corridors
               </h3>
-              <p className="text-xs text-amber-800 mt-0.5">
+              <p className="text-xs text-[var(--muted)]">
                 Other municipal agencies (water/power/telecom) have scheduled excavations on the same road sections. Review now to avoid repeat digging penalties.
               </p>
             </div>
+            <Link
+              to="/officer/coordination"
+              className="px-4 py-2 rounded-lg bg-[#C41F4F] hover:bg-[#A5163E] text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5 shrink-0 self-start sm:self-center no-underline"
+            >
+              Open Coordination Matrix <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <Link
-            to="/officer/coordination"
-            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm shadow transition-colors flex items-center gap-1.5 shrink-0 self-start sm:self-center"
-          >
-            Open Coordination Matrix <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
       )}
 
       {/* Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-medium text-gray-500 block">Department Projects</span>
-          <span className="text-3xl font-black text-gray-900 mt-1 block">{deptProjects.length}</span>
-          <span className="text-xs text-gray-400 mt-1 block">
+        <div className="bg-white p-4 rounded-xl border border-[var(--border)] shadow-xs">
+          <span className="text-xs font-semibold text-[var(--muted)] block">Department Projects</span>
+          <span className="text-2xl font-extrabold text-[var(--text)] font-heading mt-1 block">{deptProjects.length}</span>
+          <span className="text-xs text-[var(--muted)] mt-1 block">
             {deptProjects.filter(p => p.status === 'in_progress').length} active in field
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-medium text-gray-500 block">Impending Deadlines</span>
-          <span className="text-3xl font-black text-blue-600 mt-1 block">
+        <div className="bg-white p-4 rounded-xl border border-[var(--border)] shadow-xs">
+          <span className="text-xs font-semibold text-[var(--muted)] block">Impending Deadlines</span>
+          <span className="text-2xl font-extrabold text-[var(--primary)] font-heading mt-1 block">
             {deptProjects.filter(p => p.confidenceIndicator === 'at_risk' || p.status === 'in_progress').length}
           </span>
-          <span className="text-xs text-gray-400 mt-1 block">Due in current quarter</span>
+          <span className="text-xs text-[var(--muted)] mt-1 block">Due in current quarter</span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-medium text-gray-500 block">Unresolved Overlaps</span>
-          <span className="text-3xl font-black text-amber-600 mt-1 block">{pendingAlerts.length}</span>
-          <span className="text-xs text-gray-400 mt-1 block">Cross-agency conflicts</span>
+        <div className="bg-white p-4 rounded-xl border border-[var(--border)] shadow-xs">
+          <span className="text-xs font-semibold text-[var(--muted)] block">Unresolved Overlaps</span>
+          <span className="text-2xl font-extrabold text-[#9A6200] font-heading mt-1 block">{pendingAlerts.length}</span>
+          <span className="text-xs text-[var(--muted)] mt-1 block">Cross-agency conflicts</span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-medium text-gray-500 block">Open Citizen Reports</span>
-          <span className="text-3xl font-black text-rose-600 mt-1 block">{pendingReports.length}</span>
-          <span className="text-xs text-gray-400 mt-1 block">Requires engineer response</span>
+        <div className="bg-white p-4 rounded-xl border border-[var(--border)] shadow-xs">
+          <span className="text-xs font-semibold text-[var(--muted)] block">Open Citizen Reports</span>
+          <span className="text-2xl font-extrabold text-[#D13B41] font-heading mt-1 block">{pendingReports.length}</span>
+          <span className="text-xs text-[var(--muted)] mt-1 block">Requires engineer response</span>
         </div>
       </div>
 
       {/* Main Content: Two Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Department Projects Table */}
-        <div className="lg:col-span-8 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-200 flex items-center justify-between">
+        <div className="lg:col-span-8 bg-white rounded-xl border border-[var(--border)] shadow-xs overflow-hidden">
+          <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-gray-900">Active Work Orders</h2>
-              <p className="text-xs text-gray-500">Capital projects & road maintenance under this jurisdiction</p>
+              <h2 className="text-sm font-bold text-[var(--text)] font-heading">Active Work Orders</h2>
+              <p className="text-xs text-[var(--muted)]">Capital projects & road maintenance under this jurisdiction</p>
             </div>
             <Link
               to="/officer/projects/new"
-              className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1"
+              className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
             >
               + Create New
             </Link>
           </div>
 
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-[var(--border)]">
             {deptProjects.map(p => (
-              <div key={p.id} className="p-4 sm:p-5 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div key={p.id} className="p-4 hover:bg-[#F8FAFC] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <StatusBadge status={p.status} />
-                    <span className="text-xs text-gray-400">Ward: {p.ward}</span>
-                    <span className="text-xs font-semibold text-gray-500">• {p.road}</span>
+                    <span className="text-xs text-[var(--muted)]">Ward: {p.ward}</span>
+                    <span className="text-xs font-semibold text-[var(--text)]">• {p.road}</span>
                   </div>
-                  <h3 className="font-bold text-sm sm:text-base text-gray-900 leading-tight">
+                  <h3 className="font-bold text-sm text-[var(--text)] font-heading leading-tight">
                     {p.title}
                   </h3>
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-xs text-[var(--muted)]">
                     <span>Target: {p.revisedEndDate || p.originalEndDate}</span>
                     <span>Contractor: {p.contractor}</span>
                     <span>Budget: ₹{p.budgetLakhs}L</span>
@@ -194,14 +189,14 @@ export function OfficerDashboard() {
 
                 <div className="flex items-center gap-3 shrink-0 self-start sm:self-center">
                   <div className="text-right hidden sm:block">
-                    <span className="text-xs font-bold text-gray-700">{p.progressPercent}%</span>
-                    <div className="w-16 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                      <div className="h-full bg-teal-600 rounded-full" style={{ width: `${p.progressPercent}%` }} />
+                    <span className="text-xs font-bold text-[var(--teal)]">{p.progressPercent}%</span>
+                    <div className="w-16 h-1.5 bg-[#F1F5F9] rounded-full mt-1 overflow-hidden">
+                      <div className="h-full bg-[var(--teal)] rounded-full" style={{ width: `${p.progressPercent}%` }} />
                     </div>
                   </div>
                   <Link
                     to={`/officer/projects/${p.id}/edit`}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 text-gray-600 transition-colors text-xs font-medium flex items-center gap-1"
+                    className="p-2 rounded-lg border border-[var(--border)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)] text-[var(--muted)] transition-colors text-xs font-semibold flex items-center gap-1 no-underline"
                     title="Edit Work Order"
                   >
                     <Edit className="w-3.5 h-3.5" />
@@ -209,7 +204,7 @@ export function OfficerDashboard() {
                   </Link>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-600 transition-colors"
+                    className="p-2 rounded-lg border border-[var(--border)] hover:bg-[#F1F5F9] text-[var(--muted)] transition-colors"
                     title="View Public Page"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -221,33 +216,33 @@ export function OfficerDashboard() {
         </div>
 
         {/* Right: Quick Action Queues */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-4">
           {/* Coordination Queue */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
+          <div className="bg-white rounded-xl border border-[var(--border)] p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-amber-500" />
+              <h3 className="font-bold text-xs text-[var(--text)] font-heading flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#FFB020]" />
                 Coordination Alerts
               </h3>
-              <Link to="/officer/coordination" className="text-xs font-semibold text-teal-600 hover:underline">
+              <Link to="/officer/coordination" className="text-xs font-semibold text-[var(--primary)] hover:underline">
                 View All ({alerts.length})
               </Link>
             </div>
 
             {pendingAlerts.length === 0 ? (
-              <p className="text-xs text-gray-400 italic">No pending conflicts for this department.</p>
+              <p className="text-xs text-[var(--muted)] italic">No pending conflicts for this department.</p>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {pendingAlerts.slice(0, 3).map(a => (
-                  <div key={a.id} className="p-3 rounded-xl bg-amber-50/60 border border-amber-200 text-xs space-y-1">
+                  <div key={a.id} className="p-3 rounded-lg bg-[#FFE6EE]/40 border border-[#FFD0DE] text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-amber-900 uppercase text-[10px]">Severity: {a.severity}</span>
-                      <span className="font-black text-amber-700">{a.score} pts</span>
+                      <span className="font-bold text-[#C41F4F] uppercase text-[10px]">Severity: {a.severity}</span>
+                      <span className="font-bold text-[#C41F4F]">{a.score} pts</span>
                     </div>
-                    <p className="text-gray-800 font-medium">{a.reasons[0]?.description || 'Spatial-temporal overlap'}</p>
+                    <p className="text-[var(--text)] font-medium">{a.reasons[0]?.description || 'Spatial-temporal overlap'}</p>
                     <Link
                       to="/officer/coordination"
-                      className="text-teal-700 font-semibold hover:underline block pt-1"
+                      className="text-[var(--primary)] font-semibold hover:underline block pt-1"
                     >
                       Resolve Overlap →
                     </Link>
@@ -258,32 +253,32 @@ export function OfficerDashboard() {
           </div>
 
           {/* Citizen Reports Inbox */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
+          <div className="bg-white rounded-xl border border-[var(--border)] p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-gray-900 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-rose-500" />
+              <h3 className="font-bold text-xs text-[var(--text)] font-heading flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#FF5A5F]" />
                 Citizen Grievances Inbox
               </h3>
-              <Link to="/officer/reports" className="text-xs font-semibold text-teal-600 hover:underline">
+              <Link to="/officer/reports" className="text-xs font-semibold text-[var(--primary)] hover:underline">
                 View All ({reports.length})
               </Link>
             </div>
 
             {pendingReports.length === 0 ? (
-              <p className="text-xs text-gray-400 italic">No unhandled citizen reports.</p>
+              <p className="text-xs text-[var(--muted)] italic">No unhandled citizen reports.</p>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {pendingReports.slice(0, 3).map(r => (
-                  <div key={r.id} className="p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs space-y-1">
+                  <div key={r.id} className="p-3 rounded-lg bg-[#F8FAFC] border border-[var(--border)] text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-indigo-600 font-bold">{r.referenceId}</span>
-                      <span className="text-[10px] uppercase font-bold text-rose-600">{r.status}</span>
+                      <span className="font-mono text-[var(--primary)] font-bold">{r.referenceId}</span>
+                      <span className="text-[10px] uppercase font-bold text-[#D13B41]">{r.status}</span>
                     </div>
-                    <p className="font-semibold text-gray-900 line-clamp-1">{r.title}</p>
-                    <p className="text-gray-500 text-[11px] truncate">{r.locationDescription}</p>
+                    <p className="font-semibold text-[var(--text)] line-clamp-1">{r.title}</p>
+                    <p className="text-[var(--muted)] text-[11px] truncate">{r.locationDescription}</p>
                     <Link
                       to="/officer/reports"
-                      className="text-teal-700 font-semibold hover:underline block pt-1"
+                      className="text-[var(--primary)] font-semibold hover:underline block pt-1"
                     >
                       Respond & Triage →
                     </Link>

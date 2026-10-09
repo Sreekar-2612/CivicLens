@@ -75,15 +75,15 @@ export function ReportTrackPage() {
   const getStatusBadge = (status: ReportStatus) => {
     switch (status) {
       case 'resolved':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400'
+        return 'bg-[var(--teal-soft)] text-[var(--teal)] border-[var(--teal)]/30'
       case 'escalated':
-        return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400'
+        return 'bg-[#FFE9EA] text-[#D13B41] border-[#FF5A5F]/30'
       case 'in_review':
-        return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400'
+        return 'bg-[var(--primary-soft)] text-[var(--primary)] border-[var(--primary)]/20'
       case 'acknowledged':
-        return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400'
+        return 'bg-[#FFF4DB] text-[#9A6200] border-[#FFB020]/30'
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300'
+        return 'bg-[#F8FAFC] text-[var(--muted)] border-[var(--border)]'
     }
   }
 
@@ -95,98 +95,108 @@ export function ReportTrackPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Header & Search Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg space-y-4">
-        <div className="flex items-center gap-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-          <Clock className="w-4 h-4" />
-          Public Grievance Transparency Tracker
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Track Ground-Truth Reports
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-          Enter your reference code to inspect real-time officer response notes, escalation audits, and repair resolutions.
-        </p>
+    <div className="min-h-screen bg-[var(--bg)] font-sans p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+      {/* Header & Search Bar (Fresh Civic White Card) */}
+      <div className="bg-white rounded-xl border border-[var(--border)] p-6 shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--teal-soft)] text-[var(--teal)] border border-[var(--teal)]/20">
+                Ground Reality Audit
+              </span>
+              <span className="text-xs text-[var(--muted)]">• Pune Municipal Grievance Tracking</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text)] font-heading mt-1.5">
+              Citizen Grievance & Tracking Portal
+            </h1>
+            <p className="text-xs sm:text-sm text-[var(--muted)] mt-0.5">
+              Track field verification, engineer inspection notes, and resolution actions for any reported road issue.
+            </p>
+          </div>
 
-        {/* Search Input */}
-        <form onSubmit={handleSearch} className="flex gap-2 max-w-xl pt-2">
+          <Link
+            to="/report"
+            className="btn-primary text-xs sm:text-sm flex items-center gap-2 self-start md:self-center no-underline shrink-0"
+          >
+            <FileText className="w-4 h-4" />
+            Lodge New Report
+          </Link>
+        </div>
+
+        {/* Search input */}
+        <form onSubmit={handleSearch} className="flex gap-2 pt-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
             <input
               type="text"
+              placeholder="Search by Reference ID (e.g. CL-2026-8821), keyword, or corridor name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="e.g. CL-2026-0001 or search keyword..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-sm text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:bg-white transition-all"
             />
           </div>
           <button
             type="submit"
-            className="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 font-semibold text-sm transition-colors text-white shadow"
+            className="btn-primary text-xs px-5"
           >
-            Track Report
+            Search
           </button>
         </form>
       </div>
 
-      {/* Main Layout: Master-Detail */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left: Reports Feed / Filter */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <FileText className="w-4 h-4 text-indigo-600" />
-              Community Reports ({filteredReports.length})
-            </h2>
+      {/* Main Split Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: List of Reports */}
+        <div className="lg:col-span-5 space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs font-bold text-[var(--muted)] uppercase tracking-wider">
+              Citizen Filings ({filteredReports.length})
+            </span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-2 py-1"
+              className="text-xs font-semibold rounded-lg border border-[var(--border)] bg-white text-[var(--text)] px-2.5 py-1 focus:ring-2 focus:ring-[var(--primary)]"
             >
               <option value="all">All Statuses</option>
               <option value="submitted">Submitted</option>
               <option value="acknowledged">Acknowledged</option>
               <option value="in_review">In Review</option>
-              <option value="escalated">Escalated</option>
               <option value="resolved">Resolved</option>
             </select>
           </div>
 
-          <div className="space-y-3 max-h-[700px] overflow-y-auto pr-1">
+          <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
             {filteredReports.map(r => {
               const isSelected = activeReport?.id === r.id
               return (
                 <div
                   key={r.id}
                   onClick={() => selectReport(r)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  className={`p-4 rounded-xl border text-xs cursor-pointer transition-all ${
                     isSelected
-                      ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 dark:border-indigo-500 ring-2 ring-indigo-500/10'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                      ? 'bg-white border-[var(--primary)] shadow-md ring-2 ring-[var(--primary)]/20'
+                      : 'bg-white border-[var(--border)] hover:border-[var(--primary)] hover:shadow-xs'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      {r.referenceId}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${getStatusBadge(r.status)}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-bold text-[var(--primary)]">{r.referenceId}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${getStatusBadge(r.status)}`}>
                       {REPORT_STATUS_LABELS[r.status]}
                     </span>
                   </div>
 
-                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white mt-1.5 line-clamp-1">
+                  <h3 className="font-bold text-sm text-[var(--text)] font-heading mt-1.5 leading-tight">
                     {r.title}
                   </h3>
 
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <div className="flex items-center gap-2 text-[11px] text-[var(--muted)] mt-1">
+                    <MapPin className="w-3 h-3 text-[var(--muted)] shrink-0" />
                     <span className="truncate">{r.locationDescription}</span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-gray-400 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700/60">
+                  <div className="mt-2.5 pt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px] text-[var(--muted)]">
                     <span>{REPORT_CATEGORY_LABELS[r.category]}</span>
-                    <span>{format(new Date(r.createdAt), 'MMM dd, yyyy')}</span>
+                    <span>{format(new Date(r.createdAt), 'dd MMM yyyy')}</span>
                   </div>
                 </div>
               )
@@ -194,129 +204,115 @@ export function ReportTrackPage() {
           </div>
         </div>
 
-        {/* Right: Selected Report Audit Detail */}
+        {/* Right Column: Selected Report Detail & Lifecycle Timeline */}
         <div className="lg:col-span-7">
           {activeReport ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 sm:p-8 space-y-6 shadow-sm sticky top-6">
+            <div className="bg-white rounded-xl border border-[var(--border)] p-6 shadow-sm space-y-6 sticky top-6">
               {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-gray-100 dark:border-gray-700/60 pb-5">
+              <div className="flex items-start justify-between border-b border-[var(--border)] pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                    <span className="font-mono font-bold text-sm text-[var(--primary)]">
                       {activeReport.referenceId}
                     </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Filed on {format(new Date(activeReport.createdAt), 'MMMM dd, yyyy • hh:mm a')}
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${getStatusBadge(activeReport.status)}`}>
+                      {REPORT_STATUS_LABELS[activeReport.status]}
                     </span>
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mt-2">
+                  <h2 className="text-xl font-bold text-[var(--text)] font-heading mt-2">
                     {activeReport.title}
                   </h2>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-[var(--muted)] mt-1">
+                    <MapPin className="w-3.5 h-3.5 text-[var(--primary)]" />
                     <span>{activeReport.locationDescription}</span>
                   </div>
                 </div>
 
-                <span className={`px-3 py-1 rounded-lg text-xs font-bold border uppercase tracking-wider self-start ${getStatusBadge(activeReport.status)}`}>
-                  {REPORT_STATUS_LABELS[activeReport.status]}
-                </span>
+                <div className="text-right text-xs text-[var(--muted)]">
+                  <span>Filed:</span>
+                  <div className="font-semibold text-[var(--text)]">{format(new Date(activeReport.createdAt), 'dd MMM yyyy')}</div>
+                </div>
               </div>
 
-              {/* Status Progression Bar */}
-              <div className="py-2">
-                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-3">
-                  Resolution Progress Timeline
+              {/* Progress Milestones Tracker */}
+              <div className="space-y-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                  Investigation & Resolution Pipeline
                 </span>
                 <div className="grid grid-cols-4 gap-2">
-                  {STATUS_STEPS.map((step) => {
-                    const completed = isStepCompleted(step.key, activeReport.status)
+                  {STATUS_STEPS.map((step, idx) => {
+                    const done = isStepCompleted(step.key, activeReport.status)
+                    const isCurrent = activeReport.status === step.key
                     return (
-                      <div key={step.key} className="text-center">
-                        <div
-                          className={`h-2 rounded-full mb-1.5 transition-colors ${
-                            completed ? 'bg-indigo-600 dark:bg-indigo-500' : 'bg-gray-100 dark:bg-gray-700'
-                          }`}
-                        />
-                        <span className={`text-[11px] font-semibold block truncate ${
-                          completed ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'
-                        }`}>
-                          {step.label}
-                        </span>
+                      <div
+                        key={step.key}
+                        className={`p-2.5 rounded-lg border text-center transition-all ${
+                          done
+                            ? 'bg-[var(--teal-soft)] border-[var(--teal)]/40 text-[var(--teal)]'
+                            : 'bg-[#F8FAFC] border-[var(--border)] text-[var(--muted)]'
+                        }`}
+                      >
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center mx-auto mb-1 text-[10px] font-bold">
+                          {done ? (
+                            <CheckCircle2 className="w-4 h-4 text-[var(--teal)]" />
+                          ) : (
+                            <span className="w-4 h-4 rounded-full border border-[var(--border)] flex items-center justify-center">{idx + 1}</span>
+                          )}
+                        </div>
+                        <span className="text-[11px] font-bold block">{step.label}</span>
                       </div>
                     )
                   })}
                 </div>
               </div>
 
-              {/* Citizen Observation Details */}
-              <div className="space-y-3 bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Citizen Ground Observation
+              {/* Citizen Description */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                  Ground Issue Observation
                 </span>
-                <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                <div className="p-4 rounded-lg bg-[#F8FAFC] border border-[var(--border)] text-xs text-[var(--text)] leading-relaxed">
                   {activeReport.description}
-                </p>
-
-                {activeReport.photoUrl && (
-                  <div className="mt-3">
-                    <span className="text-xs font-semibold text-gray-500 block mb-1.5">Submitted Photo Evidence:</span>
-                    <img
-                      src={activeReport.photoUrl}
-                      alt="Grievance evidence"
-                      className="rounded-lg max-h-56 w-auto object-cover border border-gray-200 dark:border-gray-700"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Officer Official Response */}
-              <div className="space-y-2 border-l-4 border-indigo-500 pl-4 py-1">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                    Official Department Action & Response
-                  </span>
                 </div>
-                {activeReport.officerResponse ? (
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-800 dark:text-gray-200 italic bg-indigo-50/50 dark:bg-indigo-950/20 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/40">
-                      "{activeReport.officerResponse}"
-                    </p>
-                    <div className="text-[11px] text-gray-400 flex items-center gap-3 pt-1">
-                      {activeReport.acknowledgedAt && (
-                        <span>Acknowledged: {format(new Date(activeReport.acknowledgedAt), 'MMM dd, yyyy')}</span>
-                      )}
-                      {activeReport.resolvedAt && (
-                        <span className="text-emerald-600 font-semibold">Resolved: {format(new Date(activeReport.resolvedAt), 'MMM dd, yyyy')}</span>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg border border-amber-200 dark:border-amber-900/40">
-                    Awaiting formal officer review. Report has been auto-flagged for the assigned area engineer.
-                  </div>
-                )}
               </div>
 
-              {/* Linked project badge if exists */}
+              {/* Associated Project Dossier (if linked) */}
               {activeReport.projectId && (
-                <div className="pt-2 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between">
-                  <span className="text-xs text-gray-500">Linked to Capital Project:</span>
+                <div className="p-3.5 rounded-lg bg-[var(--primary-soft)] border border-[var(--primary)]/20 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--primary)] block">
+                      Linked Capital Work Order
+                    </span>
+                    <span className="font-bold text-[var(--text)]">Work Order ID: {activeReport.projectId}</span>
+                  </div>
                   <Link
                     to={`/projects/${activeReport.projectId}`}
-                    className="inline-flex items-center text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline gap-1"
+                    className="inline-flex items-center gap-1 font-bold text-[var(--primary)] hover:underline"
                   >
                     View Project Dossier <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               )}
+
+              {/* Photo Evidence (if any) */}
+              {activeReport.photoUrl && (
+                <div className="space-y-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
+                    Submitted Evidence Photo
+                  </span>
+                  <img
+                    src={activeReport.photoUrl}
+                    alt="Citizen evidence photo"
+                    className="w-full max-h-56 object-cover rounded-xl border border-[var(--border)]"
+                  />
+                </div>
+              )}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8">
-              <Clock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <h3 className="font-bold text-gray-900 dark:text-white">No Report Selected</h3>
-              <p className="text-xs text-gray-500 mt-1">Select a report from the list on the left or search by tracking reference code.</p>
+            <div className="text-center py-16 bg-white rounded-xl border border-[var(--border)] p-8">
+              <FileText className="w-12 h-12 text-[var(--muted)]/40 mx-auto mb-2" />
+              <h3 className="font-bold text-[var(--text)] font-heading">Select a Grievance</h3>
+              <p className="text-xs text-[var(--muted)]">Click any reference from the left panel to inspect audit status.</p>
             </div>
           )}
         </div>

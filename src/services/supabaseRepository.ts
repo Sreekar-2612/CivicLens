@@ -74,6 +74,46 @@ export function mapDbUpdateToDomain(row: any): ProjectUpdate {
   }
 }
 
+export function mapDbGrievanceToDomain(row: any): Report {
+  return {
+    id: row.id,
+    referenceId: row.reference_id,
+    projectId: row.project_id || undefined,
+    category: row.category,
+    title: row.title,
+    description: row.description,
+    road: row.road_name,
+    locality: row.locality,
+    ward: row.ward,
+    status: row.status,
+    officerResponse: row.officer_response || undefined,
+    upvotes: row.upvotes || 0,
+    evidenceUrl: row.evidence_url || undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export function mapDbClashToDomain(row: any): CoordinationAlert {
+  return {
+    id: row.id,
+    title: row.title,
+    road: row.road_name,
+    projectAId: row.project_a_id,
+    projectBId: row.project_b_id,
+    departmentAId: row.department_a_id,
+    departmentBId: row.department_b_id,
+    conflictType: row.conflict_type,
+    severity: row.severity,
+    status: row.status,
+    suggestedResolution: row.suggested_resolution || undefined,
+    jointInspectionDate: row.joint_inspection_date || undefined,
+    decisionNotes: row.decision_notes || undefined,
+    createdAt: row.created_at,
+  }
+}
+
+
 export class SupabaseDataRepository {
   private get client() {
     if (!supabase) throw new Error('Supabase client is not initialized.')
@@ -196,32 +236,70 @@ export class SupabaseDataRepository {
 
   // -- Reports (Grievances) --
   async getReports(): Promise<Report[]> {
-    return seedReports
+    const { data, error } = await this.client
+      .from('grievances')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error || !data || data.length === 0) return seedReports
+    return data.map(mapDbGrievanceToDomain)
   }
 
   async getReport(id: string): Promise<Report | undefined> {
-    return seedReports.find(r => r.id === id)
+    const { data, error } = await this.client
+      .from('grievances')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error || !data) return seedReports.find(r => r.id === id)
+    return mapDbGrievanceToDomain(data)
   }
 
   async getReportByReference(referenceId: string): Promise<Report | undefined> {
-    return seedReports.find(r => r.referenceId.toLowerCase() === referenceId.toLowerCase())
+    const { data, error } = await this.client
+      .from('grievances')
+      .select('*')
+      .ilike('reference_id', referenceId)
+      .single()
+    if (error || !data) return seedReports.find(r => r.referenceId.toLowerCase() === referenceId.toLowerCase())
+    return mapDbGrievanceToDomain(data)
   }
 
   async getReportsByProject(projectId: string): Promise<Report[]> {
-    return seedReports.filter(r => r.projectId === projectId)
+    const { data, error } = await this.client
+      .from('grievances')
+      .select('*')
+      .eq('project_id', projectId)
+    if (error || !data || data.length === 0) return seedReports.filter(r => r.projectId === projectId)
+    return data.map(mapDbGrievanceToDomain)
   }
 
-  // -- Alerts --
+  // -- Alerts (Clashes) --
   async getAlerts(): Promise<CoordinationAlert[]> {
-    return seedAlerts
+    const { data, error } = await this.client
+      .from('clashes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error || !data || data.length === 0) return seedAlerts
+    return data.map(mapDbClashToDomain)
   }
 
   async getAlert(id: string): Promise<CoordinationAlert | undefined> {
-    return seedAlerts.find(a => a.id === id)
+    const { data, error } = await this.client
+      .from('clashes')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error || !data) return seedAlerts.find(a => a.id === id)
+    return mapDbClashToDomain(data)
   }
 
   async getAlertsByProject(projectId: string): Promise<CoordinationAlert[]> {
-    return seedAlerts.filter(a => a.projectAId === projectId || a.projectBId === projectId)
+    const { data, error } = await this.client
+      .from('clashes')
+      .select('*')
+      .or(`project_a_id.eq.${projectId},project_b_id.eq.${projectId}`)
+    if (error || !data || data.length === 0) return seedAlerts.filter(a => a.projectAId === projectId || a.projectBId === projectId)
+    return data.map(mapDbClashToDomain)
   }
 
   // -- Summary Stats --

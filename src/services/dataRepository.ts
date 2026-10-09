@@ -91,12 +91,37 @@ function matchesSearch(project: Project, search: string): boolean {
   );
 }
 
-// In-memory mutable stores for fallback
-const projectStore: Project[] = [...projects];
-const reportStore: Report[] = [...reports];
-const alertStore: CoordinationAlert[] = [...coordinationAlerts];
-const updateStore: ProjectUpdate[] = [...projectUpdates];
-const milestoneStore: Milestone[] = [...milestones];
+// LocalStorage persistent stores with fallback to seed data
+function loadStore<T>(key: string, initialData: T[]): T[] {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = window.localStorage.getItem(key);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    }
+  } catch (e) {
+    console.warn(`Failed to load ${key} from localStorage:`, e);
+  }
+  return [...initialData];
+}
+
+function saveStore<T>(key: string, data: T[]): void {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(key, JSON.stringify(data));
+    }
+  } catch (e) {
+    console.warn(`Failed to save ${key} to localStorage:`, e);
+  }
+}
+
+// In-memory mutable stores with localStorage persistence
+const projectStore: Project[] = loadStore('civiclens_projects', projects);
+const reportStore: Report[] = loadStore('civiclens_reports', reports);
+const alertStore: CoordinationAlert[] = loadStore('civiclens_alerts', coordinationAlerts);
+const updateStore: ProjectUpdate[] = loadStore('civiclens_updates', projectUpdates);
+const milestoneStore: Milestone[] = loadStore('civiclens_milestones', milestones);
 
 export class SeedDataRepository implements DataRepository {
   getDataSourceMode() {
@@ -189,6 +214,7 @@ export class SeedDataRepository implements DataRepository {
       createdAt: new Date().toISOString(),
     };
     updateStore.unshift(newUpdate);
+    saveStore('civiclens_updates', updateStore);
     return newUpdate;
   }
 
@@ -269,6 +295,36 @@ export class SeedDataRepository implements DataRepository {
       updatedAt: new Date().toISOString(),
     };
     projectStore.unshift(newProject);
+    saveStore('civiclens_projects', projectStore);
+
+    // Cross-agency corridor clash check:
+    const conflicting = projectStore.filter(p =>
+      p.id !== newProject.id &&
+      (p.road.toLowerCase().trim().includes(newProject.road.toLowerCase().trim()) ||
+       newProject.road.toLowerCase().trim().includes(p.road.toLowerCase().trim())) &&
+      p.departmentId !== newProject.departmentId
+    );
+
+    if (conflicting.length > 0) {
+      const other = conflicting[0];
+      const newAlert: CoordinationAlert = {
+        id: `clash-${Date.now().toString().slice(-4)}`,
+        projectAId: other.id,
+        projectBId: newProject.id,
+        severity: 'high',
+        status: 'pending_review',
+        score: 88,
+        reasons: [
+          { type: 'same_road', description: `Simultaneous excavation work order scheduled on ${newProject.road}`, score: 55 },
+          { type: 'interfering_categories', description: 'Cross-agency digging permit scheduled without joint alignment', score: 33 }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      alertStore.unshift(newAlert);
+      saveStore('civiclens_alerts', alertStore);
+    }
+
     return newProject;
   }
 
@@ -311,6 +367,7 @@ export class SeedDataRepository implements DataRepository {
       updatedAt: new Date().toISOString(),
     };
     projectStore[idx] = updatedProject;
+    saveStore('civiclens_projects', projectStore);
 
     // Automatically record deadline revision audit history
     if (hasDeadlineChange) {
@@ -328,6 +385,7 @@ export class SeedDataRepository implements DataRepository {
         createdAt: new Date().toISOString(),
       };
       updateStore.unshift(historyUpdate);
+      saveStore('civiclens_updates', updateStore);
     }
 
     return updatedProject;
@@ -354,6 +412,7 @@ export class SeedDataRepository implements DataRepository {
       ...data,
     };
     reportStore.unshift(newReport);
+    saveStore('civiclens_reports', reportStore);
     return newReport;
   }
 
@@ -371,6 +430,7 @@ export class SeedDataRepository implements DataRepository {
       ...(status === 'escalated' ? { escalatedAt: now } : {}),
     };
     reportStore[idx] = updated;
+    saveStore('civiclens_reports', reportStore);
     return updated;
   }
 
@@ -385,6 +445,7 @@ export class SeedDataRepository implements DataRepository {
       updatedAt: new Date().toISOString(),
     };
     alertStore[idx] = updated;
+    saveStore('civiclens_alerts', alertStore);
     return updated;
   }
 

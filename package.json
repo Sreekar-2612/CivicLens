@@ -8,7 +8,13 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "supabase": "supabase",
+    "supabase:login": "supabase login",
+    "supabase:link": "supabase link",
+    "supabase:push": "supabase db push",
+    "supabase:pull": "supabase db pull",
+    "supabase:types": "supabase gen types typescript --linked > src/types/database.types.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.3",
@@ -31,6 +37,8 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
+    "pg": "^8.23.1",
+    "supabase": "^2.120.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",

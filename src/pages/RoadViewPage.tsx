@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   MapPin, AlertTriangle, CheckCircle2, Clock, Calendar,
   Building2, Layers, AlertOctagon, ArrowRight, ShieldAlert,
-  ArrowLeft, Search, RefreshCw
+  ArrowLeft, Search, RefreshCw, ChevronRight
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
 import type { Project, Department, CoordinationAlert } from '../types'
@@ -37,7 +37,6 @@ export function RoadViewPage() {
       // Determine selected road
       let targetRoad = ''
       if (roadParam) {
-        // Try decoding param or finding match
         const decoded = decodeURIComponent(roadParam).replace(/-/g, ' ')
         const match = roads.find(r => r.road.toLowerCase().includes(decoded.toLowerCase()) || decoded.toLowerCase().includes(r.road.toLowerCase()))
         targetRoad = match ? match.road : roads[0]?.road || ''
@@ -64,58 +63,54 @@ export function RoadViewPage() {
     navigate(`/roads/${encodeURIComponent(roadName)}`, { replace: true })
   }
 
-  // Sort projects along timeline: Completed (past), In Progress (current), Planned (upcoming)
   const pastProjects = roadProjects.filter(p => p.status === 'completed')
   const currentProjects = roadProjects.filter(p => p.status === 'in_progress' || p.status === 'delayed')
   const plannedProjects = roadProjects.filter(p => p.status === 'planned')
 
-  // Check for repeat excavation risk / moratorium violation
-  // If road resurfacing happened recently (<12 months) and water/gas/electric is scheduled or active
   const hasRecentResurfacing = pastProjects.some(p => p.category === 'road_resurfacing' || p.category === 'road_construction')
   const hasUpcomingExcavation = [...currentProjects, ...plannedProjects].some(
     p => p.category === 'water_pipeline' || p.category === 'gas_pipeline' || p.category === 'drainage' || p.category === 'telecom'
   )
   const isMoratoriumViolation = hasRecentResurfacing && hasUpcomingExcavation
 
-  // Related alerts on this road
   const roadProjectIds = new Set(roadProjects.map(p => p.id))
   const roadAlerts = alerts.filter(a => roadProjectIds.has(a.projectAId) || roadProjectIds.has(a.projectBId))
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header */}
       <div>
         <Link
           to="/projects"
-          className="inline-flex items-center text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-white mb-3"
+          className="inline-flex items-center text-xs font-bold text-[#64748B] hover:text-[#2F6BFF] mb-2 no-underline"
         >
-          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Project Explorer
+          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Permits Explorer
         </Link>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400 mb-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EAF1FF] text-[#2F6BFF] border border-[#2F6BFF]/20 mb-1.5">
               <Layers className="w-3.5 h-3.5" />
-              Corridor Digging Lifecycle & Moratorium Tracker
+              <span>Repeat Digging Radar &amp; Moratorium Tracker</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-              Road Corridor Timeline: {currentRoad || 'Select Corridor'}
+            <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
+              Corridor Timeline: {currentRoad || 'Select Corridor'}
             </h1>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Prevent newly paved roads from being dug up again. Track multi-agency utility works and excavation history on this specific transit corridor.
+            <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 max-w-2xl leading-relaxed">
+              Prevent newly paved roads from being dug up again. Track multi-agency utility works and repeat excavation frequency on this transit corridor.
             </p>
           </div>
 
           {/* Quick Corridor Selector dropdown */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 whitespace-nowrap font-medium">Switch Corridor:</span>
+            <span className="text-xs text-[#64748B] whitespace-nowrap font-bold">Switch Corridor:</span>
             <select
               value={currentRoad}
               onChange={(e) => handleSelectRoad(e.target.value)}
-              className="text-xs sm:text-sm font-semibold rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-2 focus:ring-2 focus:ring-indigo-500 shadow-sm"
+              className="text-xs font-bold rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] px-3 py-2 focus:border-[#2F6BFF] focus:outline-none shadow-2xs cursor-pointer"
             >
               {availableRoads.map(r => (
                 <option key={r.road} value={r.road}>
-                  {r.road} ({r.count} projects)
+                  {r.road} ({r.count} permits)
                 </option>
               ))}
             </select>
@@ -123,91 +118,94 @@ export function RoadViewPage() {
         </div>
       </div>
 
-      {/* Moratorium / Conflict Alert Banner */}
+      {/* Moratorium / Repeat Excavation Hatch Banner */}
       {isMoratoriumViolation && (
-        <div className="bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-300 dark:border-rose-800 rounded-2xl p-5 flex items-start gap-4 shadow-sm">
-          <div className="p-2.5 rounded-xl bg-rose-600 text-white shrink-0 mt-0.5 shadow">
-            <AlertOctagon className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-rose-700 dark:text-rose-400">
-                CRITICAL REPEAT-EXCAVATION RISK
-              </span>
-              <span className="bg-rose-200 dark:bg-rose-900/60 text-rose-900 dark:text-rose-200 text-[10px] font-bold px-2 py-0.5 rounded">
-                Moratorium Rule Breached
-              </span>
+        <div className="border border-[#F0386B]/30 rounded-2xl overflow-hidden shadow-2xs">
+          <div className="h-2 clash-hatch border-b border-[#F0386B]/20"></div>
+          <div className="p-4 bg-[#FFE6EE] flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-[#C41F4F] text-white shrink-0 mt-0.5 shadow-xs">
+              <AlertOctagon className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-white">
-              Road Resurfaced Recently While Subsurface Utility Trenching Is Scheduled!
-            </h3>
-            <p className="text-xs text-rose-800 dark:text-rose-300 leading-relaxed">
-              This corridor underwent asphalt resurfacing in the last 12 months. An upcoming or active utility excavation (pipeline/cable) threatens to destroy freshly laid road surface. Joint ducting or schedule synchronization is urgently required.
-            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#C41F4F]">
+                  CRITICAL REPEAT-EXCAVATION RISK
+                </span>
+                <span className="bg-[#C41F4F] text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded uppercase">
+                  Moratorium Breached
+                </span>
+              </div>
+              <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">
+                Road Resurfaced Recently While Subsurface Utility Trenching Is Scheduled!
+              </h3>
+              <p className="text-xs text-[#64748B] leading-relaxed">
+                This corridor underwent asphalt resurfacing in the last 12 months. An upcoming or active utility excavation (water/power/telecom) threatens to slice into the fresh asphalt. Co-ducting or schedule synchronization is required under Pune Section 42 Bylaws.
+              </p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Corridor Summary Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Total Work Orders</span>
-          <span className="text-2xl font-black text-gray-900 dark:text-white">{roadProjects.length}</span>
-          <span className="text-[11px] text-gray-400 mt-1 block">Past, ongoing & planned</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
+          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Total Work Orders</span>
+          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#1E293B]">{roadProjects.length}</span>
+          <span className="text-[10px] text-[#64748B] mt-0.5 block">Historical &amp; planned</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Active Digs Right Now</span>
-          <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{currentProjects.length}</span>
-          <span className="text-[11px] text-gray-400 mt-1 block">Live street disruption</span>
+        <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
+          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Active Digs Right Now</span>
+          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#FFB020]">{currentProjects.length}</span>
+          <span className="text-[10px] text-[#64748B] mt-0.5 block">Live street trenches</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Scheduled Future Digs</span>
-          <span className="text-2xl font-black text-blue-600 dark:text-blue-400">{plannedProjects.length}</span>
-          <span className="text-[11px] text-gray-400 mt-1 block">Needs co-scheduling</span>
+        <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
+          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Scheduled Future Digs</span>
+          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#2F6BFF]">{plannedProjects.length}</span>
+          <span className="text-[10px] text-[#64748B] mt-0.5 block">Opportunity to Dig-Once</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Coordination Flagged</span>
-          <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{roadAlerts.length}</span>
-          <span className="text-[11px] text-gray-400 mt-1 block">Cross-department conflicts</span>
+        <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
+          <span className="text-[10px] font-bold text-[#C41F4F] uppercase block">Clashes Flagged</span>
+          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#C41F4F]">{roadAlerts.length}</span>
+          <span className="text-[10px] text-[#64748B] mt-0.5 block">Inter-agency overlaps</span>
         </div>
       </div>
 
       {/* Multi-Agency Chronological Timeline */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 sm:p-8 space-y-8 shadow-sm">
+      <div className="bg-white rounded-2xl border border-[#E3EAF2] p-5 sm:p-6 space-y-6 shadow-2xs">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            Corridor Lifecycle & Excavation Sequence
+          <h2 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">
+            Corridor Lifecycle &amp; Excavation Sequence
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Chronological inspection of who dug this road, who is currently working, and who is planning to dig next.
+          <p className="text-xs text-[#64748B] mt-0.5">
+            Chronological inspection of which agencies dug this road, who is on site right now, and who plans to dig next.
           </p>
         </div>
 
         {/* Phase 1: Completed / Past Excavations */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="w-4 h-4" />
-            1. Completed History ({pastProjects.length})
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0E7A55]">
+            <CheckCircle2 className="w-4 h-4 text-[#12B5A6]" />
+            <span>1. Completed Works ({pastProjects.length})</span>
           </div>
           {pastProjects.length === 0 ? (
-            <p className="text-xs text-gray-400 italic pl-6">No completed historical records logged in CivicLens for this corridor yet.</p>
+            <p className="text-xs text-[#94A3B8] italic pl-6">No completed historical records logged in CivicLens for this corridor yet.</p>
           ) : (
-            <div className="space-y-3 pl-4 border-l-2 border-emerald-300 dark:border-emerald-800">
+            <div className="space-y-2.5 pl-3.5 border-l-2 border-[#12B5A6]/40">
               {pastProjects.map(p => (
-                <div key={p.id} className="p-4 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div key={p.id} className="p-3 rounded-xl bg-[#F6F9FC] border border-[#E3EAF2] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-500">Completed {p.actualEndDate || p.originalEndDate}</span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold">
+                      <span className="text-[10px] font-bold text-[#64748B]">Completed {p.actualEndDate || p.originalEndDate}</span>
+                      <span className="badge completed text-[10px] py-0 px-1.5">
                         {p.category.replace('_', ' ')}
                       </span>
                     </div>
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-white mt-1">{p.title}</h4>
-                    <p className="text-xs text-gray-500 mt-0.5">Contractor: {p.contractor} • Budget: ₹{p.budgetLakhs} Lakhs</p>
+                    <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-xs text-[#1E293B] mt-0.5">{p.title}</h4>
+                    <p className="text-[11px] text-[#64748B] mt-0.2">Contractor: {p.contractor} • Outlay: ₹{p.budgetLakhs}L</p>
                   </div>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline shrink-0"
+                    className="text-xs font-bold text-[#2F6BFF] hover:underline shrink-0 no-underline"
                   >
                     View Project Dossier →
                   </Link>
@@ -218,34 +216,35 @@ export function RoadViewPage() {
         </div>
 
         {/* Phase 2: Active Ongoing Work */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-            <Clock className="w-4 h-4" />
-            2. Active Ongoing Excavation ({currentProjects.length})
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#9A6200]">
+            <Clock className="w-4 h-4 text-[#FFB020]" />
+            <span>2. Active On-Street Disruption ({currentProjects.length})</span>
           </div>
           {currentProjects.length === 0 ? (
-            <p className="text-xs text-gray-400 italic pl-6">Currently no active excavation on this corridor.</p>
+            <p className="text-xs text-[#94A3B8] italic pl-6">No active ongoing trenches on this corridor right now.</p>
           ) : (
-            <div className="space-y-3 pl-4 border-l-2 border-amber-400 dark:border-amber-600">
+            <div className="space-y-2.5 pl-3.5 border-l-2 border-[#FFB020]">
               {currentProjects.map(p => (
-                <div key={p.id} className="p-4 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
+                <div key={p.id} className="p-3.5 rounded-xl bg-[#FFF4DB]/50 border border-[#FFB020]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div>
                     <div className="flex items-center gap-2">
-                      <StatusBadge status={p.status} />
-                      <span className="text-xs font-semibold text-gray-500">
-                        {p.startDate} → {p.revisedEndDate || p.originalEndDate}
+                      <span className="badge ongoing text-[10px] py-0 px-1.5">
+                        {p.progressPercent}% Complete
                       </span>
+                      <span className="text-[10px] font-mono text-[#64748B]">{p.id}</span>
                     </div>
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-white">{p.title}</h4>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {p.purpose} • Progress: {p.progressPercent}%
+                    <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-xs text-[#1E293B] mt-0.5">{p.title}</h4>
+                    <p className="text-[11px] text-[#64748B] mt-0.2">
+                      Contractor: {p.contractor} • Original Deadline: {p.originalEndDate}
+                      {p.revisedEndDate && <span className="text-[#D13B41] font-bold ml-1">(Delayed to {p.revisedEndDate})</span>}
                     </p>
                   </div>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline shrink-0"
+                    className="btn-primary text-xs py-1.5 px-3 shrink-0 no-underline"
                   >
-                    Inspect Details →
+                    Inspect Permit
                   </Link>
                 </div>
               ))}
@@ -253,35 +252,30 @@ export function RoadViewPage() {
           )}
         </div>
 
-        {/* Phase 3: Upcoming Planned Work Orders */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-            <Calendar className="w-4 h-4" />
-            3. Future Scheduled Work Orders ({plannedProjects.length})
+        {/* Phase 3: Planned Upcoming Digs */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#1B7FC4]">
+            <Calendar className="w-4 h-4 text-[#38A9F5]" />
+            <span>3. Future Scheduled Work Orders ({plannedProjects.length})</span>
           </div>
           {plannedProjects.length === 0 ? (
-            <p className="text-xs text-gray-400 italic pl-6">No scheduled upcoming work orders logged on this corridor.</p>
+            <p className="text-xs text-[#94A3B8] italic pl-6">No future excavation permits queued for this corridor.</p>
           ) : (
-            <div className="space-y-3 pl-4 border-l-2 border-blue-400 dark:border-blue-600">
+            <div className="space-y-2.5 pl-3.5 border-l-2 border-[#38A9F5]">
               {plannedProjects.map(p => (
-                <div key={p.id} className="p-4 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-semibold">
-                        Planned Start: {p.startDate}
-                      </span>
-                      <span className="text-xs text-gray-400">Target End: {p.originalEndDate}</span>
-                    </div>
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-white">{p.title}</h4>
-                    <p className="text-xs text-gray-500">
-                      Contractor: {p.contractor} • Budget: ₹{p.budgetLakhs} Lakhs
-                    </p>
+                <div key={p.id} className="p-3 rounded-xl bg-[#E6F4FE]/50 border border-[#38A9F5]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div>
+                    <span className="badge planned text-[10px] py-0 px-1.5">
+                      Scheduled {p.startDate} to {p.originalEndDate}
+                    </span>
+                    <h4 className="font-['Plus_Jakarta_Sans'] font-bold text-xs text-[#1E293B] mt-1">{p.title}</h4>
+                    <p className="text-[11px] text-[#64748B]">Agency: {p.contractor} • Budget: ₹{p.budgetLakhs}L</p>
                   </div>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline shrink-0"
+                    className="text-xs font-bold text-[#2F6BFF] hover:underline shrink-0 no-underline"
                   >
-                    Inspect Details →
+                    Review Schedule →
                   </Link>
                 </div>
               ))}

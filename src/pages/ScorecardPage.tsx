@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import {
   Award, TrendingUp, AlertTriangle, CheckCircle2, Clock,
   Building2, ShieldAlert, BarChart3, Filter, ArrowUpRight,
-  Layers, Users, Info
+  Layers, Users, Info, Star
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
 import type { Department, Project, Report, CoordinationAlert } from '../types'
@@ -37,7 +37,6 @@ export function ScorecardPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [reports, setReports] = useState<Report[]>([])
   const [alerts, setAlerts] = useState<CoordinationAlert[]>([])
-  const [selectedDeptId, setSelectedDeptId] = useState<string>('all')
   const [activeTab, setActiveTab] = useState<'departments' | 'contractors' | 'wards'>('departments')
 
   useEffect(() => {
@@ -64,22 +63,16 @@ export function ScorecardPage() {
     const active = deptProjects.filter(p => p.status === 'in_progress' || p.status === 'planned').length
     const delayed = deptProjects.filter(p => p.status === 'delayed' || p.confidenceIndicator === 'delayed').length
     
-    // On-time rate calculation
     const onTimeRate = total > 0 ? Math.round(((total - delayed) / total) * 100) : 100
     
-    // Conflicts involving this department's projects
     const deptProjectIds = new Set(deptProjects.map(p => p.id))
     const deptAlerts = alerts.filter(a => deptProjectIds.has(a.projectAId) || deptProjectIds.has(a.projectBId))
     const conflictScore = deptAlerts.length * 15
 
-    // Reports linked to dept projects
     const deptReports = reports.filter(r => r.projectId && deptProjectIds.has(r.projectId))
     const resolvedReports = deptReports.filter(r => r.status === 'resolved').length
-
-    // Simulated average delay days based on delayed count
     const avgDelayDays = delayed > 0 ? Math.round(delayed * 24.5) : 0
 
-    // Grade assignment
     let grade: 'A+' | 'A' | 'B' | 'C' | 'D' = 'B'
     if (onTimeRate >= 90 && deptAlerts.length <= 1) grade = 'A+'
     else if (onTimeRate >= 75) grade = 'A'
@@ -153,122 +146,126 @@ export function ScorecardPage() {
     disruptionIndex: Math.min(100, Math.round((data.active * 18) + (data.delayed * 25))),
   })).sort((a, b) => b.disruptionIndex - a.disruptionIndex)
 
-  const gradeColors = {
-    'A+': 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400',
-    'A': 'bg-green-50 text-green-700 border-green-300 dark:bg-green-950/40 dark:text-green-400',
-    'B': 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-400',
-    'C': 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-400',
-    'D': 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-400',
+  // Fresh Civic Grade Pill Styling
+  const gradeStyles = {
+    'A+': 'bg-[#E3F7F5] text-[#12B5A6] border-[#12B5A6]/30',
+    'A': 'bg-[#E1F8EF] text-[#0E7A55] border-[#22C58B]/30',
+    'B': 'bg-[#EAF1FF] text-[#2F6BFF] border-[#2F6BFF]/30',
+    'C': 'bg-[#FFF4DB] text-[#9A6200] border-[#FFB020]/30',
+    'D': 'bg-[#FFE9EA] text-[#D13B41] border-[#FF5A5F]/30',
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E3EAF2] pb-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-400 mb-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EAF1FF] text-[#2F6BFF] border border-[#2F6BFF]/20 mb-2">
             <Award className="w-3.5 h-3.5" />
-            Civic Accountability & Performance
+            <span>Civic Performance &amp; Accountability</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Civic Agency Scorecards
+          <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1E293B]">
+            Municipal Agency Scorecards
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 max-w-2xl">
-            Objective, data-driven transparency metrics measuring on-time performance, repeat excavation penalties, and contractor accountability across municipal bodies.
+          <p className="text-[#64748B] text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+            Data-driven delivery grades measuring on-time completion rates, repeat digging penalties, and contractor accountability across Pune departments.
           </p>
         </div>
 
         {/* Global Summary Stats */}
-        <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+        <div className="grid grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-[#E3EAF2] text-center shadow-2xs">
           <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Departments</div>
-            <div className="text-xl font-bold text-gray-900 dark:text-white">{departments.length}</div>
+            <div className="text-[10px] text-[#64748B] font-bold uppercase">Agencies</div>
+            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#1E293B]">{departments.length}</div>
           </div>
-          <div className="border-x border-gray-200 dark:border-gray-700 px-3">
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Avg On-Time</div>
-            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="border-x border-[#E3EAF2] px-3">
+            <div className="text-[10px] text-[#64748B] font-bold uppercase">Avg On-Time</div>
+            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#12B5A6]">
               {deptScorecards.length > 0 ? Math.round(deptScorecards.reduce((acc, s) => acc + s.onTimeRate, 0) / deptScorecards.length) : 0}%
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Flagged Alerts</div>
-            <div className="text-xl font-bold text-amber-600 dark:text-amber-400">{alerts.length}</div>
+            <div className="text-[10px] text-[#64748B] font-bold uppercase">Clash Alerts</div>
+            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#C41F4F]">{alerts.length}</div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 dark:border-gray-800 gap-8">
+      {/* Fresh Civic Filter Tabs */}
+      <div className="flex border-b border-[#E3EAF2] gap-2">
         <button
           onClick={() => setActiveTab('departments')}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
             activeTab === 'departments'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              ? 'border-[#2F6BFF] text-[#2F6BFF]'
+              : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
           }`}
         >
-          Department Transparency ({departments.length})
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Department Grades ({departments.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('contractors')}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
             activeTab === 'contractors'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              ? 'border-[#2F6BFF] text-[#2F6BFF]'
+              : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
           }`}
         >
-          Contractor Performance ({contractorScorecards.length})
+          <Users className="w-3.5 h-3.5" />
+          <span>Contractor Standings ({contractorScorecards.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('wards')}
-          className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${
+          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
             activeTab === 'wards'
-              ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-              : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white'
+              ? 'border-[#2F6BFF] text-[#2F6BFF]'
+              : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
           }`}
         >
-          Ward Disruption Index ({wardScorecards.length})
+          <Layers className="w-3.5 h-3.5" />
+          <span>Ward Disruption Index ({wardScorecards.length})</span>
         </button>
       </div>
 
       {/* Tab 1: Department Scorecard */}
       {activeTab === 'departments' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {deptScorecards.map(sc => (
               <div
                 key={sc.department.id}
-                className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+                className="bg-white rounded-xl p-4 border border-[#E3EAF2] shadow-2xs hover:shadow-xs transition-shadow relative overflow-hidden"
               >
                 <div
-                  className="absolute top-0 left-0 right-0 h-1.5"
+                  className="absolute top-0 left-0 right-0 h-1"
                   style={{ backgroundColor: sc.department.color }}
                 />
                 
-                <div className="flex items-start justify-between mt-2">
+                <div className="flex items-start justify-between mt-1">
                   <div>
-                    <span className="text-xs uppercase tracking-wider font-semibold text-gray-400">
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-[#64748B]">
                       {sc.department.shortName}
                     </span>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                    <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B] leading-tight">
                       {sc.department.name}
                     </h3>
                   </div>
-                  <span className={`px-3 py-1 rounded-lg border text-lg font-black ${gradeColors[sc.grade]}`}>
+                  <span className={`px-2.5 py-0.5 rounded-lg border text-base font-black ${gradeStyles[sc.grade]}`}>
                     {sc.grade}
                   </span>
                 </div>
 
-                {/* Progress bar: On-time rate */}
-                <div className="mt-4">
+                {/* Progress bar: On-time rate in Mint Teal */}
+                <div className="mt-3">
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-500 dark:text-gray-400 font-medium">On-Time Execution Rate</span>
-                    <span className="font-bold text-gray-900 dark:text-white">{sc.onTimeRate}%</span>
+                    <span className="text-[#64748B] font-medium text-[11px]">On-Time Execution Rate</span>
+                    <span className="font-bold text-[#1E293B] text-[11px]">{sc.onTimeRate}%</span>
                   </div>
-                  <div className="w-full h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all rounded-full ${
-                        sc.onTimeRate >= 80 ? 'bg-emerald-500' : sc.onTimeRate >= 60 ? 'bg-amber-500' : 'bg-rose-500'
+                        sc.onTimeRate >= 80 ? 'bg-[#12B5A6]' : sc.onTimeRate >= 60 ? 'bg-[#FFB020]' : 'bg-[#FF5A5F]'
                       }`}
                       style={{ width: `${sc.onTimeRate}%` }}
                     />
@@ -276,42 +273,42 @@ export function ScorecardPage() {
                 </div>
 
                 {/* Metric grid */}
-                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/60 text-xs">
+                <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-[#F1F5F9] text-xs">
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 block">Total Works</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                    <span className="text-[#64748B] text-[10px] block">Total Works</span>
+                    <span className="font-bold text-[#1E293B] text-xs">
                       {sc.totalProjects} ({sc.activeProjects} active)
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 block">Delayed Works</span>
-                    <span className={`font-semibold text-sm ${sc.delayedProjects > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                    <span className="text-[#64748B] text-[10px] block">Delayed Works</span>
+                    <span className={`font-bold text-xs ${sc.delayedProjects > 0 ? 'text-[#D13B41]' : 'text-[#1E293B]'}`}>
                       {sc.delayedProjects} projects
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 block">Avg Project Delay</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                      {sc.avgDelayDays > 0 ? `${sc.avgDelayDays} days` : '0 days (On Track)'}
+                    <span className="text-[#64748B] text-[10px] block">Avg Project Delay</span>
+                    <span className="font-bold text-[#1E293B] text-xs">
+                      {sc.avgDelayDays > 0 ? `+${sc.avgDelayDays} days` : '0 days (On Track)'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 block">Conflict Risk Index</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-sm">
-                      {sc.conflictScore > 0 ? `${sc.conflictScore} pts` : 'Low Risk'}
+                    <span className="text-[#64748B] text-[10px] block">Conflict Risk Index</span>
+                    <span className={`font-bold text-xs ${sc.conflictScore > 0 ? 'text-[#C41F4F]' : 'text-[#12B5A6]'}`}>
+                      {sc.conflictScore > 0 ? `${sc.conflictScore} pts` : 'Clean'}
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center justify-between text-xs">
-                  <span className="text-gray-500 dark:text-gray-400">
+                <div className="mt-3 pt-2.5 border-t border-[#F1F5F9] flex items-center justify-between text-xs">
+                  <span className="text-[#64748B] text-[11px]">
                     {sc.totalReports} citizen reports filed
                   </span>
                   <Link
                     to={`/projects?department=${sc.department.id}`}
-                    className="inline-flex items-center text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                    className="inline-flex items-center text-[#2F6BFF] font-bold text-xs hover:underline"
                   >
-                    View Projects <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
+                    View Works <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
                   </Link>
                 </div>
               </div>
@@ -319,58 +316,62 @@ export function ScorecardPage() {
           </div>
 
           {/* Comparative Table */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <div className="bg-white rounded-xl border border-[#E3EAF2] overflow-hidden shadow-2xs">
+            <div className="px-5 py-3 border-b border-[#E3EAF2] flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Comparative Agency Metrics</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Benchmark cross-department performance against civic delivery targets</p>
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#1E293B]">
+                  Comparative Agency Delivery Benchmarks
+                </h3>
+                <p className="text-[11px] text-[#64748B] mt-0.5">
+                  Inter-departmental performance index against municipal completion targets
+                </p>
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-900/50 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#64748B] border-b border-[#E3EAF2] uppercase">
                   <tr>
-                    <th className="px-6 py-3">Department</th>
-                    <th className="px-4 py-3">Grade</th>
-                    <th className="px-4 py-3">On-Time %</th>
-                    <th className="px-4 py-3">Active Works</th>
-                    <th className="px-4 py-3">Delayed Works</th>
-                    <th className="px-4 py-3">Citizen Reports</th>
-                    <th className="px-6 py-3 text-right">Actions</th>
+                    <th className="px-5 py-2.5">Department</th>
+                    <th className="px-3 py-2.5">Grade</th>
+                    <th className="px-3 py-2.5">On-Time %</th>
+                    <th className="px-3 py-2.5">Active</th>
+                    <th className="px-3 py-2.5">Delayed</th>
+                    <th className="px-3 py-2.5">Citizen Reports</th>
+                    <th className="px-5 py-2.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700/60">
+                <tbody className="divide-y divide-[#E3EAF2]">
                   {deptScorecards.map(sc => (
-                    <tr key={sc.department.id} className="hover:bg-gray-50/60 dark:hover:bg-gray-700/30">
-                      <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sc.department.color }} />
+                    <tr key={sc.department.id} className="hover:bg-[#F6F9FC]/60 transition-colors">
+                      <td className="px-5 py-3 font-semibold text-[#1E293B] flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: sc.department.color }} />
                         {sc.department.name}
                       </td>
-                      <td className="px-4 py-4">
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${gradeColors[sc.grade]}`}>
+                      <td className="px-3 py-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${gradeStyles[sc.grade]}`}>
                           {sc.grade}
                         </span>
                       </td>
-                      <td className="px-4 py-4 font-bold text-gray-900 dark:text-white">
+                      <td className="px-3 py-3 font-bold text-[#1E293B]">
                         {sc.onTimeRate}%
                       </td>
-                      <td className="px-4 py-4 text-gray-600 dark:text-gray-300">
+                      <td className="px-3 py-3 text-[#64748B]">
                         {sc.activeProjects}
                       </td>
-                      <td className="px-4 py-4">
-                        <span className={sc.delayedProjects > 0 ? 'text-rose-600 font-semibold' : 'text-gray-500'}>
+                      <td className="px-3 py-3">
+                        <span className={sc.delayedProjects > 0 ? 'text-[#D13B41] font-bold' : 'text-[#64748B]'}>
                           {sc.delayedProjects}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-gray-600 dark:text-gray-300">
+                      <td className="px-3 py-3 text-[#64748B]">
                         {sc.totalReports} ({sc.resolvedReports} resolved)
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-5 py-3 text-right">
                         <Link
                           to={`/projects?department=${sc.department.id}`}
-                          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                          className="text-xs font-bold text-[#2F6BFF] hover:underline"
                         >
-                          Explore Works
+                          Explore
                         </Link>
                       </td>
                     </tr>
@@ -384,72 +385,75 @@ export function ScorecardPage() {
 
       {/* Tab 2: Contractor Scorecard */}
       {activeTab === 'contractors' && (
-        <div className="space-y-6">
-          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex gap-3 items-start">
-            <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-800 dark:text-amber-300">
-              <span className="font-bold">Contractor Transparency Note:</span> Ratings and standings are calculated purely from historical timeline execution compliance, frequency of revised deadlines, and unresolved public grievance complaints.
+        <div className="space-y-4">
+          <div className="bg-[#FFF4DB] border border-[#FFB020]/30 rounded-xl p-3 flex gap-2.5 items-start">
+            <Info className="w-4 h-4 text-[#9A6200] shrink-0 mt-0.5" />
+            <div className="text-xs text-[#9A6200]">
+              <span className="font-bold">Contractor Accountability Standard:</span> Standings are strictly computed from contract timeline compliance, non-consensual deadline postponements, and verified ground hazard reports.
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {contractorScorecards.map(c => (
               <div
                 key={c.name}
-                className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl p-4 border border-[#E3EAF2] shadow-2xs hover:shadow-xs transition-shadow"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-bold text-base text-gray-900 dark:text-white">{c.name}</h3>
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold mt-1 ${
+                    <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#1E293B]">{c.name}</h3>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${
                       c.status === 'Good Standing'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        ? 'bg-[#E3F7F5] text-[#0E7A55] border border-[#12B5A6]/20'
                         : c.status === 'Under Review'
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400'
-                        : 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-400'
+                        ? 'bg-[#FFF4DB] text-[#9A6200] border border-[#FFB020]/20'
+                        : 'bg-[#FFE9EA] text-[#D13B41] border border-[#FF5A5F]/20'
                     }`}>
                       {c.status}
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-black text-gray-900 dark:text-white">★ {c.rating}</div>
-                    <div className="text-[10px] text-gray-400">Civic Delivery Score</div>
+                    <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#1E293B] flex items-center justify-end gap-1">
+                      <Star className="w-4 h-4 text-[#FFB020] fill-[#FFB020]" />
+                      <span>{c.rating}</span>
+                    </div>
+                    <div className="text-[10px] text-[#64748B]">Delivery Score</div>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60 grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="bg-gray-50 dark:bg-gray-900/40 p-2 rounded-lg">
-                    <div className="text-gray-400">Total</div>
-                    <div className="font-bold text-gray-800 dark:text-gray-200">{c.totalProjects}</div>
+                <div className="mt-3 pt-2.5 border-t border-[#F1F5F9] grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="bg-[#F6F9FC] p-1.5 rounded-lg border border-[#E3EAF2]">
+                    <div className="text-[10px] text-[#64748B]">Total</div>
+                    <div className="font-bold text-[#1E293B]">{c.totalProjects}</div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-900/40 p-2 rounded-lg">
-                    <div className="text-gray-400">Active</div>
-                    <div className="font-bold text-gray-800 dark:text-gray-200">{c.activeProjects}</div>
+                  <div className="bg-[#F6F9FC] p-1.5 rounded-lg border border-[#E3EAF2]">
+                    <div className="text-[10px] text-[#64748B]">Active</div>
+                    <div className="font-bold text-[#1E293B]">{c.activeProjects}</div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-900/40 p-2 rounded-lg">
-                    <div className="text-gray-400">Delayed</div>
-                    <div className={`font-bold ${c.delayedCount > 0 ? 'text-rose-600' : 'text-gray-800 dark:text-gray-200'}`}>
+                  <div className="bg-[#F6F9FC] p-1.5 rounded-lg border border-[#E3EAF2]">
+                    <div className="text-[10px] text-[#64748B]">Delayed</div>
+                    <div className={`font-bold ${c.delayedCount > 0 ? 'text-[#D13B41]' : 'text-[#1E293B]'}`}>
                       {c.delayedCount}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-4">
+                <div className="mt-3">
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-500 dark:text-gray-400">Average Work Progress</span>
-                    <span className="font-bold text-gray-900 dark:text-white">{c.avgProgress}%</span>
+                    <span className="text-[#64748B] text-[11px]">Average Work Progress</span>
+                    <span className="font-bold text-[#1E293B] text-[11px]">{c.avgProgress}%</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${c.avgProgress}%` }} />
+                  <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
+                    <div className="h-full bg-[#12B5A6] rounded-full" style={{ width: `${c.avgProgress}%` }} />
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700/60">
+                <div className="mt-3 pt-2.5 border-t border-[#F1F5F9]">
                   <Link
                     to={`/projects?search=${encodeURIComponent(c.name)}`}
-                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center justify-between"
+                    className="text-xs font-bold text-[#2F6BFF] hover:underline flex items-center justify-between no-underline"
                   >
-                    <span>View Assigned Work Orders</span>
+                    <span>Inspect Awarded Contracts</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -459,60 +463,68 @@ export function ScorecardPage() {
         </div>
       )}
 
-      {/* Tab 3: Ward Disruption Index */}
+      {/* Tab 3: Ward Disruption */}
       {activeTab === 'wards' && (
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <div>
-                <h3 className="font-bold text-gray-900 dark:text-white">Ward Disruption & Excavation Burden</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Combines active excavation volume, road closure duration, and delayed project density per municipal ward.
-                </p>
-              </div>
+        <div className="space-y-4">
+          <div className="bg-white rounded-xl border border-[#E3EAF2] overflow-hidden shadow-2xs">
+            <div className="px-5 py-3 border-b border-[#E3EAF2]">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#1E293B]">
+                Ward Disruption &amp; Excavation Intensity Index
+              </h3>
+              <p className="text-[11px] text-[#64748B] mt-0.5">
+                Composite metric calculated from concurrent active trenches and delayed road works
+              </p>
             </div>
-
-            <div className="divide-y divide-gray-100 dark:divide-gray-700/60">
-              {wardScorecards.map(w => (
-                <div key={w.ward} className="p-5 hover:bg-gray-50/60 dark:hover:bg-gray-700/20 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-gray-900 dark:text-white text-base">{w.ward}</h4>
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                        w.disruptionIndex > 60
-                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
-                          : w.disruptionIndex > 30
-                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                          : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                      }`}>
-                        Disruption Index: {w.disruptionIndex}/100
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {w.active} active projects • {w.delayed} delayed works • Total Allocated: ₹{w.budget} Lakhs
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                    <div className="w-32 hidden md:block">
-                      <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${
-                            w.disruptionIndex > 60 ? 'bg-rose-500' : w.disruptionIndex > 30 ? 'bg-amber-500' : 'bg-emerald-500'
-                          }`}
-                          style={{ width: `${w.disruptionIndex}%` }}
-                        />
-                      </div>
-                    </div>
-                    <Link
-                      to={`/projects?ward=${encodeURIComponent(w.ward)}`}
-                      className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      Inspect Ward
-                    </Link>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#64748B] border-b border-[#E3EAF2] uppercase">
+                  <tr>
+                    <th className="px-5 py-2.5">Municipal Ward</th>
+                    <th className="px-3 py-2.5">Disruption Index</th>
+                    <th className="px-3 py-2.5">Active Works</th>
+                    <th className="px-3 py-2.5">Delayed Corridors</th>
+                    <th className="px-3 py-2.5">CAPEX Outlay</th>
+                    <th className="px-5 py-2.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E3EAF2]">
+                  {wardScorecards.map(w => (
+                    <tr key={w.ward} className="hover:bg-[#F6F9FC]/60 transition-colors">
+                      <td className="px-5 py-3 font-bold text-[#1E293B]">
+                        {w.ward}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                            w.disruptionIndex >= 60 ? 'bg-[#FFE9EA] text-[#D13B41]' : w.disruptionIndex >= 30 ? 'bg-[#FFF4DB] text-[#9A6200]' : 'bg-[#E3F7F5] text-[#0E7A55]'
+                          }`}>
+                            {w.disruptionIndex} / 100
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 font-semibold text-[#1E293B]">
+                        {w.active} active
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={w.delayed > 0 ? 'text-[#D13B41] font-bold' : 'text-[#64748B]'}>
+                          {w.delayed} delayed
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 font-semibold text-[#1E293B]">
+                        ₹{w.budget} Lakhs
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <Link
+                          to={`/projects?ward=${encodeURIComponent(w.ward)}`}
+                          className="text-xs font-bold text-[#2F6BFF] hover:underline"
+                        >
+                          View Map
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

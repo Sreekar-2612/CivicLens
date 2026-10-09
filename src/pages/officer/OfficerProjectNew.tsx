@@ -81,7 +81,7 @@ export function OfficerProjectNew() {
       contractor: contractor.trim(),
       category,
       road: road.trim(),
-      locality: locality.trim() || 'Central Zone',
+      locality: locality.trim() || 'Central Pune',
       ward: ward.trim(),
       location: {
         lat: parseFloat(lat) || 18.5204,
@@ -91,6 +91,8 @@ export function OfficerProjectNew() {
       originalEndDate,
       budgetLakhs: parseFloat(budgetLakhs) || 50,
       progressPercent: 0,
+      confidenceIndicator: 'on_track' as const,
+      isPublished: true,
     }
 
     const valResult = validateProjectCreation(validationPayload)
@@ -101,42 +103,46 @@ export function OfficerProjectNew() {
 
     setSubmitting(true)
     try {
-      const newProj = await dataRepository.addProject({
-        ...validationPayload,
-        status: 'planned',
-        confidenceIndicator: 'on_track',
-      })
-
-      navigate(`/projects/${newProj.id}`)
+      const created = await dataRepository.addProject(validationPayload)
+      if (created) {
+        navigate(`/projects/${created.id}`)
+      } else {
+        setErrorMessages(['Failed to register project in database.'])
+      }
     } catch (err: any) {
-      setErrorMessages([err?.message || 'Failed to submit work order to database.'])
+      setErrorMessages([err?.message || 'Unexpected database error occurred.'])
     } finally {
       setSubmitting(false)
     }
   }
 
-  // Unauthorized view
+  // Authorization banner if viewing as Resident or unauthenticated
   if (!isAuthorized) {
     return (
-      <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
-        <Link
-          to="/officer"
-          className="inline-flex items-center text-xs font-semibold text-gray-500 hover:text-gray-900 mb-2"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Officer Command
-        </Link>
-        <div className="p-8 rounded-2xl bg-rose-50 border-2 border-rose-200 text-center space-y-4 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-[var(--bg)] p-6 max-w-3xl mx-auto space-y-6 font-sans">
+        <div className="bg-white rounded-xl border border-[var(--border)] p-8 text-center space-y-4 shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-[#FFE9EA] text-[#D13B41] flex items-center justify-center mx-auto">
             <ShieldX className="w-8 h-8" />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Access Restricted: Unauthorized Role</h2>
-            <p className="text-xs text-rose-800 mt-1 max-w-md mx-auto">
-              Your active session is simulated as <strong className="capitalize">{user?.role || 'Resident'}</strong> ({user?.displayName}). Only authorized municipal department officers and administrators possess write authorization to register capital work orders.
-            </p>
-          </div>
-          <div className="p-3 bg-white/80 rounded-xl text-xs text-gray-600 max-w-md mx-auto border border-rose-200">
-            <strong>Testing Tip:</strong> Use the "Test Role Switcher" in the left sidebar to switch to <em>Department Officer (Roads)</em> or <em>Administrator</em>.
+          <h2 className="text-xl font-bold text-[var(--text)] font-heading">
+            Access Restricted: Officer Credentials Required
+          </h2>
+          <p className="text-xs text-[var(--muted)] max-w-md mx-auto">
+            Work order registration requires authenticated Municipal Field Engineer or Executive Officer credentials to maintain immutable baseline deadlines.
+          </p>
+          <div className="pt-2 flex justify-center gap-3">
+            <Link
+              to="/officer"
+              className="btn-primary text-xs no-underline"
+            >
+              Switch Role in Officer Portal
+            </Link>
+            <Link
+              to="/projects"
+              className="px-4 py-2 rounded-lg border border-[var(--border)] text-xs font-semibold text-[var(--muted)] hover:text-[var(--text)] no-underline"
+            >
+              Back to Public Explorer
+            </Link>
           </div>
         </div>
       </div>
@@ -144,21 +150,22 @@ export function OfficerProjectNew() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <div>
-        <Link
-          to="/officer"
-          className="inline-flex items-center text-xs font-semibold text-gray-500 hover:text-gray-900 mb-2"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Officer Command
-        </Link>
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-teal-100 text-teal-700">
-            <FolderPlus className="w-5 h-5" />
-          </div>
+    <div className="min-h-screen bg-[var(--bg)] font-sans p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/officer"
+            className="p-2 rounded-lg border border-[var(--border)] bg-white hover:bg-[#F8FAFC] text-[var(--muted)] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Create New Public Work Order</h1>
-            <p className="text-xs text-gray-500">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--teal)]">
+              Municipal Work Order Registry
+            </span>
+            <h1 className="text-2xl font-bold text-[var(--text)] font-heading">Create New Public Work Order</h1>
+            <p className="text-xs text-[var(--muted)]">
               Register a capital excavation or road surface project. Pre-flight collision checks will run in real-time.
             </p>
           </div>
@@ -167,9 +174,9 @@ export function OfficerProjectNew() {
 
       {/* Error alert banner */}
       {errorMessages.length > 0 && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-900 space-y-1">
-          <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-rose-800">
-            <AlertTriangle className="w-4 h-4 text-rose-600" />
+        <div className="p-4 rounded-xl bg-[#FFE9EA] border border-[#FF5A5F]/30 text-[#D13B41] space-y-1">
+          <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-[#D13B41]">
+            <AlertTriangle className="w-4 h-4 text-[#FF5A5F]" />
             Validation Errors Detected ({errorMessages.length})
           </div>
           <ul className="text-xs list-disc pl-5 space-y-0.5">
@@ -180,36 +187,40 @@ export function OfficerProjectNew() {
         </div>
       )}
 
-      {/* Live Pre-Flight Conflict Warning */}
+      {/* Live Pre-Flight Conflict Warning with Clash Hatch */}
       {conflictingProjects.length > 0 && (
-        <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 space-y-2">
-          <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-amber-800">
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
-            Live Pre-Flight Coordination Warning: {conflictingProjects.length} existing project(s) on "{road}"
+        <div className="rounded-xl border border-[#FFD0DE] overflow-hidden shadow-sm bg-[#FFE6EE]">
+          <div className="clash-hatch px-4 py-2 border-b border-[#FFD0DE] flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[#F0386B]" />
+            <span className="text-xs font-bold text-[#C41F4F] uppercase tracking-wider">
+              Live Pre-Flight Coordination Warning: {conflictingProjects.length} existing project(s) on "{road}"
+            </span>
           </div>
-          <p className="text-xs text-amber-800">
-            Other departments already have permits logged on this road corridor:
-          </p>
-          <div className="space-y-1">
-            {conflictingProjects.map(cp => (
-              <div key={cp.id} className="text-xs font-medium pl-3 border-l-2 border-amber-400">
-                <span className="font-bold">{cp.title}</span> ({cp.category.replace('_', ' ')}) • {cp.startDate} to {cp.revisedEndDate || cp.originalEndDate}
-              </div>
-            ))}
+          <div className="p-4 bg-white text-xs space-y-2">
+            <p className="text-[var(--muted)]">
+              Other departments already have permits logged on this road corridor:
+            </p>
+            <div className="space-y-1">
+              {conflictingProjects.map(cp => (
+                <div key={cp.id} className="text-xs font-medium pl-3 border-l-2 border-[#F0386B] text-[var(--text)]">
+                  <span className="font-bold">{cp.title}</span> ({cp.category.replace('_', ' ')}) • {cp.startDate} to {cp.revisedEndDate || cp.originalEndDate}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-sm space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-[var(--border)] p-6 sm:p-8 shadow-sm space-y-6">
         {/* Section 1: Basic Information */}
         <div className="space-y-4">
-          <span className="text-xs font-bold uppercase tracking-wider text-teal-700 block border-b pb-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--teal)] block border-b border-[var(--border)] pb-2">
             1. Work Order Details
           </span>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Project Title *
             </label>
             <input
@@ -218,12 +229,12 @@ export function OfficerProjectNew() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Indiranagar 100ft Road Smart Drain Rehabilitation & Resurfacing"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-[var(--text)] mb-1">
               Public Purpose & Scope
             </label>
             <textarea
@@ -231,19 +242,19 @@ export function OfficerProjectNew() {
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               placeholder="Describe why this excavation/construction is necessary and what public benefit it brings."
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Authorizing Department *
               </label>
               <select
                 value={departmentId}
                 onChange={(e) => setDepartmentId(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               >
                 {departments.map(d => (
                   <option key={d.id} value={d.id}>
@@ -254,13 +265,13 @@ export function OfficerProjectNew() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Project Category *
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as ProjectCategory)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               >
                 {Object.entries(PROJECT_CATEGORY_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>
@@ -273,14 +284,14 @@ export function OfficerProjectNew() {
         </div>
 
         {/* Section 2: Location */}
-        <div className="space-y-4 pt-4 border-t">
-          <span className="text-xs font-bold uppercase tracking-wider text-teal-700 block border-b pb-2">
+        <div className="space-y-4 pt-4 border-t border-[var(--border)]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--teal)] block border-b border-[var(--border)] pb-2">
             2. Corridor & Geospatial Location
           </span>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Road / Street Name *
               </label>
               <input
@@ -289,11 +300,11 @@ export function OfficerProjectNew() {
                 value={road}
                 onChange={(e) => setRoad(e.target.value)}
                 placeholder="e.g. JM Road"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Locality / Area
               </label>
               <input
@@ -301,11 +312,11 @@ export function OfficerProjectNew() {
                 value={locality}
                 onChange={(e) => setLocality(e.target.value)}
                 placeholder="e.g. Shivajinagar"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Municipal Ward
               </label>
               <input
@@ -313,46 +324,46 @@ export function OfficerProjectNew() {
                 value={ward}
                 onChange={(e) => setWard(e.target.value)}
                 placeholder="e.g. Ward 14"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Latitude Coordinates
               </label>
               <input
                 type="text"
                 value={lat}
                 onChange={(e) => setLat(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)]"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Longitude Coordinates
               </label>
               <input
                 type="text"
                 value={lng}
                 onChange={(e) => setLng(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)]"
               />
             </div>
           </div>
         </div>
 
         {/* Section 3: Timeline & Contractor */}
-        <div className="space-y-4 pt-4 border-t">
-          <span className="text-xs font-bold uppercase tracking-wider text-teal-700 block border-b pb-2">
+        <div className="space-y-4 pt-4 border-t border-[var(--border)]">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--teal)] block border-b border-[var(--border)] pb-2">
             3. Timeline, Contractor & Budget
           </span>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Sanctioned Start Date *
               </label>
               <input
@@ -360,11 +371,11 @@ export function OfficerProjectNew() {
                 required
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Contractual Completion Deadline (Immutable Baseline) *
               </label>
               <input
@@ -372,14 +383,14 @@ export function OfficerProjectNew() {
                 required
                 value={originalEndDate}
                 onChange={(e) => setOriginalEndDate(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Executing Contractor / Agency *
               </label>
               <input
@@ -388,11 +399,11 @@ export function OfficerProjectNew() {
                 value={contractor}
                 onChange={(e) => setContractor(e.target.value)}
                 placeholder="e.g. L&T Infrastructure / BBMP In-House"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-[var(--text)] mb-1">
                 Sanctioned Budget (in ₹ Lakhs)
               </label>
               <input
@@ -400,24 +411,24 @@ export function OfficerProjectNew() {
                 value={budgetLakhs}
                 onChange={(e) => setBudgetLakhs(e.target.value)}
                 placeholder="e.g. 85"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className="pt-4 flex items-center justify-between border-t">
+        <div className="pt-4 flex items-center justify-between border-t border-[var(--border)]">
           <Link
             to="/officer"
-            className="px-4 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900"
+            className="px-4 py-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--text)] no-underline"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={submitting}
-            className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            className="btn-primary text-xs sm:text-sm flex items-center gap-1.5 disabled:opacity-50"
           >
             {submitting ? 'Registering Work Order...' : 'Publish Public Work Order'}
           </button>
