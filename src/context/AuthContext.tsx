@@ -36,7 +36,7 @@ const DEFAULT_DEMO_USER: AuthUser = {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  user: DEFAULT_DEMO_USER,
+  user: null,
   loading: false,
   isSupabaseAuth: false,
   setDemoRole: () => {},
@@ -45,13 +45,14 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(DEFAULT_DEMO_USER)
+  const [user, setUser] = useState<AuthUser | null>(isSupabaseConfigured() ? null : DEFAULT_DEMO_USER)
   const [loading, setLoading] = useState<boolean>(true)
   const isSupabase = isSupabaseConfigured()
 
   useEffect(() => {
     async function initAuth() {
       if (!isSupabase || !supabase) {
+        setUser(DEFAULT_DEMO_USER)
         setLoading(false)
         return
       }
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           })
         } else {
           // Not logged in to Supabase auth
-          setUser(DEFAULT_DEMO_USER)
+          setUser(null)
         }
 
         // Listen for auth changes
@@ -97,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               isDemoUser: false,
             })
           } else {
-            setUser(DEFAULT_DEMO_USER)
+            setUser(null)
           }
         })
 
@@ -106,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch (e) {
         console.warn('Supabase auth initialization fallback:', e)
-        setUser(DEFAULT_DEMO_USER)
+        setUser(null)
       } finally {
         setLoading(false)
       }
@@ -116,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isSupabase])
 
   const setDemoRole = (role: UserRole, departmentId?: string, displayName?: string) => {
+    if (isSupabase) return
     const titles: Record<UserRole, string> = {
       officer: displayName || 'Rajesh Patil (Roads Officer)',
       resident: displayName || 'Priya Sharma (Resident - Ward 14)',
