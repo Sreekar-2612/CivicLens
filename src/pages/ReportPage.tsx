@@ -137,14 +137,13 @@ export function ReportPage() {
         reporterName: isAnonymous ? 'Anonymous Resident' : (user?.displayName || reporterName.trim() || 'Authenticated Resident'),
         reporterContact: isAnonymous ? undefined : (user?.email || reporterContact.trim() || undefined),
       })
+      setSubmittedReport({ id: newReport.id, referenceId: newReport.referenceId })
 
       // Dispatch automated instant alerts to Contractor & Auditor
-      await NotificationService.sendGrievanceReportAlert(
+      void NotificationService.sendGrievanceReportAlert(
         newReport,
         selectedProj?.contractor
-      )
-
-      setSubmittedReport({ id: newReport.id, referenceId: newReport.referenceId })
+      ).catch(error => console.warn('Demo notification failed:', error))
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Could not submit report. Please try again.')
     } finally {
@@ -480,7 +479,7 @@ export function ReportPage() {
           <div className="p-3.5 bg-[var(--teal-soft)] border border-[var(--teal)]/30 rounded-xl flex items-start gap-3">
             <ShieldCheck className="w-5 h-5 text-[var(--teal)] shrink-0 mt-0.5" />
             <div className="text-xs text-[var(--teal)] font-medium">
-              <span className="font-bold">Public Privacy Guarantee:</span> Contact details are strictly restricted to municipal verification officers. Your name and phone number will NEVER be visible in the public transparency portal.
+              <span className="font-bold">Contact privacy:</span> Your name and contact details are available to authorized municipal staff handling the report. They are not shown in the public report feed.
             </div>
           </div>
 

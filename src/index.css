@@ -217,11 +217,11 @@
 }
 
 .btn-primary {
-  background: var(--teal-600);
-  color: white;
+  background-color: #2F6BFF !important;
+  color: #ffffff !important;
 }
 .btn-primary:hover:not(:disabled) {
-  background: var(--teal-700);
+  background-color: #1E54D8 !important;
 }
 
 .btn-secondary {
