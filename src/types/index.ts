@@ -8,8 +8,18 @@ export type ProjectStatus =
   | 'planned'
   | 'in_progress'
   | 'delayed'
+  | 'pending_audit'
   | 'completed'
   | 'cancelled';
+
+export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
+  planned: 'Planned',
+  in_progress: 'In Progress',
+  delayed: 'Delayed',
+  pending_audit: 'Pending Auditor Approval',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
 
 export type ProjectCategory =
   | 'road_construction'
@@ -211,14 +221,6 @@ export interface MapBounds {
 }
 
 // ---- Display Helpers ----
-
-export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
-  planned: 'Planned',
-  in_progress: 'In Progress',
-  delayed: 'Delayed',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
 
 export const PROJECT_CATEGORY_LABELS: Record<ProjectCategory, string> = {
   road_construction: 'Road Construction',

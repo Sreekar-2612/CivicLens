@@ -4,7 +4,7 @@ import {
   ArrowLeft, MapPin, Calendar, Building2, User, Tag,
   DollarSign, TrendingUp, Clock, AlertTriangle, CheckCircle2,
   FileText, Layers, ChevronRight, ExternalLink, History, PlusCircle, X,
-  ShieldCheck, HardHat, Camera, AlertCircle
+  ShieldCheck, HardHat, Camera, AlertCircle, Upload
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { dataRepository } from '../services/dataRepository'
@@ -251,6 +251,68 @@ export function ProjectDetail() {
               </div>
             </div>
           )}
+
+          {/* 3-Tier Auditor Verification Workflow Card */}
+          <div className="bg-white border-2 border-[#2F6BFF]/20 rounded-xl p-4 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#2F6BFF]" />
+                <span>Auditor &amp; Contractor Lifecycle Action</span>
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EAF1FF] text-[#2F6BFF]">
+                3-Tier Verification
+              </span>
+            </div>
+
+            {project.status === 'pending_audit' ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                <p className="text-xs text-amber-900 font-semibold flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Contractor marked work 100% finished. Awaiting Auditor Approval.</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await dataRepository.updateProject(project.id, {
+                      status: 'completed',
+                      progressPercent: 100,
+                      actualEndDate: new Date().toISOString().split('T')[0]
+                    }, 'Auditor verified and approved site completion')
+                    window.location.reload()
+                  }}
+                  className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors border-none cursor-pointer shadow-xs"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Auditor: Approve &amp; Mark Work Completed</span>
+                </button>
+              </div>
+            ) : project.status === 'completed' ? (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800 font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Auditor Verified &amp; Approved. Cascaded across municipal records.</span>
+              </div>
+            ) : (
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
+                <p className="text-xs text-slate-600 font-medium">
+                  Contractor completes physical digging/construction and submits for municipal auditor review.
+                </p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await dataRepository.updateProject(project.id, {
+                      status: 'pending_audit',
+                      progressPercent: 100
+                    }, 'Contractor submitted work for Auditor Verification')
+                    window.location.reload()
+                  }}
+                  className="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors border-none cursor-pointer shadow-xs"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Contractor: Submit Work for Auditor Verification</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Dates and Deadlines (Immutable Baseline Locked) */}
           <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">

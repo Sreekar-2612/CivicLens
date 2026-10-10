@@ -6,6 +6,8 @@ import {
   Clock, Sparkles, AlertCircle
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
+import { NotificationService } from '../services/notificationService'
+import { useAuth } from '../context/AuthContext'
 import type { Project, ReportCategory } from '../types'
 import { REPORT_CATEGORY_LABELS } from '../types'
 
@@ -97,12 +99,20 @@ export function ReportPage() {
     }
   }
 
+  const { user, signInWithGoogle } = useAuth()
+  const isAuthenticated = user && !user.isDemoUser
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isAuthenticated) {
+      alert('Please sign in with Google to raise an issue.')
+      return
+    }
     if (!title.trim() || !description.trim()) return
 
     setSubmitting(true)
     try {
+      const selectedProj = projects.find(p => p.id === selectedProjectId)
       const newReport = await dataRepository.addReport({
         projectId: selectedProjectId || undefined,
         category,
@@ -114,9 +124,15 @@ export function ReportPage() {
         },
         locationDescription: locationDescription.trim() || road || 'Public Right-of-Way',
         photoUrl: photoPreview || undefined,
-        reporterName: isAnonymous ? undefined : reporterName.trim() || undefined,
-        reporterContact: isAnonymous ? undefined : reporterContact.trim() || undefined,
+        reporterName: isAnonymous ? 'Anonymous Resident' : user.displayName || reporterName.trim() || 'Authenticated Resident',
+        reporterContact: isAnonymous ? undefined : user.email || reporterContact.trim() || undefined,
       })
+
+      // Dispatch automated instant alerts to Contractor & Auditor
+      await NotificationService.sendGrievanceReportAlert(
+        newReport,
+        selectedProj?.contractor
+      )
 
       setSubmittedReport({ id: newReport.id, referenceId: newReport.referenceId })
     } finally {
