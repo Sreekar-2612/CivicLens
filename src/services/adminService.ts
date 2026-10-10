@@ -45,28 +45,27 @@ async function invokeAdmin(method: 'GET' | 'POST', body?: Record<string, unknown
 export const adminService = {
   async getRosterData(): Promise<AdminRosterResponse> {
     if (supabase) {
-        const data = await invokeAdmin('GET')
-          const rawRoster: any[] = Array.isArray(data.roster) ? data.roster : []
-          const roster: AdminUserRosterItem[] = rawRoster.map(item => ({
-            id: item.id,
-            displayName: item.display_name || item.email?.split('@')[0] || 'User',
-            role: (item.role === 'department_officer' ? 'officer' : item.role) as UserRole,
-            departmentId: item.department_id || undefined,
-            email: item.email || undefined,
-            createdAt: item.created_at,
-            assignments: Array.isArray(item.assignments) ? item.assignments : [],
-            submissionCount: Number(item.submission_count || 0),
-            reviewCount: Number(item.review_count || 0),
-          }))
-
-          return {
-            roster,
-            departments: (data.departments || []).map(mapDbDepartmentToDomain),
-            projects: (data.projects || []).map(mapDbProjectToDomain),
-          }
+      const data = await invokeAdmin('GET')
+      if (![data.roster, data.departments, data.projects].every(Array.isArray)) throw new Error('Invalid administrator response')
+      const roster: AdminUserRosterItem[] = data.roster.map((item: Record<string, any>) => ({
+        id: item.id,
+        displayName: item.display_name || item.email?.split('@')[0] || 'User',
+        role: (item.role === 'department_officer' ? 'officer' : item.role) as UserRole,
+        departmentId: item.department_id || undefined,
+        email: item.email || undefined,
+        createdAt: item.created_at,
+        assignments: Array.isArray(item.assignments) ? item.assignments : [],
+        submissionCount: Number(item.submission_count || 0),
+        reviewCount: Number(item.review_count || 0),
+      }))
+      return {
+        roster,
+        departments: data.departments.map(mapDbDepartmentToDomain),
+        projects: data.projects.map((row: any) => mapDbProjectToDomain(row)),
+      }
     }
 
-    // Fallback: Local demo simulation
+    // Local mode is used only when Supabase is not configured.
     const [departments, projects] = await Promise.all([
       dataRepository.getDepartments(),
       dataRepository.getProjects(),
@@ -85,14 +84,14 @@ export const adminService = {
     projectIds: string[] = []
   ): Promise<{ success: boolean; message?: string }> {
     if (supabase) {
-        await invokeAdmin('POST', {
-            targetUserId,
-            newRole,
-            newDepartmentId: departmentId || null,
-            projectIds,
-        })
-        notifyAssignmentChange(targetUserId)
-        return { success: true, message: 'User role and assignments successfully saved to database.' }
+      await invokeAdmin('POST', {
+        targetUserId,
+        newRole,
+        newDepartmentId: departmentId || null,
+        projectIds,
+      })
+      notifyAssignmentChange(targetUserId)
+      return { success: true, message: 'User role and assignments successfully saved to database.' }
     }
 
     const users = getStoredLocalUsers()
@@ -101,6 +100,7 @@ export const adminService = {
     if (!['resident', 'officer', 'contractor', 'auditor', 'admin'].includes(newRole)) throw new Error('Invalid role')
     if (['officer', 'contractor', 'auditor'].includes(newRole) && !departmentId) throw new Error('A department is required for this role')
     if (!['contractor', 'auditor'].includes(newRole) && projectIds.length) throw new Error('Only contractors and auditors can receive project assignments')
+    if (['resident', 'admin'].includes(newRole)) departmentId = undefined
     const projects = await dataRepository.getProjects()
     if (projectIds.some(id => !projects.some(p => p.id === id && p.departmentId === departmentId))) {
       throw new Error('Every assigned project must exist in the selected department')
@@ -117,12 +117,12 @@ export const adminService = {
         progress_percent: p.progressPercent,
       }))
 
-      users[index] = {
-        ...users[index],
-        role: newRole,
-        departmentId: departmentId || undefined,
-        assignments: assignedObjects,
-      }
+    users[index] = {
+      ...users[index],
+      role: newRole,
+      departmentId: departmentId || undefined,
+      assignments: assignedObjects,
+    }
     saveStoredLocalUsers(users)
     notifyAssignmentChange(targetUserId)
 

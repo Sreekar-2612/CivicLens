@@ -6,6 +6,7 @@ import { uploadEvidenceFile } from '../../services/storageService'
 import { PROJECT_STATUS_LABELS } from '../../types'
 import { useWorkspace } from './useWorkspace'
 import { SubmissionHistory } from './SubmissionHistory'
+import { ResidentIssues } from './ResidentIssues'
 
 const inputClass = 'block w-full border border-slate-300 rounded-lg px-3 py-2 mt-1 bg-white'
 export function ContractorDashboard() {
@@ -36,7 +37,7 @@ export function ContractorDashboard() {
   }
   if (loading) return <p role="status">Loading assigned work…</p>
   if (error) return <div role="alert"><p className="text-red-700">{error}</p><button onClick={refresh} className="border rounded-lg p-2 mt-3">Try again</button></div>
-  if (!data) return null
+  if (!data || !user) return null
   const activeProjects = data.projects.filter(project => !['completed', 'cancelled'].includes(project.status))
   const selectedProject = activeProjects.find(project => project.id === projectId) || activeProjects[0]
   return <div className="space-y-6">
@@ -59,6 +60,7 @@ export function ContractorDashboard() {
       </form>
     </section>}
     {actionError && <p role="alert" className="text-red-700">{actionError}</p>}{message && <p role="status" className="text-green-700">{message}</p>}
+    {user && <ResidentIssues data={data} user={user} refresh={refresh} isCurrent={isCurrent} />}
     <SubmissionHistory data={data} />
   </div>
 }

@@ -8,13 +8,29 @@ vi.mock('../supabaseClient', () => ({
   supabase: {
     functions: { invoke },
     from: query,
+    storage: { from: () => ({ getPublicUrl: (path: string) => ({ data: { publicUrl: `https://storage.example/${path}` } }) }) },
   },
 }))
 
 import { dataRepository } from '../dataRepository'
-import { SupabaseDataRepository } from '../supabaseRepository'
+import { SupabaseDataRepository, mapDbProjectToDomain, mapDbGrievanceToDomain } from '../supabaseRepository'
 
 describe('configured Supabase data routes', () => {
+  it('preserves stored issue coordinates without inventing a map position', () => {
+    expect(mapDbGrievanceToDomain({ id: 'report-a', latitude: 0, longitude: 0 }).location).toEqual({ lat: 0, lng: 0 })
+    expect(Number.isNaN(mapDbGrievanceToDomain({ id: 'old-report' }).location.lat)).toBe(true)
+  })
+  it('never substitutes a stock photo for a project without database evidence', () => {
+    expect(mapDbProjectToDomain({ id: 'proj-0001' }).photoUrl).toBeUndefined()
+    expect(mapDbProjectToDomain({ id: 'proj-0001', photo_url: 'projects/photo.jpg' }).photoUrl).toBe('https://storage.example/projects/photo.jpg')
+    expect(mapDbProjectToDomain({ id: 'proj-0001', evidence_url: 'reports/evidence.jpg' }).photoUrl).toBe('https://storage.example/reports/evidence.jpg')
+  })
+
+  it('returns an empty project database without manufacturing projects', async () => {
+    invoke.mockResolvedValue({ data: { success: true, projects: [] }, error: null })
+    expect(await dataRepository.getProjects()).toEqual([])
+  })
+
   beforeEach(() => {
     invoke.mockReset()
     query.mockReset()

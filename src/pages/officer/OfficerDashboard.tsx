@@ -8,8 +8,10 @@ import { dataRepository } from '../../services/dataRepository'
 import type { Project, Department, Report, CoordinationAlert, SummaryStats } from '../../types'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { format } from 'date-fns'
+import { useAuth } from '../../context/AuthContext'
 
 export function OfficerDashboard() {
+  const { user } = useAuth()
   const [stats, setStats] = useState<SummaryStats | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
@@ -35,8 +37,9 @@ export function OfficerDashboard() {
     load()
   }, [])
 
-  const currentDept = departments.find(d => d.id === selectedDeptId) || departments[0]
-  const deptProjects = projects.filter(p => p.departmentId === (currentDept?.id || 'dept-bbmp'))
+  const availableDepartments = user?.role === 'admin' ? departments : departments.filter(d => d.id === user?.departmentId)
+  const currentDept = availableDepartments.find(d => d.id === selectedDeptId) || availableDepartments[0]
+  const deptProjects = projects.filter(p => currentDept && p.departmentId === currentDept.id)
   const deptProjectIds = new Set(deptProjects.map(p => p.id))
   
   // Pending conflicts involving this department
@@ -71,11 +74,12 @@ export function OfficerDashboard() {
         {/* Department Switcher & Primary Action */}
         <div className="flex items-center gap-3">
           <select
-            value={selectedDeptId}
+            value={currentDept?.id || ''}
+            disabled={user?.role !== 'admin'}
             onChange={(e) => setSelectedDeptId(e.target.value)}
             className="text-xs sm:text-sm font-semibold rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] px-3 py-2 shadow-xs focus:ring-2 focus:ring-[var(--primary)]"
           >
-            {departments.map(d => (
+            {availableDepartments.map(d => (
               <option key={d.id} value={d.id}>
                 {d.shortName} — {d.name}
               </option>

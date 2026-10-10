@@ -34,8 +34,8 @@ export function ReportPage() {
   const [description, setDescription] = useState('')
   const [road, setRoad] = useState('')
   const [locationDescription, setLocationDescription] = useState('')
-  const [lat, setLat] = useState('18.5204')
-  const [lng, setLng] = useState('73.8567')
+  const [lat, setLat] = useState('')
+  const [lng, setLng] = useState('')
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [submitError, setSubmitError] = useState('')
@@ -79,18 +79,6 @@ export function ReportPage() {
     }
   }
 
-  // Sample photo simulator
-  const handleSamplePhoto = (type: string) => {
-    setPhotoFile(null)
-    if (type === 'trench') {
-      setPhotoPreview('https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=600&q=80')
-    } else if (type === 'pothole') {
-      setPhotoPreview('https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=600&q=80')
-    } else {
-      setPhotoPreview('https://images.unsplash.com/photo-1590496793929-36417d3117de?auto=format&fit=crop&w=600&q=80')
-    }
-  }
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -118,7 +106,8 @@ export function ReportPage() {
     setSubmitting(true)
     setSubmitError('')
     try {
-      const evidencePath = photoFile ? await uploadEvidenceFile(photoFile) : (photoPreview?.startsWith('https://') ? photoPreview : undefined)
+      if (!lat.trim() || !lng.trim() || !Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng)) || Math.abs(Number(lat)) > 90 || Math.abs(Number(lng)) > 180) throw new Error('Enter the issue coordinates or select its project before submitting.')
+      const evidencePath = photoFile ? await uploadEvidenceFile(photoFile) : undefined
       const newReport = await dataRepository.addReport({
         projectId: selectedProjectId || undefined,
         road: road.trim(),
@@ -126,8 +115,8 @@ export function ReportPage() {
         title: title.trim(),
         description: description.trim(),
         location: {
-          lat: parseFloat(lat) || 18.5204,
-          lng: parseFloat(lng) || 73.8567,
+          lat: Number(lat),
+          lng: Number(lng),
         },
         locationDescription: locationDescription.trim() || road || 'Public Right-of-Way',
         photoUrl: evidencePath,
@@ -136,6 +125,7 @@ export function ReportPage() {
         reporterContact: isAnonymous ? undefined : (user?.email || reporterContact.trim() || undefined),
       })
       setSubmittedReport({ id: newReport.id, referenceId: newReport.referenceId })
+      window.dispatchEvent(new CustomEvent('civic-data-updated'))
 
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Could not submit report. Please try again.')
@@ -323,6 +313,12 @@ export function ReportPage() {
         </div>
 
         {/* Step 2: Grievance Category */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          <label className="text-sm font-medium">Issue latitude<input type="number" step="any" min="-90" max="90" required value={lat} onChange={event => setLat(event.target.value)} className="block w-full border rounded-lg p-2 mt-1" /></label>
+          <label className="text-sm font-medium">Issue longitude<input type="number" step="any" min="-180" max="180" required value={lng} onChange={event => setLng(event.target.value)} className="block w-full border rounded-lg p-2 mt-1" /></label>
+          <button type="button" onClick={() => navigator.geolocation ? navigator.geolocation.getCurrentPosition(position => { setLat(String(position.coords.latitude)); setLng(String(position.coords.longitude)) }, () => setSubmitError('Location could not be obtained. Enter coordinates or select the related project.')) : setSubmitError('Location is unavailable in this browser.')} className="border rounded-lg p-2 text-sm">Use my current location</button>
+          <p className="text-xs text-slate-600">Choose the actual issue location. Its coordinates appear on the public map; reporter contact details are withheld.</p>
+        </div>
         <div className="space-y-4 pt-4 border-t border-[var(--border)]">
           <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--primary)]">
@@ -400,7 +396,7 @@ export function ReportPage() {
           {/* Photo attachment area */}
           <div>
             <label className="block text-xs font-semibold text-[var(--text)] mb-1.5">
-              Photo Evidence (Upload or Pick Demonstration Sample)
+              Photo Evidence (Upload an on-site photo)
             </label>
             <div className="flex flex-col sm:flex-row gap-4 items-start">
               <label className="flex-1 w-full flex flex-col items-center justify-center p-4 border-2 border-dashed border-[var(--border)] rounded-xl hover:bg-[#F8FAFC] cursor-pointer transition-colors">
@@ -410,35 +406,7 @@ export function ReportPage() {
                 <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
               </label>
 
-              {/* Sample Photo Chips for Quick Demo */}
-              <div className="w-full sm:w-64 bg-[#F8FAFC] p-3 rounded-xl border border-[var(--border)] text-xs space-y-2">
-                <span className="font-semibold text-[var(--text)] block">
-                  Quick Demo Samples:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleSamplePhoto('trench')}
-                    className="px-2 py-1 rounded-lg bg-white border border-[var(--border)] text-[11px] hover:border-[var(--primary)] text-[var(--text)] cursor-pointer"
-                  >
-                    Open Trench
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSamplePhoto('pothole')}
-                    className="px-2 py-1 rounded-lg bg-white border border-[var(--border)] text-[11px] hover:border-[var(--primary)] text-[var(--text)] cursor-pointer"
-                  >
-                    Sinkhole / Damage
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSamplePhoto('traffic')}
-                    className="px-2 py-1 rounded-lg bg-white border border-[var(--border)] text-[11px] hover:border-[var(--primary)] text-[var(--text)] cursor-pointer"
-                  >
-                    Roadblock
-                  </button>
-                </div>
-              </div>
+
             </div>
 
             {photoPreview && (

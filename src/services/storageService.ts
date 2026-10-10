@@ -42,6 +42,17 @@ export async function getEvidenceUrl(pathOrUrl: string): Promise<string> {
   const { data, error } = await supabase.storage
     .from(BUCKET_NAME)
     .createSignedUrl(pathOrUrl, 60 * 5)
-  if (error || !data?.signedUrl) throw new Error('Evidence photo is not available to this account.')
+  if (error || !data?.signedUrl) {
+    // Public buckets can serve database-linked objects without a signed-in session.
+    // Private/missing objects still return an error from Storage and the image UI.
+    return supabase.storage.from(BUCKET_NAME).getPublicUrl(pathOrUrl).data.publicUrl
+  }
   return data.signedUrl
+}
+
+export function getPublicEvidenceUrl(pathOrUrl?: string): string | undefined {
+  if (!pathOrUrl) return undefined
+  if (/^(https?:|data:|blob:)/i.test(pathOrUrl)) return pathOrUrl
+  if (!supabase) return undefined
+  return supabase.storage.from(BUCKET_NAME).getPublicUrl(pathOrUrl).data.publicUrl
 }

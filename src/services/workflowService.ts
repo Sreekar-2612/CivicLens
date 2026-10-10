@@ -1,7 +1,7 @@
-import type { Project } from '../types'
+import type { Project, Report } from '../types'
 import { dataRepository, applyDemoWorkflowProjectState } from './dataRepository'
 import { supabase } from './supabaseClient'
-import { mapDbProjectToDomain } from './supabaseRepository'
+import { mapDbProjectToDomain, mapDbGrievanceToDomain } from './supabaseRepository'
 import { getStoredLocalUsers } from './localAdminRoster'
 
 export interface WorkflowActor { id: string; role: string; departmentId?: string; displayName: string; isDemoUser: boolean }
@@ -12,7 +12,7 @@ export interface TaskSubmission {
   evidencePath?: string; status: 'submitted' | 'approved' | 'changes_requested'; createdAt: string;
 }
 export interface TaskReview { id: string; submissionId: string; reviewedBy: string; decision: 'approved' | 'changes_requested'; comments: string; createdAt: string }
-export interface WorkspaceData { projects: Project[]; assignments: WorkflowAssignment[]; submissions: TaskSubmission[]; reviews: TaskReview[] }
+export interface WorkspaceData { projects: Project[]; assignments: WorkflowAssignment[]; submissions: TaskSubmission[]; reviews: TaskReview[]; reports?: Report[]; contractors?: { id: string; displayName: string; departmentId: string }[] }
 export interface SubmitTaskInput { projectId: string; title: string; description: string; progressPercent: number; submissionType: TaskSubmission['submissionType']; evidencePath?: string }
 const STORE = 'civiclens_workflow_v1'
 let memory: { submissions: TaskSubmission[]; reviews: TaskReview[] } = { submissions: [], reviews: [] }
@@ -45,14 +45,16 @@ function mapReview(row: Record<string, any>): TaskReview {
 export async function getWorkspace(user: WorkflowActor): Promise<WorkspaceData> {
   requireRole(user)
   if (supabase) {
-      const result = await invoke('get-workspace')
-      if (![result.projects, result.assignments, result.submissions, result.reviews].every(Array.isArray)) throw new Error('Invalid workspace response')
-        return {
-          projects: result.projects.map(mapDbProjectToDomain),
-          assignments: result.assignments.map((a: Record<string, any>) => ({ projectId: a.project_id, userId: a.user_id, assignmentRole: a.assignment_role })),
-          submissions: result.submissions.map(mapSubmission),
-          reviews: result.reviews.map(mapReview),
-        }
+    const result = await invoke('get-workspace')
+    if (![result.projects, result.assignments, result.submissions, result.reviews].every(Array.isArray)) throw new Error('Invalid workspace response')
+    return {
+      projects: result.projects.map((row: any) => mapDbProjectToDomain(row)),
+      assignments: result.assignments.map((a: Record<string, any>) => ({ projectId: a.project_id, userId: a.user_id, assignmentRole: a.assignment_role })),
+      submissions: result.submissions.map(mapSubmission),
+      reviews: result.reviews.map(mapReview),
+      reports: (result.reports || []).map(mapDbGrievanceToDomain),
+      contractors: (result.contractors || []).map((row: any) => ({ id: row.id, displayName: row.display_name, departmentId: row.department_id })),
+    }
   }
 
   // An explicitly empty assignment stays empty; legacy shared projectIds never grant access.
@@ -75,6 +77,12 @@ export async function getWorkspace(user: WorkflowActor): Promise<WorkspaceData> 
   return { projects, assignments, submissions, reviews: state.reviews.filter(r => submissions.some(s => s.id === r.submissionId)) }
 }
 
+export async function assignContractor(user: WorkflowActor, projectId: string, contractorId: string, reportId?: string): Promise<void> {
+  requireRole(user, 'auditor')
+  await invoke('assign-contractor', { projectId, contractorId, reportId })
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
+}
+
 export async function submitTask(user: WorkflowActor, input: SubmitTaskInput): Promise<void> {
   requireRole(user, 'contractor')
   if (input.title.trim().length < 3 || input.title.length > 200) throw new Error('Title must contain 3 to 200 characters')
@@ -85,9 +93,9 @@ export async function submitTask(user: WorkflowActor, input: SubmitTaskInput): P
   if (input.submissionType !== 'completion' && input.progressPercent === 100) throw new Error('Use a completion submission for 100% progress')
 
   if (supabase) {
-      await invoke('submit-task', input)
-      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
-      return
+    await invoke('submit-task', input)
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
+    return
   }
 
   const workspace = await getWorkspace(user)
@@ -126,9 +134,9 @@ export async function reviewTask(user: WorkflowActor, submissionId: string, deci
   if (comments.length > 5000 || (decision === 'changes_requested' && comments.trim().length < 5)) throw new Error('Explain the changes required in 5 to 5000 characters')
 
   if (supabase) {
-      await invoke('review-task', { submissionId, decision, comments })
-      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
-      return
+    await invoke('review-task', { submissionId, decision, comments })
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
+    return
   }
 
   const workspace = await getWorkspace(user)

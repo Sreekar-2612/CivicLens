@@ -3,6 +3,7 @@
 // Connects frontend actions directly to deployed Supabase Edge Functions
 // ============================================================
 import { supabase } from './supabaseClient'
+import { getPublicEvidenceUrl } from './storageService'
 import type {
   Project, ProjectUpdate, Milestone, Department,
   Report, CoordinationAlert, FilterState, SummaryStats,
@@ -21,16 +22,8 @@ function functionResult<T>(name: string, data: { success?: boolean; error?: stri
 }
 
 // Mappers
-const DEFAULT_PROJECT_PHOTOS: Record<string, string> = {
-  'proj-0001': '/images/works/asphalt-resurfacing.png',
-  'proj-0002': '/images/works/jcb-utility-trenching.png',
-  'proj-0003': '/images/works/pipeline-conduit-laying.png',
-  'proj-0004': '/images/works/pipeline-conduit-laying.png',
-  'proj-0005': '/images/works/jcb-utility-trenching.png',
-  'proj-0006': '/images/works/asphalt-resurfacing.png',
-}
-
-export function mapDbProjectToDomain(row: any): Project {
+export function mapDbProjectToDomain(row: any, residentPhotoUrl?: string): Project {
+  const photo = getPublicEvidenceUrl(row.photo_url || row.evidence_url || residentPhotoUrl)
   return {
     id: row.id,
     title: row.title,
@@ -42,7 +35,7 @@ export function mapDbProjectToDomain(row: any): Project {
     confidenceIndicator: row.confidence_indicator || 'on_track',
     road: row.road_name,
     locality: row.locality,
-    ward: row.ward || 'Ward 1',
+    ward: row.ward || '',
     location: {
       lat: row.latitude,
       lng: row.longitude,
@@ -53,7 +46,7 @@ export function mapDbProjectToDomain(row: any): Project {
     actualEndDate: row.actual_end_date || undefined,
     progressPercent: row.progress_percent || 0,
     budgetLakhs: row.budget ? Number(row.budget) : 0,
-    photoUrl: row.photo_url || row.evidence_url || DEFAULT_PROJECT_PHOTOS[row.id] || '/images/works/asphalt-resurfacing.png',
+    photoUrl: photo || undefined,
     isPublished: row.publication_status === 'published',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -83,12 +76,13 @@ export function mapDbUpdateToDomain(row: any): ProjectUpdate {
     delayReason: row.delay_reason_description || undefined,
     evidenceUrl: row.evidence_path || undefined,
     authorId: row.created_by || 'system',
-    authorName: row.created_by_name || 'Authorized Officer',
+    authorName: row.created_by_name || 'Name not recorded',
     createdAt: row.created_at,
   }
 }
 
 export function mapDbGrievanceToDomain(row: any): Report {
+  const photo = getPublicEvidenceUrl(row.evidence_url)
   return {
     id: row.id,
     referenceId: row.reference_id || `GRV-${row.id}`,
@@ -97,13 +91,14 @@ export function mapDbGrievanceToDomain(row: any): Report {
     title: row.title,
     description: row.description,
     location: {
-      lat: row.latitude ?? 0,
-      lng: row.longitude ?? 0,
+      lat: row.latitude ?? Number.NaN,
+      lng: row.longitude ?? Number.NaN,
     },
     locationDescription: row.road_name
       ? [row.road_name, row.locality, row.ward].filter(Boolean).join(', ')
       : 'Location withheld',
-    photoUrl: row.evidence_url || undefined,
+    photoUrl: photo,
+    evidenceUrl: photo,
     status: row.status as any,
     reporterName: row.reporter_name || undefined,
     reporterContact: row.reporter_contact || undefined,
@@ -118,15 +113,9 @@ export function mapDbClashToDomain(row: any): CoordinationAlert {
     id: row.id,
     projectAId: row.project_a_id,
     projectBId: row.project_b_id,
-    score: row.score ?? (row.severity === 'critical' ? 95 : row.severity === 'high' ? 80 : row.severity === 'medium' ? 60 : 30),
+    score: row.score ?? 0,
     severity: row.severity as any,
-    reasons: Array.isArray(row.reasons) ? row.reasons : [
-      {
-        type: row.conflict_type === 'overlapping_dates' ? 'overlapping_dates' : 'same_road',
-        description: row.title || 'Inter-departmental scheduling conflict detected',
-        score: 80
-      }
-    ],
+    reasons: Array.isArray(row.reasons) ? row.reasons : [],
     status: row.status as any,
     decisionNotes: row.decision_notes || undefined,
     createdAt: row.created_at,
@@ -167,12 +156,31 @@ export class SupabaseDataRepository {
 
   // -- Projects (Edge Function: get-projects) --
   async getProjects(filters?: Partial<FilterState>): Promise<Project[]> {
+    // 1. Fetch grievance evidence photos uploaded by residents
+    const evidenceMap = new Map<string, string>()
+    try {
+      const { data: gList } = await this.client
+        .from('grievances')
+        .select('project_id, evidence_url')
+        .not('evidence_url', 'is', null)
+        .order('created_at', { ascending: false })
+      if (gList) {
+        for (const g of gList) {
+          if (g.project_id && g.evidence_url && !evidenceMap.has(g.project_id)) {
+            evidenceMap.set(g.project_id, g.evidence_url)
+          }
+        }
+      }
+    } catch {
+      // Ignore if grievances table is unavailable
+    }
+
     try {
       const { data, error } = await this.client.functions.invoke('get-projects', {
         body: filters || {}
       })
       if (!error && data?.success && Array.isArray(data.projects)) {
-        return data.projects.map(mapDbProjectToDomain)
+        return data.projects.map((p: any) => mapDbProjectToDomain(p, evidenceMap.get(p.id)))
       }
     } catch (e) {
       console.warn('Edge function get-projects fallback to DB:', e)
@@ -203,7 +211,7 @@ export class SupabaseDataRepository {
     const { data, error } = await query
     if (error) throw error
 
-    let result = (data || []).map(mapDbProjectToDomain)
+    let result = (data || []).map((p: any) => mapDbProjectToDomain(p, evidenceMap.get(p.id)))
     if (filters?.search) {
       const s = filters.search.toLowerCase()
       result = result.filter(p =>
@@ -218,12 +226,25 @@ export class SupabaseDataRepository {
 
   // -- Project Details (Edge Function: get-project-detail) --
   async getProject(id: string): Promise<Project | undefined> {
+    let residentPhoto: string | undefined
+    try {
+      const { data: g } = await this.client
+        .from('grievances')
+        .select('evidence_url')
+        .eq('project_id', id)
+        .not('evidence_url', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (g?.evidence_url) residentPhoto = g.evidence_url
+    } catch {}
+
     try {
       const { data, error } = await this.client.functions.invoke('get-project-detail', {
         body: { id }
       })
       if (!error && data?.success && data.project) {
-        return mapDbProjectToDomain(data.project)
+        return mapDbProjectToDomain(data.project, residentPhoto)
       }
     } catch (e) {
       console.warn('Edge function get-project-detail fallback to DB:', e)
@@ -235,7 +256,7 @@ export class SupabaseDataRepository {
       .eq('id', id)
       .single()
     if (error || !data) return undefined
-    return mapDbProjectToDomain(data)
+    return mapDbProjectToDomain(data, residentPhoto)
   }
 
   async getProjectsByRoad(road: string): Promise<Project[]> {
@@ -293,14 +314,24 @@ export class SupabaseDataRepository {
     }))
   }
 
-  // -- Reports / Grievances (Edge Function: get-grievances) --
+  // -- Reports / Grievances (Edge Function: get-grievances with DB Fallback) --
   async getReports(): Promise<Report[]> {
-    const { data, error } = await this.client.functions.invoke('get-grievances')
-    if (error) throw error
-    if (!data?.success || !Array.isArray(data.grievances)) {
-      throw new Error(`get-grievances: ${data?.error || 'Invalid response'}`)
+    try {
+      const { data, error } = await this.client.functions.invoke('get-grievances')
+      if (!error && data?.success && Array.isArray(data.grievances)) {
+        return data.grievances.map(mapDbGrievanceToDomain)
+      }
+    } catch (e) {
+      console.warn('Edge function get-grievances fallback to DB:', e)
     }
-    return data.grievances.map(mapDbGrievanceToDomain)
+
+    // Direct DB Fallback
+    const { data, error } = await this.client
+      .from('grievances')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data || []).map(mapDbGrievanceToDomain)
   }
 
   async getReport(id: string): Promise<Report | undefined> {

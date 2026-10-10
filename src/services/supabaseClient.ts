@@ -33,7 +33,7 @@ export async function checkSupabaseConnection(): Promise<{
     return {
       configured: false,
       connected: false,
-      errorMessage: 'Supabase credentials not configured in environment (.env.local). Operating in local seed-data fallback mode.',
+      errorMessage: 'Supabase credentials are not configured. Database records are unavailable.',
     }
   }
 

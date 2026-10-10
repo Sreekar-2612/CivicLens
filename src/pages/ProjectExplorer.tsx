@@ -9,19 +9,13 @@ import {
   Maximize2, Compass, Globe
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
-import type { Project, Department, FilterState, ProjectStatus, ProjectCategory } from '../types'
+import type { Project, Department, Report, FilterState, ProjectStatus, ProjectCategory } from '../types'
 import { PROJECT_STATUS_LABELS, PROJECT_CATEGORY_LABELS } from '../types'
 import { ProjectCard } from '../components/ui/ProjectCard'
 import { StatusBadge } from '../components/ui/StatusBadge'
-import { EmptyState, LoadingState } from '../components/ui/SharedStates'
+import { EmptyState, ErrorState, LoadingState } from '../components/ui/SharedStates'
 import { ProjectMap } from '../components/map/ProjectMap'
-import { generateCityProjects, geocodeCity } from '../config/regionConfig'
-
-const ALL_WARDS = [
-  'All Wards', 'Ward 03', 'Ward 07', 'Ward 08', 'Ward 10', 'Ward 11', 'Ward 12',
-  'Ward 14', 'Ward 15', 'Ward 16', 'Ward 17', 'Ward 18', 'Ward 20',
-  'Ward 22', 'Ward 37', 'Ward 42',
-]
+import { geocodeCity } from '../config/regionConfig'
 
 const STATUS_FILTERS: { key: ProjectStatus | 'all'; label: string; color: string; bg: string }[] = [
   { key: 'all', label: 'All Projects', color: '#0F172A', bg: '#F1F5F9' },
@@ -38,8 +32,11 @@ export function ProjectExplorer() {
   const lngParam = searchParams.get('lng')
 
   const [allProjects, setAllProjects] = useState<Project[]>([])
+  const [reports, setReports] = useState<Report[]>([])
+  const [revision, setRevision] = useState(0)
   const [departments, setDepartments] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'map' | 'grid'>('map')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [clashAlertOpen, setClashAlertOpen] = useState(false)
@@ -54,25 +51,35 @@ export function ProjectExplorer() {
   })
 
   useEffect(() => {
+    let active = true
     async function load() {
-      const [p, d] = await Promise.all([
+      setLoading(true); setLoadError(null)
+      try {
+      const [p, d, r] = await Promise.all([
         dataRepository.getProjects(),
         dataRepository.getDepartments(),
+        dataRepository.getReports(),
       ])
-      let combined = p
-      if (cityParam && latParam && lngParam) {
-        const cityProjects = generateCityProjects(cityParam, parseFloat(latParam), parseFloat(lngParam))
-        combined = [...cityProjects, ...p]
-      }
-      setAllProjects(combined)
+      if (!active) return
+      setAllProjects(p)
+      setReports(r)
       setDepartments(d)
-      if (combined.length > 0) {
-        setSelectedProject(combined[0])
-      }
-      setLoading(false)
+      setSelectedProject(p[0] || null)
+      } catch (error) {
+        if (active) { setAllProjects([]); setSelectedProject(null); setLoadError(error instanceof Error ? error.message : 'Database records could not be loaded') }
+      } finally { if (active) setLoading(false) }
     }
     load()
-  }, [cityParam, latParam, lngParam])
+    return () => { active = false }
+  }, [cityParam, latParam, lngParam, revision])
+
+  useEffect(() => {
+    const refresh = () => setRevision(value => value + 1)
+    window.addEventListener('civic-data-updated', refresh)
+    window.addEventListener('focus', refresh)
+    const poll = window.setInterval(refresh, 30000)
+    return () => { window.removeEventListener('civic-data-updated', refresh); window.removeEventListener('focus', refresh); window.clearInterval(poll) }
+  }, [])
 
   // Filter projects
   const filteredProjects = useMemo(() => {
@@ -81,7 +88,6 @@ export function ProjectExplorer() {
     if (cityParam) {
       const c = cityParam.toLowerCase()
       result = result.filter(p =>
-        p.id.startsWith('gen-') ||
         p.locality.toLowerCase().includes(c) ||
         p.road.toLowerCase().includes(c) ||
         p.title.toLowerCase().includes(c)
@@ -115,6 +121,7 @@ export function ProjectExplorer() {
   }, [allProjects, filters, cityParam])
 
   const deptMap = useMemo(() => new Map(departments.map(d => [d.id, d])), [departments])
+  const wardOptions = useMemo(() => ['All Wards', ...Array.from(new Set(allProjects.map(p => p.ward).filter(Boolean))).sort()], [allProjects])
 
   const stats = useMemo(() => {
     const total = allProjects.length
@@ -153,6 +160,7 @@ export function ProjectExplorer() {
   }
 
   if (loading) return <LoadingState message="Loading projects..." />
+  if (loadError) return <ErrorState title="Projects could not be loaded" description={loadError} />
 
   return (
     <div className="min-h-screen bg-transparent font-sans text-slate-900 pb-12">
@@ -232,7 +240,7 @@ export function ProjectExplorer() {
                 onChange={(e) => setFilters(f => ({ ...f, ward: e.target.value }))}
                 className="text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs cursor-pointer focus:ring-2 focus:ring-[#11e852] focus:outline-none"
               >
-                {ALL_WARDS.map(w => (
+                {wardOptions.map(w => (
                   <option key={w} value={w === 'All Wards' ? 'all' : w}>{w}</option>
                 ))}
               </select>
@@ -347,6 +355,7 @@ export function ProjectExplorer() {
             <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm relative h-[650px]">
               <ProjectMap
                 projects={filteredProjects}
+                reports={reports.filter(report => !report.projectId || filteredProjects.some(project => project.id === report.projectId))}
                 departments={departments}
                 selectedProject={selectedProject}
                 onSelectProject={setSelectedProject}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import {
   Shield, Users, HardHat, FileCheck, Building2, Search,
@@ -14,6 +14,10 @@ import { dataRepository } from '../services/dataRepository'
 
 export function AdminPage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth()
+  const isAdmin = !authLoading && user?.role === 'admin'
+  const identity = `${user?.id}:${user?.role}`
+  const currentIdentity = useRef(identity)
+  currentIdentity.current = identity
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
   
@@ -23,6 +27,7 @@ export function AdminPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [stats, setStats] = useState<SummaryStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const isAssignmentRoute = location.pathname.includes('/assign') || location.pathname.includes('/roles')
   const initialTab = isAssignmentRoute || searchParams.get('tab') === 'assignment'
@@ -65,24 +70,31 @@ export function AdminPage() {
   const [exportedSuccess, setExportedSuccess] = useState(false)
 
   const loadData = async () => {
+    if (!isAdmin) return
+    const requestedIdentity = identity
     setLoading(true)
+    setLoadError(null)
     try {
       const [rosterRes, summaryStats] = await Promise.all([
         adminService.getRosterData(),
         dataRepository.getSummaryStats(),
       ])
+      if (currentIdentity.current !== requestedIdentity) return
       setRoster(rosterRes.roster)
       setDepartments(rosterRes.departments)
       setProjects(rosterRes.projects)
       setStats(summaryStats)
 
       if (rosterRes.roster.length > 0 && !selectedUser) {
-        selectUserForEdit(rosterRes.roster[0])
+        selectUserForEdit(rosterRes.roster[0], rosterRes.departments[0]?.id)
       }
     } catch (err) {
-      console.error('Failed to load admin data', err)
+      if (currentIdentity.current === requestedIdentity) {
+        setRoster([]); setProjects([]); setDepartments([]); setStats(null); setSelectedUser(null)
+        setLoadError(err instanceof Error ? err.message : 'Failed to load administrator data')
+      }
     } finally {
-      setLoading(false)
+      if (currentIdentity.current === requestedIdentity) setLoading(false)
     }
   }
 
@@ -94,6 +106,9 @@ export function AdminPage() {
   }
 
   useEffect(() => {
+    setRoster([]); setProjects([]); setDepartments([]); setStats(null); setSelectedUser(null)
+    setSaveMessage(null); setSaveError(null)
+    if (!isAdmin) return
     loadData()
     checkDb()
 
@@ -106,12 +121,12 @@ export function AdminPage() {
       window.removeEventListener('civic-data-updated', handleUpdate)
       window.removeEventListener('storage', handleUpdate)
     }
-  }, [])
+  }, [isAdmin, identity])
 
-  const selectUserForEdit = (targetUser: AdminUserRosterItem) => {
+  const selectUserForEdit = (targetUser: AdminUserRosterItem, defaultDepartmentId = departments[0]?.id) => {
     setSelectedUser(targetUser)
     setEditRole(targetUser.role)
-    setEditDept(targetUser.departmentId || 'dept-roads')
+    setEditDept(targetUser.departmentId || defaultDepartmentId || '')
     setSelectedProjectIds(targetUser.assignments.map(a => a.project_id))
     setSaveMessage(null)
     setSaveError(null)
@@ -119,7 +134,7 @@ export function AdminPage() {
 
   const handleSaveAssignment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedUser) return
+    if (!isAdmin || !selectedUser || isSaving) return
 
     setIsSaving(true)
     setSaveMessage(null)
@@ -215,7 +230,21 @@ export function AdminPage() {
   }
 
   // Access Guard: Ensure user has administrator role
-  const isAdmin = user?.role === 'admin' || user?.isDemoUser
+  if (!isAdmin) return (
+    <main className="max-w-xl mx-auto p-8 space-y-4">
+      <h1 className="text-2xl font-bold">Administrator access required</h1>
+      <p>{user ? 'Your account cannot manage roles or project assignments.' : 'Sign in with an authorized administrator account to continue.'}</p>
+      {!user && <button className="btn-primary" onClick={() => void signInWithGoogle()}>Sign in with Google</button>}
+      <Link className="block" to="/">Return to public portal</Link>
+    </main>
+  )
+  if (loadError) return (
+    <main className="max-w-xl mx-auto p-8 space-y-4">
+      <h1 className="text-2xl font-bold">Administrator workspace unavailable</h1>
+      <p role="alert" className="text-red-700">{loadError}</p>
+      <button className="btn-primary" onClick={() => void loadData()}>Try again</button>
+    </main>
+  )
 
   return (
     <div className={`min-h-screen ${activeTab === 'assignment' ? 'bg-[#F6F9FC]' : 'bg-transparent'} text-[#1E293B] font-['Inter',sans-serif] pb-16`}>
@@ -607,7 +636,7 @@ export function AdminPage() {
                       </label>
                       <select
                         value={editRole}
-                        onChange={e => setEditRole(e.target.value as UserRole)}
+                        onChange={e => { setEditRole(e.target.value as UserRole); setSelectedProjectIds([]); setSaveMessage(null) }}
                         className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:border-[#021217] focus:outline-none"
                       >
                         <option value="resident">Resident (Citizen)</option>
@@ -627,7 +656,7 @@ export function AdminPage() {
                       </label>
                       <select
                         value={editDept}
-                        onChange={e => setEditDept(e.target.value)}
+                        onChange={e => { setEditDept(e.target.value); setSelectedProjectIds([]); setSaveMessage(null) }}
                         disabled={!['contractor', 'auditor', 'officer'].includes(editRole)}
                         className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:border-[#021217] focus:outline-none disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
                       >

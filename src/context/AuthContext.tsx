@@ -23,10 +23,6 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
-const DEFAULT_DEMO_USER: AuthUser = {
-  id: 'usr-demo-officer', displayName: 'Rajesh Patil (Roads Department)',
-  role: 'officer', departmentId: 'dept-roads', isDemoUser: true,
-}
 const AuthContext = createContext<AuthContextType>({
   user: null, loading: true, authError: null, isSupabaseAuth: false,
   setDemoRole: () => {}, signInWithGoogle: async () => {}, signOut: async () => {},
@@ -41,12 +37,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!client) { setLoading(false); return }
     let active = true
     let requestVersion = 0
-    async function loadIdentity(identity: { id: string; email?: string } | null) {
+    async function loadIdentity(identity: { id: string; email?: string } | null, refresh = false) {
       const version = ++requestVersion
-      setLoading(true)
-      setUser(null)
+      if (!refresh) { setLoading(true); setUser(null) }
       setAuthError(null)
-      if (!identity) { setLoading(false); return }
+      if (!identity) { setUser(null); setLoading(false); return }
       try {
         const { data: profile, error } = await client!.from('profiles')
           .select('display_name, role, department_id').eq('id', identity.id).single()
@@ -76,19 +71,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }).catch(() => {
       if (active && requestVersion === initialVersion) { setAuthError('Could not restore your session. Please sign in again.'); setLoading(false) }
     })
-    return () => { active = false; requestVersion++; listener.subscription.unsubscribe() }
-  }, [isSupabase])
-  const setDemoRole = (role: UserRole, departmentId?: string, displayName?: string) => {
-    if (isSupabase) return
-    const titles: Record<UserRole, string> = {
-      officer: 'Rajesh Patil (Roads Officer)', resident: 'Priya Sharma (Resident)',
-      contractor: 'Roads Contractor', auditor: 'Roads Auditor', admin: 'Municipal Administrator', public: 'Public Visitor',
+    const refreshIdentity = () => {
+      void client.auth.getSession().then(({ data, error }) => {
+        if (active && !error) void loadIdentity(data.session?.user || null, true)
+      }).catch(() => {})
     }
-    setUser({
-      id: `usr-demo-${role}`, displayName: displayName || titles[role], role,
-      departmentId: ['officer', 'contractor', 'auditor'].includes(role) ? departmentId || 'dept-roads' : undefined, isDemoUser: true,
-    })
-    setAuthError(null); setLoading(false)
+    window.addEventListener('focus', refreshIdentity)
+    const assignmentChanged = (event: Event) => {
+      if ((event as CustomEvent).detail?.targetUserId) refreshIdentity()
+    }
+    window.addEventListener('civic-data-updated', assignmentChanged)
+    return () => {
+      active = false; requestVersion++; listener.subscription.unsubscribe()
+      window.removeEventListener('focus', refreshIdentity)
+      window.removeEventListener('civic-data-updated', assignmentChanged)
+    }
+  }, [isSupabase])
+  const setDemoRole = (_role: UserRole, _departmentId?: string, _displayName?: string) => {
+    setAuthError('Sign in with a verified account. This website uses Supabase records only.')
   }
   const signInWithGoogle = async () => {
     setAuthError(null)

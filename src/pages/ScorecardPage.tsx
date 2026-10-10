@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import {
   Award, TrendingUp, AlertTriangle, CheckCircle2, Clock,
   Building2, ShieldAlert, BarChart3, Filter, ArrowUpRight,
-  Layers, Users, Info, Star
+  Layers, Users, Info
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
+import { ErrorState, LoadingState, EmptyState } from '../components/ui/SharedStates'
 import type { Department, Project, Report, CoordinationAlert } from '../types'
 
 interface DeptScorecard {
@@ -28,7 +29,7 @@ interface ContractorScorecard {
   totalProjects: number
   avgProgress: number
   delayedCount: number
-  rating: number
+  completionRate: number
   status: 'Good Standing' | 'Under Review' | 'Flagged for Delays'
 }
 
@@ -38,6 +39,8 @@ export function ScorecardPage() {
   const [reports, setReports] = useState<Report[]>([])
   const [alerts, setAlerts] = useState<CoordinationAlert[]>([])
   const [activeTab, setActiveTab] = useState<'departments' | 'contractors' | 'wards'>('departments')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -52,7 +55,7 @@ export function ScorecardPage() {
       setReports(r)
       setAlerts(a)
     }
-    loadData()
+    loadData().catch(err => setError(err instanceof Error ? err.message : 'Database records could not be loaded.')).finally(() => setLoading(false))
   }, [])
 
   // Calculate department metrics
@@ -63,15 +66,18 @@ export function ScorecardPage() {
     const active = deptProjects.filter(p => p.status === 'in_progress' || p.status === 'planned').length
     const delayed = deptProjects.filter(p => p.status === 'delayed' || p.confidenceIndicator === 'delayed').length
     
-    const onTimeRate = total > 0 ? Math.round(((total - delayed) / total) * 100) : 100
+    const onTimeRate = total > 0 ? Math.round(((total - delayed) / total) * 100) : 0
     
     const deptProjectIds = new Set(deptProjects.map(p => p.id))
     const deptAlerts = alerts.filter(a => deptProjectIds.has(a.projectAId) || deptProjectIds.has(a.projectBId))
-    const conflictScore = deptAlerts.length * 15
+    const conflictScore = deptAlerts.reduce((sum, alert) => sum + alert.score, 0)
 
     const deptReports = reports.filter(r => r.projectId && deptProjectIds.has(r.projectId))
     const resolvedReports = deptReports.filter(r => r.status === 'resolved').length
-    const avgDelayDays = delayed > 0 ? Math.round(delayed * 24.5) : 0
+    const delays = deptProjects.filter(project => project.status === 'delayed' || project.confidenceIndicator === 'delayed')
+      .map(project => Math.max(0, (Date.parse(project.actualEndDate || new Date().toISOString().slice(0, 10)) - Date.parse(project.originalEndDate)) / 86400000))
+      .filter(Number.isFinite)
+    const avgDelayDays = delays.length ? Math.round(delays.reduce((sum, days) => sum + days, 0) / delays.length) : 0
 
     let grade: 'A+' | 'A' | 'B' | 'C' | 'D' = 'B'
     if (onTimeRate >= 90 && deptAlerts.length <= 1) grade = 'A+'
@@ -93,7 +99,7 @@ export function ScorecardPage() {
       resolvedReports,
       grade,
     }
-  }).sort((a, b) => b.onTimeRate - a.onTimeRate)
+  }).filter(card => card.totalProjects > 0).sort((a, b) => b.onTimeRate - a.onTimeRate)
 
   // Calculate contractor transparency metrics
   const contractorMap = new Map<string, Project[]>()
@@ -110,9 +116,7 @@ export function ScorecardPage() {
     const active = pList.filter(p => p.status === 'in_progress').length
     const avgProgress = Math.round(pList.reduce((acc, p) => acc + p.progressPercent, 0) / (total || 1))
     
-    let rating = 4.8 - (delayed * 0.8)
-    if (rating < 2.0) rating = 2.0
-    rating = Math.round(rating * 10) / 10
+    const completionRate = Math.round(pList.filter(project => project.status === 'completed').length / total * 100)
 
     let status: 'Good Standing' | 'Under Review' | 'Flagged for Delays' = 'Good Standing'
     if (delayed >= 2) status = 'Flagged for Delays'
@@ -124,10 +128,10 @@ export function ScorecardPage() {
       activeProjects: active,
       delayedCount: delayed,
       avgProgress,
-      rating,
+      completionRate,
       status,
     }
-  }).sort((a, b) => b.rating - a.rating)
+  }).sort((a, b) => b.completionRate - a.completionRate)
 
   // Ward Disruption Analysis
   const wardMap = new Map<string, { total: number; active: number; delayed: number; budget: number }>()
@@ -143,7 +147,7 @@ export function ScorecardPage() {
   const wardScorecards = Array.from(wardMap.entries()).map(([ward, data]) => ({
     ward,
     ...data,
-    disruptionIndex: Math.min(100, Math.round((data.active * 18) + (data.delayed * 25))),
+    disruptionIndex: Math.round(data.active / data.total * 100),
   })).sort((a, b) => b.disruptionIndex - a.disruptionIndex)
 
   // Fresh Civic Grade Pill Styling
@@ -154,6 +158,10 @@ export function ScorecardPage() {
     'C': 'bg-[#FFF4DB] text-[#9A6200] border-[#FFB020]/30',
     'D': 'bg-[#FFE9EA] text-[#D13B41] border-[#FF5A5F]/30',
   }
+
+  if (loading) return <LoadingState message="Loading database metrics…" />
+  if (error) return <ErrorState title="Scorecard unavailable" description={error} />
+  if (!projects.length) return <EmptyState title="No recorded projects" description="Scorecards will appear when projects are available in Supabase." />
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -179,7 +187,7 @@ export function ScorecardPage() {
             <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#021217]">{departments.length}</div>
           </div>
           <div className="border-x border-[#E3EAF2] px-3">
-            <div className="text-[10px] text-[#536267] font-bold uppercase">Avg On-Time</div>
+            <div className="text-[10px] text-[#536267] font-bold uppercase">Without delays</div>
             <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#088c2e]">
               {deptScorecards.length > 0 ? Math.round(deptScorecards.reduce((acc, s) => acc + s.onTimeRate, 0) / deptScorecards.length) : 0}%
             </div>
@@ -224,7 +232,7 @@ export function ScorecardPage() {
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Ward Disruption Index ({wardScorecards.length})</span>
+          <span>Ward Work Activity ({wardScorecards.length})</span>
         </button>
       </div>
 
@@ -259,7 +267,7 @@ export function ScorecardPage() {
                 {/* Progress bar: On-time rate in Mint Teal */}
                 <div className="mt-3">
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-[#64748B] font-medium text-[11px]">On-Time Execution Rate</span>
+                    <span className="text-[#64748B] font-medium text-[11px]">Projects without delays</span>
                     <span className="font-bold text-[#1E293B] text-[11px]">{sc.onTimeRate}%</span>
                   </div>
                   <div className="w-full h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
@@ -333,7 +341,7 @@ export function ScorecardPage() {
                   <tr>
                     <th className="px-5 py-2.5">Department</th>
                     <th className="px-3 py-2.5">Grade</th>
-                    <th className="px-3 py-2.5">On-Time %</th>
+                    <th className="px-3 py-2.5">Without delays %</th>
                     <th className="px-3 py-2.5">Active</th>
                     <th className="px-3 py-2.5">Delayed</th>
                     <th className="px-3 py-2.5">Citizen Reports</th>
@@ -389,7 +397,7 @@ export function ScorecardPage() {
           <div className="bg-[#FFF4DB] border border-[#FFB020]/30 rounded-xl p-3 flex gap-2.5 items-start">
             <Info className="w-4 h-4 text-[#9A6200] shrink-0 mt-0.5" />
             <div className="text-xs text-[#9A6200]">
-              <span className="font-bold">Contractor Accountability Standard:</span> Standings are strictly computed from contract timeline compliance, non-consensual deadline postponements, and verified ground hazard reports.
+              <span className="font-bold">Metric source:</span> Metrics are calculated from recorded project status, progress, and completion. Review the underlying projects for details.
             </div>
           </div>
 
@@ -414,8 +422,7 @@ export function ScorecardPage() {
                   </div>
                   <div className="text-right">
                     <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#021217] flex items-center justify-end gap-1">
-                      <Star className="w-4 h-4 text-[#FFB020] fill-[#FFB020]" />
-                      <span>{c.rating}</span>
+                      <span>{c.completionRate}% completed</span>
                     </div>
                     <div className="text-[10px] text-[#536267]">Delivery Score</div>
                   </div>
@@ -469,10 +476,10 @@ export function ScorecardPage() {
           <div className="bg-white rounded-xl border border-[#E3EAF2] overflow-hidden shadow-2xs">
             <div className="px-5 py-3 border-b border-[#E3EAF2]">
               <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#021217]">
-                Ward Disruption &amp; Excavation Intensity Index
+                Ward Work Activity
               </h3>
               <p className="text-[11px] text-[#536267] mt-0.5">
-                Composite metric calculated from concurrent active trenches and delayed road works
+                Active work orders as a percentage of each ward’s recorded projects
               </p>
             </div>
             <div className="overflow-x-auto">
@@ -480,7 +487,7 @@ export function ScorecardPage() {
                 <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#536267] border-b border-[#E3EAF2] uppercase">
                   <tr>
                     <th className="px-5 py-2.5">Municipal Ward</th>
-                    <th className="px-3 py-2.5">Disruption Index</th>
+                    <th className="px-3 py-2.5">Active Works Share</th>
                     <th className="px-3 py-2.5">Active Works</th>
                     <th className="px-3 py-2.5">Delayed Corridors</th>
                     <th className="px-3 py-2.5">CAPEX Outlay</th>
@@ -498,7 +505,7 @@ export function ScorecardPage() {
                           <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                             w.disruptionIndex >= 60 ? 'bg-[#FFE9EA] text-[#D13B41]' : w.disruptionIndex >= 30 ? 'bg-[#FFF4DB] text-[#9A6200]' : 'bg-[#E3F7F5] text-[#0E7A55]'
                           }`}>
-                            {w.disruptionIndex} / 100
+                            {w.disruptionIndex}%
                           </span>
                         </div>
                       </td>

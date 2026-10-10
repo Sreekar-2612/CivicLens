@@ -4,6 +4,7 @@ import { EvidencePhoto } from '../../components/EvidencePhoto'
 import { reviewTask } from '../../services/workflowService'
 import { useWorkspace } from './useWorkspace'
 import { SubmissionHistory } from './SubmissionHistory'
+import { ResidentIssues } from './ResidentIssues'
 
 export function AuditorDashboard() {
   const { user, data, loading, error, refresh, isCurrent } = useWorkspace()
@@ -43,6 +44,7 @@ export function AuditorDashboard() {
         <div className="flex flex-wrap gap-3"><button disabled={!!busy} onClick={() => void review(item.id, 'approved')} className="bg-green-700 text-white rounded-lg px-4 py-2 disabled:opacity-60">{busy === item.id ? 'Saving review…' : item.submissionType === 'completion' ? 'Approve completion' : 'Approve submission'}</button><button disabled={!!busy} onClick={() => void review(item.id, 'changes_requested')} className="border border-amber-600 text-amber-900 rounded-lg px-4 py-2 disabled:opacity-60">Request corrections</button></div>
       </article>
     })}
+    <ResidentIssues data={data} user={user} refresh={refresh} isCurrent={isCurrent} />
     <SubmissionHistory data={data} />
   </div>
 }

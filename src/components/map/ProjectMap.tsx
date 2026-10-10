@@ -6,7 +6,7 @@ import {
   Layers, MapPin, ExternalLink, Globe, Compass,
   Eye, CheckCircle2, AlertTriangle, ShieldCheck
 } from 'lucide-react'
-import type { Project, Department } from '../../types'
+import type { Project, Department, Report } from '../../types'
 import { PROJECT_STATUS_LABELS } from '../../types'
 
 import { CURRENT_REGION, geocodeCity } from '../../config/regionConfig'
@@ -76,6 +76,7 @@ function createRealisticMarker(status: string, isSelected: boolean = false) {
 
 interface ProjectMapProps {
   projects: Project[]
+  reports?: Report[]
   departments: Department[]
   selectedProject?: Project | null
   onSelectProject?: (project: Project | null) => void
@@ -88,12 +89,14 @@ interface ProjectMapProps {
 
 function MapController({
   projects,
+  reports,
   selectedProject,
   customTarget,
   center,
   resetTrigger
 }: {
   projects: Project[]
+  reports: Report[]
   selectedProject?: Project | null
   customTarget?: [number, number] | null
   center?: [number, number]
@@ -127,17 +130,21 @@ function MapController({
 
   // Fit bounds when reset trigger changes or on initial load with projects if no center
   useEffect(() => {
-    if (projects.length > 0 && !center && !customTarget) {
-      const bounds = L.latLngBounds(projects.map(p => [p.location.lat, p.location.lng]))
+    const locations: [number, number][] = [...projects.map(p => p.location), ...reports.map(r => r.location)]
+      .filter(location => Number.isFinite(location.lat) && Number.isFinite(location.lng))
+      .map(location => [location.lat, location.lng])
+    if (locations.length > 0 && !center && !customTarget) {
+      const bounds = L.latLngBounds(locations)
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
     }
-  }, [resetTrigger, projects, center, customTarget, map])
+  }, [resetTrigger, projects, reports, center, customTarget, map])
 
   return null
 }
 
 export function ProjectMap({
   projects,
+  reports = [],
   departments,
   selectedProject,
   onSelectProject,
@@ -279,6 +286,7 @@ export function ProjectMap({
       >
         <MapController
           projects={projects}
+          reports={reports}
           selectedProject={selectedProject}
           customTarget={customTarget}
           center={center}
@@ -318,6 +326,12 @@ export function ProjectMap({
           />
         )}
 
+        {reports.filter(report => Number.isFinite(report.location.lat) && Number.isFinite(report.location.lng)).map(report => (
+          <Marker key={`report-${report.id}`} position={[report.location.lat, report.location.lng]}
+            icon={L.divIcon({ className: 'resident-issue-marker', html: '<div style="width:24px;height:24px;border-radius:50%;background:#ea580c;border:3px solid white;box-shadow:0 1px 5px #0005;color:white;text-align:center;font-weight:bold">!</div>', iconSize: [24, 24], iconAnchor: [12, 12] })}>
+            <Popup><div className="space-y-2"><strong>Resident issue: {report.title}</strong><p>{report.referenceId}</p><p>Status: {report.status.replaceAll('_', ' ')}</p><p>{report.description}</p><Link to={`/reports/track?ref=${encodeURIComponent(report.referenceId)}`}>Track issue</Link></div></Popup>
+          </Marker>
+        ))}
         {/* Markers */}
         {projects.map(project => {
           const dept = deptMap.get(project.departmentId)

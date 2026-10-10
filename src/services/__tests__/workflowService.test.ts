@@ -13,6 +13,10 @@ beforeEach(() => {
   const store = new Map<string, string>()
   vi.stubGlobal('localStorage', { getItem: (key: string) => store.get(key) || null, setItem: (key: string, value: string) => store.set(key, value) })
   store.set('civiclens_workflow_v1', JSON.stringify({ submissions: [], reviews: [], projectIds: ['road-one'] }))
+  store.set('quicksort_admin_users_v1', JSON.stringify([contractor, auditor].map(user => ({
+    ...user, submissionCount: 0, reviewCount: 0,
+    assignments: [{ project_id: 'road-one', assignment_role: user.role, project_title: 'Road work' }],
+  }))))
   project = { id: 'road-one', departmentId: 'dept-roads', status: 'in_progress', progressPercent: 80 } as Project
   vi.mocked(dataRepository.getProjects).mockImplementation(async () => [project])
   vi.mocked(dataRepository.getProject).mockImplementation(async id => id === project.id ? project : undefined)
@@ -26,6 +30,24 @@ describe('contractor and auditor workflow', () => {
   it('denies unassigned and other-department projects', async () => {
     await expect(submitTask(contractor, { ...input, projectId: 'water-project' })).rejects.toThrow('assignment')
     expect((await getWorkspace({ ...contractor, departmentId: 'dept-water' })).projects).toEqual([])
+  })
+  it('keeps revocation empty even with legacy shared project ids', async () => {
+    const roster = JSON.parse(localStorage.getItem('quicksort_admin_users_v1')!)
+    roster[0].assignments = []
+    localStorage.setItem('quicksort_admin_users_v1', JSON.stringify(roster))
+    expect((await getWorkspace(contractor)).projects).toEqual([])
+    expect((await getWorkspace(auditor)).projects).toHaveLength(1)
+    await expect(submitTask(contractor, input)).rejects.toThrow('assignment')
+  })
+  it('rejects a stale role after reassignment', async () => {
+    const roster = JSON.parse(localStorage.getItem('quicksort_admin_users_v1')!)
+    roster[0].role = 'resident'
+    localStorage.setItem('quicksort_admin_users_v1', JSON.stringify(roster))
+    expect((await getWorkspace(contractor)).projects).toEqual([])
+  })
+  it('does not honor an assignment to a different department', async () => {
+    project = { ...project, departmentId: 'dept-water' }
+    expect((await getWorkspace(contractor)).projects).toEqual([])
   })
   it('requires evidence and reserves completion for auditor approval', async () => {
     await expect(submitTask(contractor, { ...input, evidencePath: undefined })).rejects.toThrow('evidence')
@@ -52,5 +74,14 @@ describe('contractor and auditor workflow', () => {
   it('denies self-review even if stored submission has an auditor author', async () => {
     localStorage.setItem('civiclens_workflow_v1', JSON.stringify({ projectIds: ['road-one'], submissions: [{ ...input, id: 'self-submission', submittedBy: auditor.id, status: 'submitted', createdAt: new Date().toISOString() }], reviews: [] }))
     await expect(reviewTask(auditor, 'self-submission', 'approved', '')).rejects.toThrow('own submission')
+  })
+  it('blocks review after the submitting contractor loses access', async () => {
+    await submitTask(contractor, input)
+    const submission = (await getWorkspace(auditor)).submissions[0]
+    const roster = JSON.parse(localStorage.getItem('quicksort_admin_users_v1')!)
+    roster[0].assignments = []
+    localStorage.setItem('quicksort_admin_users_v1', JSON.stringify(roster))
+    await expect(reviewTask(auditor, submission.id, 'approved', '')).rejects.toThrow('no longer has project access')
+    expect(project.status).toBe('pending_audit')
   })
 })

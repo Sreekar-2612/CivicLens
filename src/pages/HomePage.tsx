@@ -7,6 +7,8 @@ import {
 import { dataRepository } from '../services/dataRepository'
 import type { Project, SummaryStats, Department } from '../types'
 import { DepthCarousel } from '../components/ui/DepthCarousel'
+import { DatabaseProjectGallery } from '../components/ui/DatabaseProjectGallery'
+import { EmptyState, ErrorState, LoadingState } from '../components/ui/SharedStates'
 import { WeightHoverText } from '../components/hero/WeightHoverText'
 import { geocodeCity } from '../config/regionConfig'
 
@@ -14,23 +16,37 @@ export function HomePage() {
   const [stats, setStats] = useState<SummaryStats | null>(null)
   const [dbProjects, setDbProjects] = useState<Project[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+  const [dataError, setDataError] = useState<string | null>(null)
+  const [revision, setRevision] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
+    let active = true
     async function load() {
+      setDataLoading(true); setDataError(null)
+      try {
       const [s, p, d] = await Promise.all([
         dataRepository.getSummaryStats(),
         dataRepository.getProjects(),
         dataRepository.getDepartments(),
       ])
+      if (!active) return
       setStats(s)
       setDbProjects(p)
       setDepartments(d)
+      } catch (error) {
+        if (active) {
+          setStats(null); setDbProjects([]); setDepartments([])
+          setDataError(error instanceof Error ? error.message : 'Database records could not be loaded')
+        }
+      } finally { if (active) setDataLoading(false) }
     }
     load()
-  }, [])
+    return () => { active = false }
+  }, [revision])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -244,14 +260,14 @@ export function HomePage() {
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#11e852] animate-pulse" />
                 <span className="text-[11px] font-bold text-[#088c2e] uppercase tracking-wider">
-                  Live Database Entries ({dbProjects.length} Verified Records)
+                  {dataLoading ? 'Loading registry…' : dataError ? 'Registry unavailable' : `${dbProjects.length} published records`}
                 </span>
               </div>
               <h2 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#021217]">
                 Active Municipal Work Orders &amp; Permits
               </h2>
               <p className="text-xs sm:text-sm text-[#536267] mt-1">
-                Verified work permits currently logged in the central infrastructure database
+                Published work permits recorded in the database
               </p>
             </div>
             <Link
@@ -263,7 +279,11 @@ export function HomePage() {
             </Link>
           </div>
 
-          {dbProjects.length > 0 && (
+          {dataLoading ? <LoadingState message="Loading published projects…" /> : dataError ? (
+            <ErrorState title="Projects could not be loaded" description={dataError} onRetry={() => setRevision(value => value + 1)} />
+          ) : dbProjects.length === 0 ? (
+            <EmptyState title="No published projects" description="There are no published work orders in the database yet." />
+          ) : (
             <DepthCarousel
               projects={dbProjects}
               departmentMap={deptMap}
@@ -272,166 +292,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Ground Reality & On-Site Verification Photos Section (Dedicated Showcase with Animations & Hover Effects) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-[#f1f3d8] text-[#021217] border border-[#e2c09c] text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-3 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-[#11e852] animate-ping" />
-            <span>VERIFIED ON-SITE FIELD EVIDENCE</span>
-          </div>
-          <h2 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#021217]">
-            Ground Reality &amp; Excavation Monitoring
-          </h2>
-          <p className="text-xs sm:text-sm text-[#536267] max-w-2xl mx-auto mt-2 leading-relaxed">
-            Real photographic audits captured directly from active excavation corridors, utility trenching operations, and road resurfacing teams.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
-          {/* Card 1: Asphalt Resurfacing & Pothole Patching */}
-          <div className="group relative bg-white/95 backdrop-blur-md border border-[#e2c09c] hover:border-[#11e852] rounded-3xl overflow-hidden shadow-xs hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.015] transition-all duration-300">
-            <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-[#021217]">
-              <img
-                src="/images/works/asphalt-resurfacing.png"
-                alt="Road Surface Paving & Hot-Mix Bitumen Resurfacing"
-                className="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-105 transition-all duration-700 ease-out"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#021217] via-[#021217]/25 to-black/20" />
-              
-              <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-                <span className="text-[10px] font-bold text-white bg-[#e2c09c] text-[#021217] px-2.5 py-1 rounded-full shadow-xs uppercase tracking-wide">
-                  PWD · ROADS
-                </span>
-                <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-full">
-                  MG Road Corridor
-                </span>
-              </div>
-
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 text-white">
-                <span className="text-[10px] font-bold text-[#11e852] uppercase tracking-wider block mb-1">
-                  • IN EXECUTION · 42% COMPLETE
-                </span>
-                <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-base sm:text-lg leading-snug drop-shadow-md">
-                  Road Surface Paving &amp; Hot-Mix Resurfacing
-                </h3>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-3 bg-white">
-              <p className="text-xs text-[#536267] leading-relaxed">
-                Field team conducting manual asphalt distribution and compaction rolling along MG Road to repair monsoon wear before final lane demarcation.
-              </p>
-              <div className="pt-2 border-t border-[#e2c09c]/30 flex items-center justify-between text-xs font-semibold">
-                <span className="text-[#021217]">Contractor: Hindustan Construction</span>
-                <Link
-                  to="/projects/proj-0001"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#021217] hover:text-[#088c2e] hover:underline"
-                >
-                  <span>View Permit</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: JCB Utility Trenching */}
-          <div className="group relative bg-white/95 backdrop-blur-md border border-[#e2c09c] hover:border-[#11e852] rounded-3xl overflow-hidden shadow-xs hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.015] transition-all duration-300">
-            <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-[#021217]">
-              <img
-                src="/images/works/jcb-utility-trenching.png"
-                alt="Deep Utility Conduit Excavation with Heavy Machinery"
-                className="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-105 transition-all duration-700 ease-out"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#021217] via-[#021217]/25 to-black/20" />
-              
-              <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-                <span className="text-[10px] font-bold text-white bg-[#12B5A6] px-2.5 py-1 rounded-full shadow-xs uppercase tracking-wide">
-                  WATER SUPPLY · WSD
-                </span>
-                <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-full">
-                  Karve Road Corridor
-                </span>
-              </div>
-
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 text-white">
-                <span className="text-[10px] font-bold text-[#11e852] uppercase tracking-wider block mb-1">
-                  • IN EXECUTION · 65% COMPLETE
-                </span>
-                <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-base sm:text-lg leading-snug drop-shadow-md">
-                  Heavy Utility Trenching with Excavators
-                </h3>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-3 bg-white">
-              <p className="text-xs text-[#536267] leading-relaxed">
-                Heavy backhoe excavator trenching alongside high-density traffic for cast-iron to HDPE pipeline replacement under municipal water corridor monitoring.
-              </p>
-              <div className="pt-2 border-t border-[#e2c09c]/30 flex items-center justify-between text-xs font-semibold">
-                <span className="text-[#021217]">Contractor: Tata Projects Ltd.</span>
-                <Link
-                  to="/projects/proj-0002"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#021217] hover:text-[#088c2e] hover:underline"
-                >
-                  <span>View Permit</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Pipeline & Underground Conduit Laying */}
-          <div className="group relative bg-white/95 backdrop-blur-md border border-[#e2c09c] hover:border-[#ff0000] rounded-3xl overflow-hidden shadow-xs hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.015] transition-all duration-300">
-            <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-[#021217]">
-              <img
-                src="/images/works/pipeline-conduit-laying.png"
-                alt="Underground Power Cable Ducting & Manhole Access"
-                className="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-105 transition-all duration-700 ease-out"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#021217] via-[#021217]/25 to-black/20" />
-              
-              <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-                <span className="text-[10px] font-bold text-[#021217] bg-[#FFB020] px-2.5 py-1 rounded-full shadow-xs uppercase tracking-wide">
-                  ELECTRICAL · ELEC
-                </span>
-                <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-xs px-2.5 py-1 rounded-full">
-                  JM Road Corridor
-                </span>
-              </div>
-
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 text-white">
-                <span className="text-[10px] font-bold text-[#ff0000] uppercase tracking-wider block mb-1">
-                  • DELAYED · REVISED DEADLINE
-                </span>
-                <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-base sm:text-lg leading-snug drop-shadow-md">
-                  Underground Cable Ducting &amp; Barricaded Trench
-                </h3>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-3 bg-white">
-              <p className="text-xs text-[#536267] leading-relaxed">
-                Sub-surface utility trenching and manual cable laying with safety barricades on high-volume traffic arterial, audited for delay mitigation.
-              </p>
-              <div className="pt-2 border-t border-[#e2c09c]/30 flex items-center justify-between text-xs font-semibold">
-                <span className="text-[#021217]">Contractor: Larsen &amp; Toubro</span>
-                <Link
-                  to="/projects/proj-0003"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#021217] hover:text-[#088c2e] hover:underline"
-                >
-                  <span>View Permit</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
+      <DatabaseProjectGallery projects={dbProjects} loading={dataLoading} error={dataError} />
 
       {/* Inter-Agency Objectives */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">

@@ -12,6 +12,7 @@ export function useWorkspace() {
   const activeIdentity = useRef(identity)
   activeIdentity.current = identity
   const mounted = useRef(true)
+  const loadedIdentity = useRef('')
   useEffect(() => {
     mounted.current = true
     const handleUpdate = () => {
@@ -19,15 +20,20 @@ export function useWorkspace() {
     }
     window.addEventListener('civic-data-updated', handleUpdate)
     window.addEventListener('storage', handleUpdate)
+    window.addEventListener('focus', handleUpdate)
+    const poll = window.setInterval(handleUpdate, 30000)
     return () => {
       mounted.current = false
       window.removeEventListener('civic-data-updated', handleUpdate)
       window.removeEventListener('storage', handleUpdate)
+      window.removeEventListener('focus', handleUpdate)
+      window.clearInterval(poll)
     }
   }, [])
   useEffect(() => {
     let active = true
-    setData(undefined); setError(''); setLoading(true)
+    if (loadedIdentity.current !== identity) { setData(undefined); setLoading(true); loadedIdentity.current = identity }
+    setError('')
     if (!user) { setLoading(false); return }
     getWorkspace(user).then(result => { if (active) setData(result) })
       .catch(cause => { if (active) setError(cause instanceof Error ? cause.message : 'Could not load workspace.') })

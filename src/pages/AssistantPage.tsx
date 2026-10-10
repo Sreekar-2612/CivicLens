@@ -4,6 +4,7 @@ import {
   Sparkles, Send, Bot, User, ArrowRight
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
+import { ErrorState, LoadingState } from '../components/ui/SharedStates'
 import type { Project, Department, CoordinationAlert, Report } from '../types'
 
 interface Message {
@@ -37,6 +38,8 @@ export function AssistantPage() {
   const [departments, setDepartments] = useState<Department[]>([])
   const [alerts, setAlerts] = useState<CoordinationAlert[]>([])
   const [reports, setReports] = useState<Report[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+  const [dataError, setDataError] = useState('')
 
   const endRef = useRef<HTMLDivElement>(null)
 
@@ -53,7 +56,7 @@ export function AssistantPage() {
       setAlerts(a)
       setReports(r)
     }
-    load()
+    load().catch(err => setDataError(err instanceof Error ? err.message : 'Database records could not be loaded.')).finally(() => setDataLoading(false))
   }, [])
 
   useEffect(() => {
@@ -62,7 +65,7 @@ export function AssistantPage() {
 
   const handleSend = (queryText?: string) => {
     const text = queryText || inputValue.trim()
-    if (!text) return
+    if (!text || dataLoading || dataError || isTyping) return
 
     const userMsg: Message = {
       id: `msg-${Date.now()}`,
@@ -136,6 +139,9 @@ export function AssistantPage() {
 
     setMessages(prev => [...prev, aiMsg])
   }
+
+  if (dataLoading) return <LoadingState message="Loading database records…" />
+  if (dataError) return <ErrorState title="Assistant records unavailable" description={dataError} />
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-5rem)] flex flex-col space-y-4">

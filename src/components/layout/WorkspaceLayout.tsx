@@ -1,11 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { departmentMap } from '../../data/departments'
+import { dataRepository } from '../../services/dataRepository'
 
 export function WorkspaceLayout({ role }: { role: 'contractor' | 'auditor' }) {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
   const [error, setError] = useState('')
+  const [departmentName, setDepartmentName] = useState<string>()
+  useEffect(() => {
+    let active = true
+    setDepartmentName(undefined)
+    if (user?.departmentId) {
+      dataRepository.getDepartment(user.departmentId)
+        .then(department => { if (active) setDepartmentName(department?.name) })
+        .catch(() => { if (active) setDepartmentName('Department details unavailable') })
+    }
+    return () => { active = false }
+  }, [user?.departmentId])
   const title = role === 'contractor' ? 'Contractor workspace' : 'Auditor workspace'
   async function authenticate(action: () => Promise<void>) {
     try { setError(''); await action() } catch (cause) { setError(cause instanceof Error ? cause.message : 'Authentication failed.') }
@@ -21,7 +32,7 @@ export function WorkspaceLayout({ role }: { role: 'contractor' | 'auditor' }) {
   return <div className="min-h-screen bg-transparent text-[#021217]">
     <header className="bg-white/95 backdrop-blur-md border-b border-[#e2c09c]/40">
       <div className="max-w-6xl mx-auto p-4 flex flex-wrap items-center justify-between gap-4">
-        <div><h1 className="font-bold text-xl text-[#021217]">QuickSort · {title}</h1><p className="text-sm text-[#536267]">{user.displayName} · {departmentMap.get(user.departmentId || '')?.name || user.departmentId || 'Department not assigned'}</p>
+        <div><h1 className="font-bold text-xl text-[#021217]">QuickSort · {title}</h1><p className="text-sm text-[#536267]">{user.displayName} · {departmentName || user.departmentId || 'Department not assigned'}</p>
           {user.isDemoUser && <span className="text-xs text-amber-800">Demo account · Changes stay in this browser</span>}
         </div>
         <div className="flex gap-4 items-center text-sm"><Link to="/" className="text-[#021217] hover:text-[#11e852] font-semibold">Public portal</Link><button onClick={() => void authenticate(signOut)} className="border border-[#CBD5E1] rounded-lg px-3 py-2 hover:bg-[#FAF7F0] cursor-pointer">Sign out</button></div>

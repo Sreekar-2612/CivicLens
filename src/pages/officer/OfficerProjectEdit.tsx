@@ -27,7 +27,8 @@ export function OfficerProjectEdit() {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [errorMessages, setErrorMessages] = useState<string[]>([])
 
-  const isAuthorized = user && (user.role === 'officer' || user.role === 'admin')
+  const isAuthorized = user && (user.role === 'admin' ||
+    (user.role === 'officer' && !!user.departmentId && user.departmentId === project?.departmentId))
 
   useEffect(() => {
     async function load() {

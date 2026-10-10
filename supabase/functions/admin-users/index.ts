@@ -1,5 +1,5 @@
 import { corsHeaders } from '../_shared/cors.ts'
-import { requireActor, errorResponse } from '../_shared/supabase.ts'
+import { requireActor, getSupabaseClient, errorResponse } from '../_shared/supabase.ts'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -7,14 +7,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { db, user, profile } = await requireActor(req, ['admin'])
+    const { db } = await requireActor(req, ['admin'])
+    // These RPCs authorize auth.uid(); preserve the verified caller's JWT.
+    const actorDb = getSupabaseClient(req)
 
     if (req.method === 'GET') {
-      const { data: roster, error: rosterErr } = await db.rpc('admin_get_user_roster')
+      const { data: roster, error: rosterErr } = await actorDb.rpc('admin_get_user_roster')
       if (rosterErr) throw rosterErr
 
-      const { data: departments } = await db.from('departments').select('*').order('name')
-      const { data: projects } = await db.from('projects').select('id, title, road, locality, department_id, status, progress_percent').order('title')
+      const { data: departments, error: departmentErr } = await db.from('departments').select('*').order('name')
+      if (departmentErr) throw departmentErr
+      const { data: projects, error: projectErr } = await db.from('projects').select('*').order('title')
+      if (projectErr) throw projectErr
 
       return new Response(JSON.stringify({
         success: true,
@@ -33,7 +37,7 @@ Deno.serve(async (req) => {
       if (!targetUserId) throw new Error('targetUserId is required')
       if (!newRole) throw new Error('newRole is required')
 
-      const { data: result, error: updateErr } = await db.rpc('admin_update_user_assignment', {
+      const { data: result, error: updateErr } = await actorDb.rpc('admin_update_user_assignment', {
         p_target_user_id: targetUserId,
         p_new_role: newRole,
         p_new_department_id: newDepartmentId || null,

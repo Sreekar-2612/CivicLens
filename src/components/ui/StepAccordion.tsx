@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import type { Report } from '../../types'
 import { formatDistanceToNow, format } from 'date-fns'
+import { EvidencePhoto } from '../EvidencePhoto'
 
 interface StepAccordionProps {
   reports: Report[]
@@ -55,21 +56,6 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
     setIsAutoPlay(false)
   }
 
-  // Fallback representative photos if report has no photo
-  const getPhotoForReport = (report: Report, idx: number) => {
-    if (report.photoUrl && report.photoUrl.trim() !== '') return report.photoUrl
-    if (report.evidenceUrl && report.evidenceUrl.trim() !== '') return report.evidenceUrl
-
-    const fallbacks = [
-      'https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1590496793929-36417d3117de?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=900&q=80',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80'
-    ]
-    return fallbacks[idx % fallbacks.length]
-  }
-
   // If no citizen reports exist for this project
   if (count === 0) {
     return (
@@ -95,8 +81,8 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
     )
   }
 
-  const currentReport = reports[activeStep]
-  const currentPhoto = getPhotoForReport(currentReport, activeStep)
+  const currentReport = reports[Math.min(activeStep, count - 1)]
+  const currentPhoto = currentReport.photoUrl || currentReport.evidenceUrl || null
 
   return (
     <div
@@ -267,12 +253,12 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
 
             {/* Photo Container with Smooth Fade / Morph Transition */}
             <div className="relative aspect-4/3 w-full bg-[#050D25] overflow-hidden">
-              <img
+              {currentPhoto ? <EvidencePhoto
                 key={currentPhoto}
-                src={currentPhoto}
+                path={currentPhoto}
                 alt={currentReport.title}
                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 animate-in fade-in duration-300"
-              />
+              /> : <p className="p-8 text-center text-sm text-slate-300">No photo attached to this report.</p>}
 
               {/* Scrim Gradient */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#080F20] via-transparent to-transparent opacity-80" />
@@ -280,6 +266,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
               {/* Fullscreen Magnifier Action Button */}
               <button
                 onClick={() => setModalImage(currentPhoto)}
+                disabled={!currentPhoto}
                 className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-xs transition-transform active:scale-95 cursor-pointer shadow-md"
                 aria-label="View photo fullscreen"
               >
@@ -309,6 +296,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
               </span>
               <button
                 onClick={() => setModalImage(currentPhoto)}
+                disabled={!currentPhoto}
                 className="text-[#38BDF8] hover:underline cursor-pointer flex items-center gap-1"
               >
                 <span>Inspect Fullscreen</span>
@@ -335,8 +323,8 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
             >
               <X className="w-5 h-5" />
             </button>
-            <img
-              src={modalImage}
+            <EvidencePhoto
+              path={modalImage}
               alt="Uploaded Resident Fieldwork Evidence"
               className="max-h-[75vh] w-auto mx-auto object-contain"
             />

@@ -36,7 +36,7 @@ export function OfficerProjectNew() {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessages, setErrorMessages] = useState<string[]>([])
 
-  const isAuthorized = user && (user.role === 'officer' || user.role === 'admin')
+  const isAuthorized = user && (user.role === 'admin' || (user.role === 'officer' && !!user.departmentId))
 
   useEffect(() => {
     async function load() {
@@ -44,13 +44,14 @@ export function OfficerProjectNew() {
         dataRepository.getDepartments(),
         dataRepository.getProjects(),
       ])
-      setDepartments(depts)
+      const availableDepartments = user?.role === 'admin' ? depts : depts.filter(d => d.id === user?.departmentId)
+      setDepartments(availableDepartments)
       setAllProjects(projs)
-      if (depts.length > 0) {
+      if (availableDepartments.length > 0) {
         // Pre-select user's department if available
         const defaultDept = user?.departmentId
-          ? depts.find(d => d.id === user.departmentId)?.id || depts[0].id
-          : depts[0].id
+          ? availableDepartments.find(d => d.id === user.departmentId)?.id || availableDepartments[0].id
+          : availableDepartments[0].id
         setDepartmentId(defaultDept)
       }
     }
@@ -265,6 +266,7 @@ export function OfficerProjectNew() {
               </label>
               <select
                 value={departmentId}
+                disabled={user?.role !== 'admin'}
                 onChange={(e) => setDepartmentId(e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               >

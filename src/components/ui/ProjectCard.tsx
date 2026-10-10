@@ -4,6 +4,7 @@ import { PROJECT_CATEGORY_LABELS } from '../../types'
 import { StatusBadge, ConfidenceBadge } from './StatusBadge'
 import { MapPin, Calendar, Building2, TrendingUp } from 'lucide-react'
 import { format } from 'date-fns'
+import { EvidencePhoto } from '../EvidencePhoto'
 
 interface ProjectCardProps {
   project: Project
@@ -22,11 +23,10 @@ export function ProjectCard({ project, department }: ProjectCardProps) {
       {/* Project Photo Banner with Hover Zoom Effect */}
       {project.photoUrl && (
         <div className="relative h-40 w-full overflow-hidden bg-[#021217]/5">
-          <img
-            src={project.photoUrl}
+          <EvidencePhoto
+            path={project.photoUrl}
             alt={project.title}
             className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-105 transition-all duration-500 ease-out"
-            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#021217]/70 via-transparent to-black/20" />
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
