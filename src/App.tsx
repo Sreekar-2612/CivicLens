@@ -22,7 +22,6 @@ const OfficerNotifications = lazy(() => import('./pages/officer/OfficerNotificat
 const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })))
 const AssistantPage = lazy(() => import('./pages/AssistantPage').then(module => ({ default: module.AssistantPage })))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(module => ({ default: module.NotFoundPage })))
-const FreshCivicMockPage = lazy(() => import('./pages/FreshCivicMockPage').then(module => ({ default: module.FreshCivicMockPage })))
 
 export default function App() {
   return (
@@ -30,9 +29,6 @@ export default function App() {
       <GlobalParticleBackground />
       <Suspense fallback={<div role="status" className="p-6 text-sm text-slate-600">Loading page...</div>}>
       <Routes>
-        {/* Fresh Civic Design System Prototype Mock */}
-        <Route path="/mock-preview" element={<FreshCivicMockPage />} />
-
         {/* Public routes */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />

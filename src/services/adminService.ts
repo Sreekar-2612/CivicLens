@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient'
 import { dataRepository } from './dataRepository'
+import { mapDbDepartmentToDomain, mapDbProjectToDomain } from './supabaseRepository'
+import { getStoredLocalUsers, saveStoredLocalUsers } from './localAdminRoster'
 import type { Department, Project, UserRole } from '../types'
 
 export interface AdminUserRosterItem {
@@ -27,124 +29,23 @@ export interface AdminRosterResponse {
   projects: Project[]
 }
 
-const LOCAL_ADMIN_USERS_KEY = 'quicksort_admin_users_v1'
-
-const INITIAL_DEMO_USERS: AdminUserRosterItem[] = [
-  {
-    id: 'usr-demo-admin',
-    displayName: 'Sreekar Tirumala (Chief Administrator)',
-    role: 'admin',
-    email: 'sreekartirumala0706@gmail.com',
-    assignments: [],
-    submissionCount: 0,
-    reviewCount: 0,
-    createdAt: '2026-10-01T08:00:00Z',
-  },
-  {
-    id: 'usr-demo-officer',
-    displayName: 'Rajesh Patil (Roads Department)',
-    role: 'officer',
-    departmentId: 'dept-roads',
-    email: 'officer.roads@civiclens.gov.in',
-    assignments: [],
-    submissionCount: 0,
-    reviewCount: 0,
-    createdAt: '2026-10-02T09:30:00Z',
-  },
-  {
-    id: 'usr-demo-contractor',
-    displayName: 'Premier Road Works Contractor',
-    role: 'contractor',
-    departmentId: 'dept-roads',
-    email: 'contractor.premier@civiclens.gov.in',
-    assignments: [
-      {
-        project_id: 'proj-001',
-        assignment_role: 'contractor',
-        project_title: 'MG Road Resurfacing — Sector 4 to Station Link',
-        road: 'MG Road',
-        status: 'in_progress',
-        progress_percent: 65,
-      },
-      {
-        project_id: 'proj-004',
-        assignment_role: 'contractor',
-        project_title: 'Station Main Road Conduit Trenching',
-        road: 'Station Road',
-        status: 'delayed',
-        progress_percent: 45,
-      },
-    ],
-    submissionCount: 4,
-    reviewCount: 0,
-    createdAt: '2026-10-03T11:00:00Z',
-  },
-  {
-    id: 'usr-demo-auditor',
-    displayName: 'V. K. Sen (Independent Quality Auditor)',
-    role: 'auditor',
-    departmentId: 'dept-roads',
-    email: 'auditor.roads@civiclens.gov.in',
-    assignments: [
-      {
-        project_id: 'proj-001',
-        assignment_role: 'auditor',
-        project_title: 'MG Road Resurfacing — Sector 4 to Station Link',
-        road: 'MG Road',
-        status: 'in_progress',
-        progress_percent: 65,
-      },
-      {
-        project_id: 'proj-004',
-        assignment_role: 'auditor',
-        project_title: 'Station Main Road Conduit Trenching',
-        road: 'Station Road',
-        status: 'delayed',
-        progress_percent: 45,
-      },
-    ],
-    submissionCount: 0,
-    reviewCount: 3,
-    createdAt: '2026-10-03T11:30:00Z',
-  },
-  {
-    id: 'usr-resident-01',
-    displayName: 'M Naga Venkata Sai',
-    role: 'resident',
-    email: 'venkatasaimeka2006@gmail.com',
-    assignments: [],
-    submissionCount: 0,
-    reviewCount: 0,
-    createdAt: '2026-10-05T14:15:00Z',
-  },
-]
-
-function getStoredLocalUsers(): AdminUserRosterItem[] {
-  try {
-    const raw = localStorage.getItem(LOCAL_ADMIN_USERS_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch (e) {
-    console.warn('Failed to parse local admin users', e)
+function notifyAssignmentChange(targetUserId?: string) {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('civic-data-updated', { detail: { targetUserId } }))
   }
-  return INITIAL_DEMO_USERS
 }
 
-function saveStoredLocalUsers(users: AdminUserRosterItem[]) {
-  try {
-    localStorage.setItem(LOCAL_ADMIN_USERS_KEY, JSON.stringify(users))
-  } catch (e) {
-    console.warn('Failed to save local admin users', e)
-  }
+async function invokeAdmin(method: 'GET' | 'POST', body?: Record<string, unknown>) {
+  if (!supabase) throw new Error('Supabase is unavailable')
+  const { data, error } = await supabase.functions.invoke('admin-users', { method, ...(body ? { body } : {}) })
+  if (error || !data?.success) throw new Error(data?.error || error?.message || 'Administrator request failed. No changes were saved.')
+  return data
 }
 
 export const adminService = {
   async getRosterData(): Promise<AdminRosterResponse> {
     if (supabase) {
-      try {
-        const { data, error } = await supabase.functions.invoke('admin-users', {
-          method: 'GET',
-        })
-        if (!error && data?.success) {
+        const data = await invokeAdmin('GET')
           const rawRoster: any[] = Array.isArray(data.roster) ? data.roster : []
           const roster: AdminUserRosterItem[] = rawRoster.map(item => ({
             id: item.id,
@@ -160,13 +61,9 @@ export const adminService = {
 
           return {
             roster,
-            departments: data.departments || await dataRepository.getDepartments(),
-            projects: data.projects || await dataRepository.getProjects(),
+            departments: (data.departments || []).map(mapDbDepartmentToDomain),
+            projects: (data.projects || []).map(mapDbProjectToDomain),
           }
-        }
-      } catch (err) {
-        console.warn('Edge function admin-users call failed, falling back to local/DB query', err)
-      }
     }
 
     // Fallback: Local demo simulation
@@ -187,51 +84,28 @@ export const adminService = {
     departmentId?: string,
     projectIds: string[] = []
   ): Promise<{ success: boolean; message?: string }> {
-    let dbSuccess = false
-    let statusMessage = ''
-
     if (supabase) {
-      try {
-        const { data, error } = await supabase.functions.invoke('admin-users', {
-          method: 'POST',
-          body: {
+        await invokeAdmin('POST', {
             targetUserId,
             newRole,
             newDepartmentId: departmentId || null,
             projectIds,
-          },
         })
-
-        if (!error && data?.success) {
-          dbSuccess = true
-          statusMessage = 'User role and assignments successfully saved to database.'
-        }
-      } catch (err: any) {
-        console.warn('Edge function update failed, attempting direct DB query', err)
-      }
-
-      if (!dbSuccess) {
-        try {
-          const { error: rpcErr } = await supabase.rpc('admin_update_user_assignment', {
-            p_target_user_id: targetUserId,
-            p_new_role: newRole === 'officer' ? 'department_officer' : newRole,
-            p_new_department_id: departmentId || null,
-            p_project_ids: projectIds,
-          })
-          if (!rpcErr) {
-            dbSuccess = true
-            statusMessage = 'User assignments successfully updated in Supabase database.'
-          }
-        } catch (rpcEx) {
-          console.warn('Direct RPC also failed', rpcEx)
-        }
-      }
+        notifyAssignmentChange(targetUserId)
+        return { success: true, message: 'User role and assignments successfully saved to database.' }
     }
 
-    // Always synchronize local simulation state so UI immediately reflects everywhere
     const users = getStoredLocalUsers()
     const index = users.findIndex(u => u.id === targetUserId)
+    if (index < 0) throw new Error('Target user profile not found')
+    if (!['resident', 'officer', 'contractor', 'auditor', 'admin'].includes(newRole)) throw new Error('Invalid role')
+    if (['officer', 'contractor', 'auditor'].includes(newRole) && !departmentId) throw new Error('A department is required for this role')
+    if (!['contractor', 'auditor'].includes(newRole) && projectIds.length) throw new Error('Only contractors and auditors can receive project assignments')
     const projects = await dataRepository.getProjects()
+    if (projectIds.some(id => !projects.some(p => p.id === id && p.departmentId === departmentId))) {
+      throw new Error('Every assigned project must exist in the selected department')
+    }
+    if (departmentId && !(await dataRepository.getDepartments()).some(d => d.id === departmentId)) throw new Error('Department not found')
     const assignedObjects = projects
       .filter(p => projectIds.includes(p.id))
       .map(p => ({
@@ -243,49 +117,18 @@ export const adminService = {
         progress_percent: p.progressPercent,
       }))
 
-    if (index >= 0) {
       users[index] = {
         ...users[index],
         role: newRole,
         departmentId: departmentId || undefined,
         assignments: assignedObjects,
       }
-    } else {
-      users.push({
-        id: targetUserId,
-        displayName: 'Assigned User',
-        role: newRole,
-        departmentId: departmentId || undefined,
-        assignments: assignedObjects,
-        submissionCount: 0,
-        reviewCount: 0,
-      })
-    }
     saveStoredLocalUsers(users)
-
-    // Synchronize workflow service state
-    try {
-      const workflowKey = 'civiclens_workflow_v1'
-      const rawWf = globalThis.localStorage?.getItem(workflowKey)
-      const wfState = rawWf ? JSON.parse(rawWf) : { submissions: [], reviews: [] }
-      wfState.projectIds = projectIds
-      globalThis.localStorage?.setItem(workflowKey, JSON.stringify(wfState))
-    } catch (e) {
-      console.warn('Failed to sync workflow store', e)
-    }
-
-    // Dispatch global notification event so website components immediately re-render
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('civic-data-updated', {
-        detail: { targetUserId, newRole, projectIds, timestamp: Date.now() }
-      }))
-    }
+    notifyAssignmentChange(targetUserId)
 
     return {
       success: true,
-      message: dbSuccess
-        ? statusMessage
-        : 'Assignment updated and synchronized in workspace.',
+      message: 'Assignment saved in this browser’s demo workspace.',
     }
   },
 }

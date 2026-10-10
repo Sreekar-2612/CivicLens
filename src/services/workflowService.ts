@@ -2,6 +2,7 @@ import type { Project } from '../types'
 import { dataRepository, applyDemoWorkflowProjectState } from './dataRepository'
 import { supabase } from './supabaseClient'
 import { mapDbProjectToDomain } from './supabaseRepository'
+import { getStoredLocalUsers } from './localAdminRoster'
 
 export interface WorkflowActor { id: string; role: string; departmentId?: string; displayName: string; isDemoUser: boolean }
 export interface WorkflowAssignment { projectId: string; userId: string; assignmentRole: 'contractor' | 'auditor' }
@@ -14,7 +15,7 @@ export interface TaskReview { id: string; submissionId: string; reviewedBy: stri
 export interface WorkspaceData { projects: Project[]; assignments: WorkflowAssignment[]; submissions: TaskSubmission[]; reviews: TaskReview[] }
 export interface SubmitTaskInput { projectId: string; title: string; description: string; progressPercent: number; submissionType: TaskSubmission['submissionType']; evidencePath?: string }
 const STORE = 'civiclens_workflow_v1'
-let memory: { submissions: TaskSubmission[]; reviews: TaskReview[]; projectIds?: string[] } = { submissions: [], reviews: [] }
+let memory: { submissions: TaskSubmission[]; reviews: TaskReview[] } = { submissions: [], reviews: [] }
 function load() {
   const stored = globalThis.localStorage?.getItem(STORE)
   return stored ? JSON.parse(stored) as typeof memory : memory
@@ -25,7 +26,8 @@ function save(state: typeof memory) {
 }
 function requireRole(user: WorkflowActor, role?: string) {
   if (!user || !['contractor', 'auditor'].includes(user.role) || (role && user.role !== role)) throw new Error('Insufficient permissions')
-  if (!supabase && (!user.isDemoUser || user.id !== `usr-demo-${user.role}`)) throw new Error('Only designated accounts can use the local workspace')
+  if (supabase && user.isDemoUser) throw new Error('A verified account is required')
+  if (!supabase && (!user.isDemoUser || user.id !== `usr-demo-${user.role}`)) throw new Error('Only designated demo accounts can use the local workspace')
 }
 async function invoke(name: string, body?: Record<string, any>) {
   if (!supabase) throw new Error('Supabase is unavailable')
@@ -43,56 +45,32 @@ function mapReview(row: Record<string, any>): TaskReview {
 export async function getWorkspace(user: WorkflowActor): Promise<WorkspaceData> {
   requireRole(user)
   if (supabase) {
-    try {
       const result = await invoke('get-workspace')
-      if (result && Array.isArray(result.projects)) {
+      if (![result.projects, result.assignments, result.submissions, result.reviews].every(Array.isArray)) throw new Error('Invalid workspace response')
         return {
           projects: result.projects.map(mapDbProjectToDomain),
           assignments: result.assignments.map((a: Record<string, any>) => ({ projectId: a.project_id, userId: a.user_id, assignmentRole: a.assignment_role })),
           submissions: result.submissions.map(mapSubmission),
           reviews: result.reviews.map(mapReview),
         }
-      }
-    } catch (err) {
-      console.warn('Supabase get-workspace call skipped or failed, synchronizing from admin roster:', err)
-    }
   }
 
-  // Synchronize from admin roster
-  let assignedIds: string[] = []
-  try {
-    const rawRoster = globalThis.localStorage?.getItem('quicksort_admin_users_v1')
-    if (rawRoster) {
-      const rosterList = JSON.parse(rawRoster)
-      const matched = rosterList.find((u: any) => u.id === user.id || (user.isDemoUser && u.role === user.role))
-      if (matched && Array.isArray(matched.assignments) && matched.assignments.length > 0) {
-        assignedIds = matched.assignments.map((a: any) => a.project_id)
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to parse roster for workspace sync', e)
+  // An explicitly empty assignment stays empty; legacy shared projectIds never grant access.
+  const roster = getStoredLocalUsers()
+  const matched = roster.find(account => account.id === user.id)
+  if (!matched || matched.role !== user.role || !user.departmentId || matched.departmentId !== user.departmentId) {
+    return { projects: [], assignments: [], submissions: [], reviews: [] }
   }
-
+  const assignedIds = matched.assignments.filter(a => a.assignment_role === user.role).map(a => a.project_id)
   const state = load()
-  if (assignedIds.length === 0) {
-    if (!state.projectIds || state.projectIds.length === 0) {
-      state.projectIds = (await dataRepository.getProjects())
-        .filter(p => (!user.departmentId || p.departmentId === user.departmentId) && p.status !== 'completed')
-        .slice(0, 3)
-        .map(p => p.id)
-      save(state)
-    }
-    assignedIds = state.projectIds
-  }
-
   const assigned = await Promise.all(assignedIds.map(id => dataRepository.getProject(id)))
-  const projects = assigned.filter((p): p is Project => !!p)
-  const assignments: WorkflowAssignment[] = projects.flatMap(p => [
-    { projectId: p.id, userId: user.id, assignmentRole: user.role as 'contractor' | 'auditor' },
-    { projectId: p.id, userId: 'usr-demo-contractor', assignmentRole: 'contractor' as const },
-    { projectId: p.id, userId: 'usr-demo-auditor', assignmentRole: 'auditor' as const },
-  ])
+  const projects = assigned.filter((p): p is Project => !!p && p.departmentId === user.departmentId)
   const ids = new Set(projects.map(p => p.id))
+  const assignments: WorkflowAssignment[] = roster.flatMap(account =>
+    account.assignments.filter(a => ids.has(a.project_id) && a.assignment_role === account.role &&
+      ['contractor', 'auditor'].includes(account.role) && account.departmentId === user.departmentId)
+      .map(a => ({ projectId: a.project_id, userId: account.id, assignmentRole: a.assignment_role as 'contractor' | 'auditor' }))
+  )
   const submissions = state.submissions.filter(s => ids.has(s.projectId) && (user.role === 'auditor' || s.submittedBy === user.id))
   return { projects, assignments, submissions, reviews: state.reviews.filter(r => submissions.some(s => s.id === r.submissionId)) }
 }
@@ -107,19 +85,15 @@ export async function submitTask(user: WorkflowActor, input: SubmitTaskInput): P
   if (input.submissionType !== 'completion' && input.progressPercent === 100) throw new Error('Use a completion submission for 100% progress')
 
   if (supabase) {
-    try {
       await invoke('submit-task', input)
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
       return
-    } catch (e) {
-      console.warn('Invoke submit-task failed, updating via local simulation:', e)
-    }
   }
 
   const workspace = await getWorkspace(user)
   const project = workspace.projects.find(p => p.id === input.projectId)
   if (!project || !workspace.assignments.some(a => a.projectId === input.projectId && a.userId === user.id && a.assignmentRole === 'contractor')) throw new Error('Project assignment required')
-  if (project.status === 'completed' || project.status === 'pending_audit') throw new Error('Project is completed or awaiting completion review')
+  if (['completed', 'cancelled', 'pending_audit'].includes(project.status)) throw new Error('Project is closed or awaiting completion review')
   if (input.progressPercent < project.progressPercent) throw new Error('Progress cannot decrease')
   if (workspace.submissions.some(s => s.projectId === input.projectId && s.status === 'submitted')) throw new Error('Review the pending submission before submitting again')
 
@@ -152,13 +126,9 @@ export async function reviewTask(user: WorkflowActor, submissionId: string, deci
   if (comments.length > 5000 || (decision === 'changes_requested' && comments.trim().length < 5)) throw new Error('Explain the changes required in 5 to 5000 characters')
 
   if (supabase) {
-    try {
       await invoke('review-task', { submissionId, decision, comments })
       if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('civic-data-updated'))
       return
-    } catch (e) {
-      console.warn('Invoke review-task failed, updating via local simulation:', e)
-    }
   }
 
   const workspace = await getWorkspace(user)
@@ -166,11 +136,15 @@ export async function reviewTask(user: WorkflowActor, submissionId: string, deci
   if (!submission || !workspace.assignments.some(a => a.projectId === submission.projectId && a.userId === user.id && a.assignmentRole === 'auditor')) throw new Error('Auditor assignment required')
   if (submission.submittedBy === user.id) throw new Error('You cannot review your own submission')
   if (submission.status !== 'submitted') throw new Error('Submission already reviewed')
+  if (!workspace.assignments.some(a => a.projectId === submission.projectId && a.userId === submission.submittedBy && a.assignmentRole === 'contractor')) {
+    throw new Error('Submitting contractor no longer has project access')
+  }
+  const project = workspace.projects.find(p => p.id === submission.projectId)!
+  if (['completed', 'cancelled'].includes(project.status)) throw new Error('Project is closed')
 
   const state = load()
   const now = new Date().toISOString()
   if (decision === 'approved') {
-    const project = workspace.projects.find(p => p.id === submission.projectId)!
     await applyDemoWorkflowProjectState(submission.projectId, { progressPercent: Math.max(project.progressPercent, submission.progressPercent), ...(submission.submissionType === 'completion' ? { status: 'completed' as const, actualEndDate: now.slice(0, 10) } : {}) })
   } else if (submission.submissionType === 'completion') {
     await applyDemoWorkflowProjectState(submission.projectId, { status: 'in_progress' })

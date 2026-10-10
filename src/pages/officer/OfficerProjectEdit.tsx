@@ -72,7 +72,7 @@ export function OfficerProjectEdit() {
           <div>
             <h2 className="text-xl font-bold text-[var(--text)] font-heading">Access Restricted: Unauthorized Role</h2>
             <p className="text-xs text-[var(--muted)] mt-1 max-w-md mx-auto">
-              Your active session is simulated as <strong className="capitalize">{user?.role || 'Resident'}</strong>. Only authorized department officers and administrators possess write authorization to modify work orders.
+              Your active session is authenticated as <strong className="capitalize">{user?.role || 'Resident'}</strong>. Only authorized department officers and administrators possess write authorization to modify work orders.
             </p>
           </div>
         </div>
