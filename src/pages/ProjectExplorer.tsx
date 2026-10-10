@@ -15,6 +15,7 @@ import { ProjectCard } from '../components/ui/ProjectCard'
 import { StatusBadge } from '../components/ui/StatusBadge'
 import { EmptyState, LoadingState } from '../components/ui/SharedStates'
 import { ProjectMap } from '../components/map/ProjectMap'
+import { generateCityProjects } from '../config/regionConfig'
 
 const ALL_WARDS = [
   'All Wards', 'Ward 03', 'Ward 07', 'Ward 08', 'Ward 10', 'Ward 11', 'Ward 12',
@@ -32,6 +33,10 @@ const STATUS_FILTERS: { key: ProjectStatus | 'all'; label: string; color: string
 
 export function ProjectExplorer() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const cityParam = searchParams.get('city')
+  const latParam = searchParams.get('lat')
+  const lngParam = searchParams.get('lng')
+
   const [allProjects, setAllProjects] = useState<Project[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
@@ -54,19 +59,34 @@ export function ProjectExplorer() {
         dataRepository.getProjects(),
         dataRepository.getDepartments(),
       ])
-      setAllProjects(p)
+      let combined = p
+      if (cityParam && latParam && lngParam) {
+        const cityProjects = generateCityProjects(cityParam, parseFloat(latParam), parseFloat(lngParam))
+        combined = [...cityProjects, ...p]
+      }
+      setAllProjects(combined)
       setDepartments(d)
-      if (p.length > 0) {
-        setSelectedProject(p[0])
+      if (combined.length > 0) {
+        setSelectedProject(combined[0])
       }
       setLoading(false)
     }
     load()
-  }, [])
+  }, [cityParam, latParam, lngParam])
 
   // Filter projects
   const filteredProjects = useMemo(() => {
     let result = [...allProjects]
+
+    if (cityParam) {
+      const c = cityParam.toLowerCase()
+      result = result.filter(p =>
+        p.id.startsWith('gen-') ||
+        p.locality.toLowerCase().includes(c) ||
+        p.road.toLowerCase().includes(c) ||
+        p.title.toLowerCase().includes(c)
+      )
+    }
 
     if (filters.search) {
       const s = filters.search.toLowerCase()
@@ -92,7 +112,7 @@ export function ProjectExplorer() {
     }
 
     return result
-  }, [allProjects, filters])
+  }, [allProjects, filters, cityParam])
 
   const deptMap = useMemo(() => new Map(departments.map(d => [d.id, d])), [departments])
 
@@ -128,7 +148,7 @@ export function ProjectExplorer() {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Pune Municipal Works Observatory
+                  {cityParam ? `${cityParam} Works Observatory` : 'Municipal Works Observatory'}
                 </span>
                 <span className="text-xs text-slate-400">• Verified Geospatial Registry</span>
               </div>
@@ -238,6 +258,35 @@ export function ProjectExplorer() {
             </div>
           </div>
 
+          {/* Active City Scope Banner if queried from HomePage or Global search */}
+          {cityParam && (
+            <div className="mt-4 bg-[#EAF1FF] border-2 border-[#2F6BFF]/30 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-[#2F6BFF] text-white">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-[#1E293B]">
+                    Active City Filter: <span className="text-[#2F6BFF] font-extrabold">{cityParam}</span>
+                  </div>
+                  <div className="text-[11px] text-[#64748B]">
+                    Displaying localized infrastructure projects around coordinates ({latParam}, {lngParam}) • {filteredProjects.length} active works recorded
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchParams({})
+                  setFilters(f => ({ ...f, search: '' }))
+                }}
+                className="text-xs font-bold text-[#2F6BFF] hover:text-[#1E54D8] px-3 py-1.5 rounded-lg bg-white border border-[#2F6BFF]/30 hover:bg-[#F6F9FC] transition-colors cursor-pointer"
+              >
+                Reset / View All Cities ✕
+              </button>
+            </div>
+          )}
+
           {/* Status Filter Chips (Clean, Spacious) */}
           <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             {STATUS_FILTERS.map(st => {
@@ -278,6 +327,7 @@ export function ProjectExplorer() {
                 departments={departments}
                 selectedProject={selectedProject}
                 onSelectProject={setSelectedProject}
+                center={latParam && lngParam ? [parseFloat(latParam), parseFloat(lngParam)] : undefined}
                 height="100%"
               />
             </div>

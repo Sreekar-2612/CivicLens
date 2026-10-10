@@ -9,11 +9,14 @@ import { dataRepository } from '../services/dataRepository'
 import type { Project, SummaryStats, Department } from '../types'
 import { ProjectCard } from '../components/ui/ProjectCard'
 
+import { geocodeCity } from '../config/regionConfig'
+
 export function HomePage() {
   const [stats, setStats] = useState<SummaryStats | null>(null)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -30,10 +33,23 @@ export function HomePage() {
     load()
   }, [])
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (searchQuery.trim()) {
-      navigate(`/projects?search=${encodeURIComponent(searchQuery.trim())}`)
+    const query = searchQuery.trim()
+    if (!query) return
+
+    setIsSearching(true)
+    try {
+      const geo = await geocodeCity(query)
+      if (geo) {
+        navigate(`/projects?city=${encodeURIComponent(query)}&lat=${geo.lat}&lng=${geo.lng}`)
+      } else {
+        navigate(`/projects?search=${encodeURIComponent(query)}`)
+      }
+    } catch {
+      navigate(`/projects?search=${encodeURIComponent(query)}`)
+    } finally {
+      setIsSearching(false)
     }
   }
 
@@ -68,7 +84,7 @@ export function HomePage() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#2F6BFF]" />
                 <input
                   type="text"
-                  placeholder="Search by road (e.g. FC Road), ward, or contractor..."
+                  placeholder="Search any city or road (e.g. Guntur, Bengaluru, FC Road)..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F6F9FC] border border-[#CBD5E1] text-[#1E293B] placeholder-[#64748B] text-xs font-medium focus:outline-none focus:bg-white focus:border-[#2F6BFF] focus:ring-3 focus:ring-[#2F6BFF]/15 transition-all shadow-2xs"
@@ -76,9 +92,10 @@ export function HomePage() {
               </div>
               <button
                 type="submit"
-                className="btn-primary text-xs py-2.5 px-6 shadow-sm whitespace-nowrap"
+                disabled={isSearching}
+                className="btn-primary text-xs py-2.5 px-6 shadow-sm whitespace-nowrap disabled:opacity-75"
               >
-                Search Permits
+                {isSearching ? 'Locating City...' : 'Search Works & Permits'}
               </button>
             </form>
 
@@ -199,14 +216,14 @@ export function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="text-center mb-10">
           <span className="text-xs font-bold text-[#2F6BFF] uppercase tracking-wider">
-            Municipal Coordination Principles
+            Universal Municipal Coordination
           </span>
           <h2 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#1E293B] mt-1">
-            Why Pune Needs CivicLens
+            Why Every Municipality Needs SpadeWork
           </h2>
           <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto mt-2">
             Roads are paved, then sliced open weeks later by water or telecom utilities.
-            CivicLens shows work orders together so departments can coordinate schedules.
+            SpadeWork brings cross-departmental work orders into a unified spatial registry to coordinate schedules and prevent repeat road digging in any city.
           </p>
         </div>
 
