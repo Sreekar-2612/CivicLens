@@ -109,6 +109,9 @@ export interface Project {
   // Progress
   progressPercent: number;
 
+  // Media
+  photoUrl?: string;
+
   // Metadata
   isPublished: boolean;
   createdAt: string;

@@ -21,6 +21,15 @@ function functionResult<T>(name: string, data: { success?: boolean; error?: stri
 }
 
 // Mappers
+const DEFAULT_PROJECT_PHOTOS: Record<string, string> = {
+  'proj-0001': '/images/works/asphalt-resurfacing.png',
+  'proj-0002': '/images/works/jcb-utility-trenching.png',
+  'proj-0003': '/images/works/pipeline-conduit-laying.png',
+  'proj-0004': '/images/works/pipeline-conduit-laying.png',
+  'proj-0005': '/images/works/jcb-utility-trenching.png',
+  'proj-0006': '/images/works/asphalt-resurfacing.png',
+}
+
 export function mapDbProjectToDomain(row: any): Project {
   return {
     id: row.id,
@@ -44,6 +53,7 @@ export function mapDbProjectToDomain(row: any): Project {
     actualEndDate: row.actual_end_date || undefined,
     progressPercent: row.progress_percent || 0,
     budgetLakhs: row.budget ? Number(row.budget) : 0,
+    photoUrl: row.photo_url || row.evidence_url || DEFAULT_PROJECT_PHOTOS[row.id] || '/images/works/asphalt-resurfacing.png',
     isPublished: row.publication_status === 'published',
     createdAt: row.created_at,
     updatedAt: row.updated_at,

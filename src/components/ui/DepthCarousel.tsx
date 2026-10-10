@@ -160,22 +160,22 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
             </button>
           </div>
 
-          {/* Stepper Chevron Buttons */}
+          {/* Stepper Chevron Buttons with Hover Effects */}
           {viewMode === 'depth' && (
-            <div className="flex items-center gap-1.5 ml-2">
+            <div className="flex items-center gap-2 ml-2">
               <button
                 onClick={() => stepSlide(-1)}
                 aria-label="Previous Project"
-                className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#021217] hover:bg-[#FAF7F0] hover:border-[#11e852] flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
+                className="w-8 h-8 rounded-full bg-white border border-[#e2c09c] text-[#021217] hover:border-[#11e852] hover:bg-[#faf7f0] hover:scale-110 hover:shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4 text-[#021217]" />
               </button>
               <button
                 onClick={() => stepSlide(1)}
                 aria-label="Next Project"
-                className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#021217] hover:bg-[#FAF7F0] hover:border-[#11e852] flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
+                className="w-8 h-8 rounded-full bg-white border border-[#e2c09c] text-[#021217] hover:border-[#11e852] hover:bg-[#faf7f0] hover:scale-110 hover:shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 text-[#021217]" />
               </button>
             </div>
           )}
