@@ -14,6 +14,7 @@ import { projectUpdates, milestones } from '../data/updates';
 import { reports, coordinationAlerts } from '../data/reports';
 import { isSupabaseConfigured } from './supabaseClient';
 import { SupabaseDataRepository } from './supabaseRepository';
+import { detectClashes } from './clashEngine';
 import {
   validateProjectCreation,
   validateDeadlineRevision,
@@ -122,6 +123,37 @@ const reportStore: Report[] = loadStore('civiclens_reports', reports);
 const alertStore: CoordinationAlert[] = loadStore('civiclens_alerts', coordinationAlerts);
 const updateStore: ProjectUpdate[] = loadStore('civiclens_updates', projectUpdates);
 const milestoneStore: Milestone[] = loadStore('civiclens_milestones', milestones);
+
+function syncDetectedClashes(): void {
+  const detected = detectClashes(projectStore);
+  const currentIds = new Set(detected.map(alert => alert.id));
+  const pairKey = (alert: CoordinationAlert) => [alert.projectAId, alert.projectBId].sort().join('|');
+  let changed = false;
+  for (let i = alertStore.length - 1; i >= 0; i--) {
+    if (alertStore[i].id.startsWith('clash-auto-') &&
+        alertStore[i].status === 'pending_review' && !currentIds.has(alertStore[i].id)) {
+      alertStore.splice(i, 1);
+      changed = true;
+    }
+  }
+  const existingPairs = new Map(alertStore.map(alert => [pairKey(alert), alert]));
+  for (const alert of detected) {
+    const existing = existingPairs.get(pairKey(alert));
+    if (!existing) {
+      alertStore.unshift(alert);
+      existingPairs.set(pairKey(alert), alert);
+      changed = true;
+    } else if (existing.id.startsWith('clash-auto-') &&
+      (existing.score !== alert.score || JSON.stringify(existing.reasons) !== JSON.stringify(alert.reasons))) {
+      existing.score = alert.score;
+      existing.severity = alert.severity;
+      existing.reasons = alert.reasons;
+      existing.updatedAt = new Date().toISOString();
+      changed = true;
+    }
+  }
+  if (changed) saveStore('civiclens_alerts', alertStore);
+}
 
 export class SeedDataRepository implements DataRepository {
   getDataSourceMode() {
@@ -237,14 +269,17 @@ export class SeedDataRepository implements DataRepository {
 
   // -- Alerts --
   async getAlerts(): Promise<CoordinationAlert[]> {
+    syncDetectedClashes();
     return [...alertStore].sort((a, b) => b.score - a.score);
   }
 
   async getAlert(id: string): Promise<CoordinationAlert | undefined> {
+    syncDetectedClashes();
     return alertStore.find(a => a.id === id);
   }
 
   async getAlertsByProject(projectId: string): Promise<CoordinationAlert[]> {
+    syncDetectedClashes();
     return alertStore.filter(
       a => a.projectAId === projectId || a.projectBId === projectId
     );
@@ -252,6 +287,7 @@ export class SeedDataRepository implements DataRepository {
 
   // -- Stats --
   async getSummaryStats(): Promise<SummaryStats> {
+    syncDetectedClashes();
     const published = projectStore.filter(p => p.isPublished);
     return {
       totalProjects: published.length,
@@ -297,33 +333,7 @@ export class SeedDataRepository implements DataRepository {
     projectStore.unshift(newProject);
     saveStore('civiclens_projects', projectStore);
 
-    // Cross-agency corridor clash check:
-    const conflicting = projectStore.filter(p =>
-      p.id !== newProject.id &&
-      (p.road.toLowerCase().trim().includes(newProject.road.toLowerCase().trim()) ||
-       newProject.road.toLowerCase().trim().includes(p.road.toLowerCase().trim())) &&
-      p.departmentId !== newProject.departmentId
-    );
-
-    if (conflicting.length > 0) {
-      const other = conflicting[0];
-      const newAlert: CoordinationAlert = {
-        id: `clash-${Date.now().toString().slice(-4)}`,
-        projectAId: other.id,
-        projectBId: newProject.id,
-        severity: 'high',
-        status: 'pending_review',
-        score: 88,
-        reasons: [
-          { type: 'same_road', description: `Simultaneous excavation work order scheduled on ${newProject.road}`, score: 55 },
-          { type: 'interfering_categories', description: 'Cross-agency digging permit scheduled without joint alignment', score: 33 }
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      alertStore.unshift(newAlert);
-      saveStore('civiclens_alerts', alertStore);
-    }
+    syncDetectedClashes();
 
     return newProject;
   }
@@ -368,6 +378,7 @@ export class SeedDataRepository implements DataRepository {
     };
     projectStore[idx] = updatedProject;
     saveStore('civiclens_projects', projectStore);
+    syncDetectedClashes();
 
     // Automatically record deadline revision audit history
     if (hasDeadlineChange) {

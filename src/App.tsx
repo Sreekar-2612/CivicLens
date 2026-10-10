@@ -1,26 +1,28 @@
 import { Routes, Route } from 'react-router-dom'
-import { PublicLayout } from './components/layout/PublicLayout'
-import { OfficerLayout } from './components/layout/OfficerLayout'
-import { HomePage } from './pages/HomePage'
-import { ProjectExplorer } from './pages/ProjectExplorer'
-import { ProjectDetail } from './pages/ProjectDetail'
-import { ScorecardPage } from './pages/ScorecardPage'
-import { ReportPage } from './pages/ReportPage'
-import { ReportTrackPage } from './pages/ReportTrackPage'
-import { RoadViewPage } from './pages/RoadViewPage'
-import { OfficerDashboard } from './pages/officer/OfficerDashboard'
-import { OfficerProjectNew } from './pages/officer/OfficerProjectNew'
-import { OfficerProjectEdit } from './pages/officer/OfficerProjectEdit'
-import { OfficerCoordination } from './pages/officer/OfficerCoordination'
-import { OfficerReports } from './pages/officer/OfficerReports'
-import { AdminPage } from './pages/AdminPage'
-import { AssistantPage } from './pages/AssistantPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-
-import { FreshCivicMockPage } from './pages/FreshCivicMockPage'
+import { lazy, Suspense } from 'react'
+const PublicLayout = lazy(() => import('./components/layout/PublicLayout').then(module => ({ default: module.PublicLayout })))
+const OfficerLayout = lazy(() => import('./components/layout/OfficerLayout').then(module => ({ default: module.OfficerLayout })))
+const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })))
+const ProjectExplorer = lazy(() => import('./pages/ProjectExplorer').then(module => ({ default: module.ProjectExplorer })))
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail').then(module => ({ default: module.ProjectDetail })))
+const ScorecardPage = lazy(() => import('./pages/ScorecardPage').then(module => ({ default: module.ScorecardPage })))
+const ReportPage = lazy(() => import('./pages/ReportPage').then(module => ({ default: module.ReportPage })))
+const ReportTrackPage = lazy(() => import('./pages/ReportTrackPage').then(module => ({ default: module.ReportTrackPage })))
+const RoadViewPage = lazy(() => import('./pages/RoadViewPage').then(module => ({ default: module.RoadViewPage })))
+const OfficerDashboard = lazy(() => import('./pages/officer/OfficerDashboard').then(module => ({ default: module.OfficerDashboard })))
+const OfficerProjectNew = lazy(() => import('./pages/officer/OfficerProjectNew').then(module => ({ default: module.OfficerProjectNew })))
+const OfficerProjectEdit = lazy(() => import('./pages/officer/OfficerProjectEdit').then(module => ({ default: module.OfficerProjectEdit })))
+const OfficerCoordination = lazy(() => import('./pages/officer/OfficerCoordination').then(module => ({ default: module.OfficerCoordination })))
+const OfficerReports = lazy(() => import('./pages/officer/OfficerReports').then(module => ({ default: module.OfficerReports })))
+const OfficerNotifications = lazy(() => import('./pages/officer/OfficerNotifications').then(module => ({ default: module.OfficerNotifications })))
+const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })))
+const AssistantPage = lazy(() => import('./pages/AssistantPage').then(module => ({ default: module.AssistantPage })))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then(module => ({ default: module.NotFoundPage })))
+const FreshCivicMockPage = lazy(() => import('./pages/FreshCivicMockPage').then(module => ({ default: module.FreshCivicMockPage })))
 
 export default function App() {
   return (
+    <Suspense fallback={<div role="status" className="p-6 text-sm text-slate-600">Loading page...</div>}>
     <Routes>
       {/* Fresh Civic Design System Prototype Mock */}
       <Route path="/mock-preview" element={<FreshCivicMockPage />} />
@@ -45,6 +47,7 @@ export default function App() {
         <Route path="/officer/projects/:id/edit" element={<OfficerProjectEdit />} />
         <Route path="/officer/coordination" element={<OfficerCoordination />} />
         <Route path="/officer/reports" element={<OfficerReports />} />
+        <Route path="/officer/notifications" element={<OfficerNotifications />} />
       </Route>
 
       {/* Admin */}
@@ -55,5 +58,6 @@ export default function App() {
       {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </Suspense>
   )
 }

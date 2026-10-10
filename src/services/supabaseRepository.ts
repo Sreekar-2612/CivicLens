@@ -108,11 +108,11 @@ export function mapDbClashToDomain(row: any): CoordinationAlert {
     id: row.id,
     projectAId: row.project_a_id,
     projectBId: row.project_b_id,
-    score: row.severity === 'critical' ? 95 : row.severity === 'high' ? 80 : row.severity === 'medium' ? 60 : 30,
+    score: row.score ?? (row.severity === 'critical' ? 95 : row.severity === 'high' ? 80 : row.severity === 'medium' ? 60 : 30),
     severity: row.severity as any,
-    reasons: [
+    reasons: Array.isArray(row.reasons) ? row.reasons : [
       {
-        type: (row.conflict_type as any) || 'same_road',
+        type: row.conflict_type === 'overlapping_dates' ? 'overlapping_dates' : 'same_road',
         description: row.title || 'Inter-departmental scheduling conflict detected',
         score: 80
       }
@@ -120,7 +120,7 @@ export function mapDbClashToDomain(row: any): CoordinationAlert {
     status: row.status as any,
     decisionNotes: row.decision_notes || undefined,
     createdAt: row.created_at,
-    updatedAt: row.created_at,
+    updatedAt: row.updated_at || row.created_at,
   }
 }
 
@@ -315,7 +315,7 @@ export class SupabaseDataRepository {
     if (!data?.success || !Array.isArray(data.clashes)) {
       throw new Error(`get-clashes: ${data?.error || 'Invalid response'}`)
     }
-    return data.clashes.map(mapDbClashToDomain)
+    return data.clashes.map(mapDbClashToDomain).sort((a: CoordinationAlert, b: CoordinationAlert) => b.score - a.score)
   }
 
   async getAlert(id: string): Promise<CoordinationAlert | undefined> {

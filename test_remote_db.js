@@ -1,32 +1,22 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://xrpqgszwigdrcwbkpdtt.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhycHFnc3p3aWdkcmN3YmtwZHR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1NzAxOTIsImV4cCI6MjEwNzE0NjE5Mn0.ahFaf2jxd1j3FfXT-EaFM-ausFHJVaETtHW3NN39Aa8'
+const url = process.env.VITE_SUPABASE_URL
+const key = process.env.VITE_SUPABASE_ANON_KEY
+if (!url || !key) throw new Error('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY for an isolated test project.')
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const client = createClient(url, key, { auth: { persistSession: false } })
+const publicTables = ['departments', 'projects', 'clashes', 'public_grievances']
+const privateTables = ['grievances', 'audit_logs', 'notifications']
+let failures = 0
 
-async function testAllTables() {
-  const tables = [
-    'departments',
-    'projects',
-    'project_updates',
-    'profiles',
-    'contractors',
-    'clashes',
-    'grievances',
-    'contractor_evaluations',
-    'audit_logs'
-  ]
-
-  console.log('--- Testing REST API for all 9 tables ---')
-  for (const t of tables) {
-    const { data, error } = await supabase.from(t).select('*').limit(5)
-    if (error) {
-      console.log(`❌ ${t}: ${error.message}`)
-    } else {
-      console.log(`✅ ${t}: ${data.length} records retrieved.`)
-    }
-  }
+for (const table of publicTables) {
+  const { error } = await client.from(table).select('*').limit(1)
+  if (error) { console.error(`FAIL public read ${table}: ${error.message}`); failures++ }
+  else console.log(`PASS public read ${table}`)
 }
-
-testAllTables()
+for (const table of privateTables) {
+  const { error } = await client.from(table).select('*').limit(1)
+  if (!error) { console.error(`FAIL anonymous access to ${table} was allowed`); failures++ }
+  else console.log(`PASS anonymous access denied to ${table}`)
+}
+if (failures) process.exitCode = 1

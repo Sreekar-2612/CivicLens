@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, FolderPlus, Layers, MessageSquare,
-  Shield, Menu, X, ChevronRight, ArrowLeft, Building2
+  Shield, Menu, X, ChevronRight, ArrowLeft, Building2, Bell
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { dataRepository } from '../../services/dataRepository'
@@ -12,6 +12,7 @@ const officerNavItems = [
   { to: '/officer/projects/new', label: 'New Work Order', icon: FolderPlus },
   { to: '/officer/coordination', label: 'Clash Coordination', icon: Layers },
   { to: '/officer/reports', label: 'Grievance Inbox', icon: MessageSquare },
+  { to: '/officer/notifications', label: 'Notifications', icon: Bell },
 ]
 
 export function OfficerLayout() {
@@ -97,7 +98,7 @@ export function OfficerLayout() {
               </div>
               <p className="text-xs text-[#1E293B] font-semibold truncate">{user?.displayName}</p>
               
-              <div className="pt-2 border-t border-[#E3EAF2]">
+              {!dataRepository.getDataSourceMode().isSupabase && <div className="pt-2 border-t border-[#E3EAF2]">
                 <label className="block text-[10px] uppercase font-bold text-[#64748B] mb-1">
                   Testing Role Switcher
                 </label>
@@ -115,7 +116,7 @@ export function OfficerLayout() {
                   <option value="resident">Resident (Citizen - Read Only)</option>
                   <option value="admin">Administrator (Cross-Dept)</option>
                 </select>
-              </div>
+              </div>}
 
               <div className="pt-1 text-[10px] text-[#64748B] flex items-center justify-between">
                 <span>Database:</span>

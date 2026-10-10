@@ -1,102 +1,78 @@
-import type { CoordinationAlert, Department } from '../types'
+import { dataRepository } from './dataRepository'
+import { supabase } from './supabaseClient'
+import type { AuthUser } from '../context/AuthContext'
 
-export interface NotificationPayload {
-  recipientEmail: string
-  recipientPhone?: string
-  subject: string
+export interface AppNotification {
+  id: string
+  kind: 'clash' | 'grievance'
+  entityId: string
+  title: string
   body: string
-  alertId: string
-  severity: string
-  sentAt: string
+  createdAt: string
+  readAt?: string
+}
+
+const DEMO_READ_KEY = 'civiclens_read_notifications'
+
+function demoReadTimes(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(DEMO_READ_KEY) || '{}') }
+  catch { return {} }
 }
 
 export class NotificationService {
-  private static alertLog: NotificationPayload[] = []
-
-  public static async sendCriticalClashAlert(
-    alert: CoordinationAlert,
-    deptA?: Department,
-    deptB?: Department
-  ): Promise<NotificationPayload> {
-    const recipientEmail = deptA?.contactEmail || deptB?.contactEmail || 'commissioner@pmc.gov.in'
-    const recipientPhone = deptA?.contactPhone || '+91-020-2501-0000'
-
-    const subject = `⚠️ CRITICAL CLASH ALERT [Score ${alert.score}]: ${alert.reasons[0]?.description || 'Road Overlap'}`
-    const body = `
-    ATTENTION: High-risk inter-departmental clash detected on shared corridor.
-    - Conflict Score: ${alert.score} / 100 (${alert.severity.toUpperCase()})
-    - Department A: ${deptA?.name || 'Primary Agency'} (Project: ${alert.projectAId})
-    - Department B: ${deptB?.name || 'Secondary Agency'} (Project: ${alert.projectBId})
-    - Reasons: ${alert.reasons.map(r => r.description).join('; ')}
-    
-    ACTION REQUIRED: Please log into the SpadeWork Officer Portal to coordinate joint trenching dates.
-    `
-
-    const payload: NotificationPayload = {
-      recipientEmail,
-      recipientPhone,
-      subject,
-      body,
-      alertId: alert.id,
-      severity: alert.severity,
-      sentAt: new Date().toISOString(),
+  static async getInbox(user: AuthUser | null): Promise<AppNotification[]> {
+    if (!user || !['officer', 'admin'].includes(user.role)) return []
+    if (supabase) {
+      if (user.isDemoUser) throw new Error('Sign in with an authorized officer account to view live notifications.')
+      const { data, error } = await supabase.from('notifications')
+        .select('id, kind, entity_id, title, body, created_at, read_at')
+        .order('created_at', { ascending: false }).limit(100)
+      if (error) throw new Error(`Could not load notifications: ${error.message}`)
+      return (data || []).map(row => ({
+        id: row.id, kind: row.kind, entityId: row.entity_id,
+        title: row.title, body: row.body, createdAt: row.created_at,
+        readAt: row.read_at || undefined,
+      }))
     }
 
-    console.log('📱 Sending Automated Clash Notification Alert:', payload)
-    this.alertLog.push(payload)
-    return payload
+    const [alerts, reports, projects] = await Promise.all([
+      dataRepository.getAlerts(), dataRepository.getReports(), dataRepository.getProjects(),
+    ])
+    const projectDepartments = new Map(projects.map(project => [project.id, project.departmentId]))
+    const canSeeProject = (id?: string) => user.role === 'admin' ||
+      Boolean(id && projectDepartments.get(id) === user.departmentId)
+    const readTimes = demoReadTimes()
+    const clashNotifications: AppNotification[] = alerts
+      .filter(alert => alert.status === 'pending_review' && ['high', 'critical'].includes(alert.severity) &&
+        (canSeeProject(alert.projectAId) || canSeeProject(alert.projectBId)))
+      .map(alert => ({
+        id: `demo-clash-${alert.id}`, kind: 'clash', entityId: alert.id,
+        title: `Coordination alert (${alert.severity})`,
+        body: alert.reasons[0]?.description || 'Two work orders need schedule review.',
+        createdAt: alert.createdAt, readAt: readTimes[`demo-clash-${alert.id}`],
+      }))
+    const grievanceNotifications: AppNotification[] = reports
+      .filter(report => ['submitted', 'acknowledged', 'in_review', 'escalated'].includes(report.status) &&
+        (report.projectId ? canSeeProject(report.projectId) : user.role === 'admin'))
+      .map(report => ({
+        id: `demo-grievance-${report.id}`, kind: 'grievance', entityId: report.id,
+        title: `New grievance ${report.referenceId}`,
+        body: 'A resident report needs review.',
+        createdAt: report.createdAt, readAt: readTimes[`demo-grievance-${report.id}`],
+      }))
+    return [...clashNotifications, ...grievanceNotifications]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   }
 
-  public static async sendGrievanceReportAlert(
-    report: { referenceId: string; title: string; category: string; locationDescription: string; reporterName?: string },
-    contractorName?: string
-  ): Promise<{ contractorPayload: NotificationPayload; auditorPayload: NotificationPayload }> {
-    const sentAt = new Date().toISOString()
-
-    const contractorPayload: NotificationPayload = {
-      recipientEmail: `contractor.${(contractorName || 'general').toLowerCase().replace(/\s+/g, '')}@spadework.gov.in`,
-      recipientPhone: '+91-98000-11223',
-      subject: `🚨 ISSUE REPORTED [Ref: ${report.referenceId}]: ${report.title}`,
-      body: `
-      NEW CITIZEN GRIEVANCE LOGGED
-      - Reference ID: ${report.referenceId}
-      - Category: ${report.category}
-      - Location: ${report.locationDescription}
-      - Reported By: ${report.reporterName || 'Authenticated Resident'}
-      
-      ACTION REQUIRED BY CONTRACTOR (${contractorName || 'Assigned Vendor'}):
-      Inspect the site, resolve the reported hazard/delay, and upload completion proof for Auditor verification.
-      `,
-      alertId: report.referenceId,
-      severity: 'high',
-      sentAt,
+  static async markRead(id: string): Promise<void> {
+    const readAt = new Date().toISOString()
+    if (supabase) {
+      const { data, error } = await supabase.from('notifications')
+        .update({ read_at: readAt }).eq('id', id).select('id').single()
+      if (error) throw new Error(`Could not mark notification read: ${error.message}`)
+      if (!data) throw new Error('Notification was not found or is not assigned to this account.')
+      return
     }
-
-    const auditorPayload: NotificationPayload = {
-      recipientEmail: 'auditor.quality@spadework.gov.in',
-      recipientPhone: '+91-98000-44556',
-      subject: `📋 AUDIT TRACKING LOGGED [Ref: ${report.referenceId}]: ${report.title}`,
-      body: `
-      NEW ISSUE LOGGED FOR AUDIT TRACKING
-      - Reference ID: ${report.referenceId}
-      - Category: ${report.category}
-      - Contractor: ${contractorName || 'Assigned Vendor'}
-      
-      AUDITOR ROLE: Track contractor progress and verify completion before granting final municipal approval.
-      `,
-      alertId: report.referenceId,
-      severity: 'medium',
-      sentAt,
-    }
-
-    console.log('📱 [CONTRACTOR DISPATCH]:', contractorPayload)
-    console.log('📱 [AUDITOR DISPATCH]:', auditorPayload)
-
-    this.alertLog.push(contractorPayload, auditorPayload)
-    return { contractorPayload, auditorPayload }
-  }
-
-  public static getSentNotifications(): NotificationPayload[] {
-    return this.alertLog
+    localStorage.setItem(DEMO_READ_KEY, JSON.stringify({ ...demoReadTimes(), [id]: readAt }))
   }
 }

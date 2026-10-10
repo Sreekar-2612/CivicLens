@@ -6,7 +6,6 @@ import {
   Clock, Sparkles, AlertCircle
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
-import { NotificationService } from '../services/notificationService'
 import { uploadEvidenceFile } from '../services/storageService'
 import { useAuth } from '../context/AuthContext'
 import type { Project, ReportCategory } from '../types'
@@ -119,7 +118,6 @@ export function ReportPage() {
     setSubmitting(true)
     setSubmitError('')
     try {
-      const selectedProj = projects.find(p => p.id === selectedProjectId)
       const evidencePath = photoFile ? await uploadEvidenceFile(photoFile) : (photoPreview?.startsWith('https://') ? photoPreview : undefined)
       const newReport = await dataRepository.addReport({
         projectId: selectedProjectId || undefined,
@@ -139,11 +137,6 @@ export function ReportPage() {
       })
       setSubmittedReport({ id: newReport.id, referenceId: newReport.referenceId })
 
-      // Dispatch automated instant alerts to Contractor & Auditor
-      void NotificationService.sendGrievanceReportAlert(
-        newReport,
-        selectedProj?.contractor
-      ).catch(error => console.warn('Demo notification failed:', error))
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'Could not submit report. Please try again.')
     } finally {
