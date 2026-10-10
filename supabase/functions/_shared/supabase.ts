@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { isUserAccessToken } from './requestToken.ts'
 
 const url = () => Deno.env.get('SUPABASE_URL') || ''
 const anonKey = () => Deno.env.get('SUPABASE_ANON_KEY') || ''
@@ -22,7 +23,7 @@ export function hasUserToken(req: Request) {
   const authorization = req.headers.get('Authorization')
   if (!authorization) return false
   const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1]
-  return token !== anonKey()
+  return isUserAccessToken(token, anonKey())
 }
 
 export function validEvidencePath(path: string, userId: string, folders: string[]) {

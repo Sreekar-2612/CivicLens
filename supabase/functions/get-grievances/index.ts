@@ -7,9 +7,7 @@ Deno.serve(async (req) => {
 
   try {
     let actor: Awaited<ReturnType<typeof requireActor>> | null = null
-    try { actor = await requireActor(req) } catch (error) {
-      if (hasUserToken(req)) throw error
-    }
+    if (hasUserToken(req)) actor = await requireActor(req)
     const supabase = actor?.db || getAnonymousClient()
     const staffFields = 'id,reference_id,project_id,category,title,description,road_name,locality,ward,latitude,longitude,evidence_url,status,officer_response,created_at,updated_at'
     let query = actor
