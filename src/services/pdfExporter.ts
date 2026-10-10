@@ -7,16 +7,16 @@ export function generateProjectDossierHTML(project: Project, department?: Depart
       <head>
         <title>Project Dossier - ${project.title}</title>
         <style>
-          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #1e293b; }
-          .header { border-bottom: 3px solid #2f6bff; padding-bottom: 20px; margin-bottom: 30px; }
-          .title { font-size: 24px; font-weight: bold; color: #0f172a; margin: 0 0 8px 0; }
-          .dept { font-size: 14px; color: #2f6bff; font-weight: bold; }
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #021217; }
+          .header { border-bottom: 3px solid #e2c09c; padding-bottom: 20px; margin-bottom: 30px; }
+          .title { font-size: 24px; font-weight: bold; color: #021217; margin: 0 0 8px 0; }
+          .dept { font-size: 14px; color: #088c2e; font-weight: bold; }
           .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-          .card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; }
+          .card { background: #f8fafc; border: 1px solid #e2c09c; padding: 16px; border-radius: 8px; }
           .label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: bold; margin-bottom: 4px; }
-          .val { font-size: 15px; font-weight: 600; color: #0f172a; }
-          .status { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: bold; background: #e0f2fe; color: #0369a1; }
-          .footer { font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; }
+          .val { font-size: 15px; font-weight: 600; color: #021217; }
+          .status { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: bold; background: #f1f3d8; color: #021217; border: 1px solid #e2c09c; }
+          .footer { font-size: 11px; color: #94a3b8; border-top: 1px solid #e2c09c; padding-top: 20px; text-align: center; }
         </style>
       </head>
       <body>

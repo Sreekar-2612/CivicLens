@@ -70,7 +70,7 @@ export function OfficerNotifications() {
         <p className="rounded-xl border bg-white p-6 text-sm text-slate-600">No notifications yet.</p>
       ) : <ul className="space-y-3">
         {notifications.map(notification => (
-          <li key={notification.id} className={`rounded-xl border p-4 ${notification.readAt ? 'bg-white' : 'border-blue-300 bg-blue-50'}`}>
+          <li key={notification.id} className={`rounded-xl border p-4 ${notification.readAt ? 'bg-white' : 'border-[#e2c09c] bg-[#e2c09c]/15'}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-slate-900">{notification.title}</p>
@@ -81,7 +81,7 @@ export function OfficerNotifications() {
                 <Check className="h-3 w-3" /> Mark read
               </button>}
             </div>
-            <Link to={notification.kind === 'clash' ? '/officer/coordination' : '/officer/reports'} className="mt-3 inline-block text-sm font-semibold text-blue-700">
+            <Link to={notification.kind === 'clash' ? '/officer/coordination' : '/officer/reports'} className="mt-3 inline-block text-sm font-semibold text-[#021217] hover:text-[#088c2e]">
               Open {notification.kind === 'clash' ? 'coordination' : 'grievance inbox'}
             </Link>
           </li>

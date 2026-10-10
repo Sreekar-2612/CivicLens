@@ -35,7 +35,7 @@ export function AuditorDashboard() {
     {pending.map(item => {
       const project = data.projects.find(value => value.id === item.projectId)
       return <article key={item.id} className="bg-white border rounded-xl p-5 space-y-4">
-        <div><h3 className="text-lg font-semibold">{item.title}</h3><Link to={`/projects/${item.projectId}`} className="text-blue-700 text-sm">{project?.title || item.projectId}</Link><p className="text-sm text-slate-600 mt-1">{item.submissionType} · Submitted {new Date(item.createdAt).toLocaleString()}</p></div>
+        <div><h3 className="text-lg font-semibold text-[#021217]">{item.title}</h3><Link to={`/projects/${item.projectId}`} className="text-[#021217] hover:text-[#11e852] font-semibold text-sm">{project?.title || item.projectId}</Link><p className="text-sm text-[#536267] mt-1">{item.submissionType} · Submitted {new Date(item.createdAt).toLocaleString()}</p></div>
         <p className="text-sm">Recorded project progress: {project?.progressPercent ?? 'Unknown'}% · Contractor reported: {item.progressPercent}%</p>
         <p className="whitespace-pre-wrap text-sm">{item.description}</p>
         {item.evidencePath ? <EvidencePhoto path={item.evidencePath} alt={`Evidence for ${item.title}`} className="max-h-80 rounded-lg object-contain" /> : <p className="text-sm text-slate-600">No evidence photo attached.</p>}

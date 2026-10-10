@@ -154,12 +154,12 @@ export function ProjectDetail() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-[#64748B]">
-        <Link to="/projects" className="hover:text-[#2F6BFF] no-underline text-[#64748B] flex items-center gap-1 font-semibold">
-          <ArrowLeft className="w-3.5 h-3.5" /> Permits Explorer
+      <nav className="flex items-center gap-2 text-xs text-[#536267]">
+        <Link to="/projects" className="hover:text-[#11e852] no-underline text-[#536267] flex items-center gap-1 font-semibold">
+          <ArrowLeft className="w-3.5 h-3.5 text-[#088c2e]" /> Permits Explorer
         </Link>
         <ChevronRight className="w-3 h-3 text-[#94A3B8]" />
-        <span className="font-semibold text-[#1E293B] truncate">{project.title}</span>
+        <span className="font-semibold text-[#021217] truncate">{project.title}</span>
       </nav>
 
       {/* Hero Header Card */}
@@ -167,14 +167,14 @@ export function ProjectDetail() {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-mono font-bold text-[#64748B] bg-[#F6F9FC] border border-[#E3EAF2] px-2 py-0.5 rounded">
+              <span className="text-[10px] font-mono font-bold text-[#536267] bg-[#F6F9FC] border border-[#E3EAF2] px-2 py-0.5 rounded">
                 {project.id.toUpperCase()}
               </span>
-              <span className="text-[10px] font-bold text-[#2F6BFF] bg-[#EAF1FF] px-2 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-[#021217] bg-[#e2c09c]/30 border border-[#e2c09c]/50 px-2 py-0.5 rounded">
                 Ward: {project.ward}
               </span>
             </div>
-            <h1 className="font-['Plus_Jakarta_Sans'] text-xl sm:text-2xl font-extrabold text-[#1E293B] leading-tight mb-1.5">
+            <h1 className="font-['Plus_Jakarta_Sans'] text-xl sm:text-2xl font-extrabold text-[#021217] leading-tight mb-1.5">
               {project.title}
             </h1>
             <p className="text-xs text-[#64748B] leading-relaxed">
@@ -254,13 +254,13 @@ export function ProjectDetail() {
           )}
 
           {/* 3-Tier Auditor Verification Workflow Card */}
-          <div className="bg-white border-2 border-[#2F6BFF]/20 rounded-xl p-4 shadow-sm space-y-3">
+          <div className="bg-white border-2 border-[#e2c09c] rounded-xl p-4 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#2F6BFF]" />
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#021217] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#088c2e]" />
                 <span>Auditor &amp; Contractor Lifecycle Action</span>
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EAF1FF] text-[#2F6BFF]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c]/50">
                 3-Tier Verification
               </span>
             </div>
@@ -306,9 +306,9 @@ export function ProjectDetail() {
                     }, 'Contractor submitted work for Auditor Verification')
                     window.location.reload()
                   }}
-                  className="w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors border-none cursor-pointer shadow-xs"
+                  className="w-full py-2 px-3 rounded-lg bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                 >
-                  <Upload className="w-4 h-4" />
+                  <Upload className="w-4 h-4 text-[#11e852]" />
                   <span>Contractor: Submit Work for Auditor Verification</span>
                 </button>
               </div>
@@ -318,11 +318,11 @@ export function ProjectDetail() {
           {/* Dates and Deadlines (Immutable Baseline Locked) */}
           <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#2F6BFF]" />
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#021217] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#088c2e]" />
                 <span>Contractual Timeline &amp; Deadlines</span>
               </h2>
-              <span className="badge bg-[#EAF1FF] text-[#2F6BFF] text-[10px] py-0 px-2 font-bold">
+              <span className="badge bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c]/50 text-[10px] py-0 px-2 font-bold">
                 Baseline Locked
               </span>
             </div>
@@ -434,8 +434,8 @@ export function ProjectDetail() {
           {/* Update History Card */}
           <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-[#2F6BFF]" />
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#021217] flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-[#088c2e]" />
                 <span>Field Progress Audit Trail ({updates.length})</span>
               </h2>
               <button
@@ -447,22 +447,22 @@ export function ProjectDetail() {
                 }}
                 className="btn-primary text-xs py-1.5 px-3"
               >
-                <PlusCircle className="w-3.5 h-3.5" />
+                <PlusCircle className="w-3.5 h-3.5 text-[#11e852]" />
                 <span>Post Progress Update</span>
               </button>
             </div>
 
             {/* Modal: Post Progress Update */}
             {showUpdateModal && (
-              <div className="mb-4 p-3.5 rounded-xl bg-[#EAF1FF] border border-[#2F6BFF]/30 text-xs space-y-3">
-                <div className="flex items-center justify-between border-b border-[#2F6BFF]/20 pb-1.5">
-                  <span className="font-bold uppercase tracking-wider text-[#2F6BFF] text-[11px]">
+              <div className="mb-4 p-3.5 rounded-xl bg-[#FAF7F0] border-2 border-[#e2c09c] text-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-[#e2c09c]/40 pb-1.5">
+                  <span className="font-bold uppercase tracking-wider text-[#088c2e] text-[11px]">
                     Submit Official Progress Record
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowUpdateModal(false)}
-                    className="p-1 text-[#64748B] hover:text-[#1E293B]"
+                    className="p-1 text-[#536267] hover:text-[#021217]"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -477,9 +477,9 @@ export function ProjectDetail() {
                 <form onSubmit={handlePostUpdate} className="space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <div className="flex justify-between font-semibold text-[#1E293B] mb-1 text-[11px]">
+                      <div className="flex justify-between font-semibold text-[#021217] mb-1 text-[11px]">
                         <span>Progress Percentage</span>
-                        <span className="text-[#2F6BFF] font-bold">{newProgress}%</span>
+                        <span className="text-[#088c2e] font-bold">{newProgress}%</span>
                       </div>
                       <input
                         type="range"
@@ -487,7 +487,7 @@ export function ProjectDetail() {
                         max="100"
                         value={newProgress}
                         onChange={(e) => setNewProgress(parseInt(e.target.value))}
-                        className="w-full accent-[#2F6BFF]"
+                        className="w-full accent-[#11e852]"
                       />
                     </div>
 
@@ -663,8 +663,8 @@ export function ProjectDetail() {
           {/* Related Projects */}
           {relatedProjects.length > 0 && (
             <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
-              <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#2F6BFF]" />
+              <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#021217] mb-2 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#088c2e]" />
                 <span>Other Works on {project.road}</span>
               </h3>
               <div className="space-y-1.5">
@@ -672,11 +672,11 @@ export function ProjectDetail() {
                   <Link
                     key={rp.id}
                     to={`/projects/${rp.id}`}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-[#F6F9FC] border border-transparent hover:border-[#E3EAF2] transition-colors no-underline"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-[#FAF7F0] border border-transparent hover:border-[#e2c09c] transition-colors no-underline"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-[#1E293B] truncate">{rp.title}</p>
-                      <p className="text-[10px] text-[#64748B]">{rp.contractor}</p>
+                      <p className="text-xs font-bold text-[#021217] truncate">{rp.title}</p>
+                      <p className="text-[10px] text-[#536267]">{rp.contractor}</p>
                     </div>
                     <StatusBadge status={rp.status} />
                   </Link>
@@ -688,29 +688,29 @@ export function ProjectDetail() {
           {/* Citizen Reports */}
           {reports.length > 0 && (
             <div className="bg-white border border-[#E3EAF2] rounded-xl p-4 shadow-2xs">
-              <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-1.5">
-                <Camera className="w-3.5 h-3.5 text-[#12B5A6]" />
+              <h3 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#021217] mb-2 flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-[#088c2e]" />
                 <span>Citizen Reports ({reports.length})</span>
               </h3>
               <div className="space-y-1.5">
                 {reports.map(rpt => (
-                  <div key={rpt.id} className="p-2 rounded-lg bg-[#F6F9FC] border border-[#E3EAF2]">
+                  <div key={rpt.id} className="p-2 rounded-lg bg-[#FAF7F0] border border-[#e2c09c]/40">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <span className="text-[10px] font-mono text-[#64748B] font-bold">{rpt.referenceId}</span>
+                      <span className="text-[10px] font-mono text-[#536267] font-bold">{rpt.referenceId}</span>
                       <ReportStatusBadge status={rpt.status} />
                     </div>
-                    <p className="text-xs font-medium text-[#1E293B] line-clamp-1">{rpt.title}</p>
-                    <p className="text-[10px] text-[#64748B]">
+                    <p className="text-xs font-medium text-[#021217] line-clamp-1">{rpt.title}</p>
+                    <p className="text-[10px] text-[#536267]">
                       {formatDistanceToNow(new Date(rpt.createdAt), { addSuffix: true })}
                     </p>
                   </div>
                 ))}
                 <a
                   href="#citizen-fieldwork"
-                  className="mt-2 pt-2 border-t border-[#F1F5F9] text-[11px] font-bold text-[#2F6BFF] hover:underline flex items-center justify-between no-underline"
+                  className="mt-2 pt-2 border-t border-[#F1F5F9] text-[11px] font-bold text-[#021217] hover:text-[#11e852] hover:underline flex items-center justify-between no-underline"
                 >
                   <span>Inspect Photos in Step Accordion</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#11e852]" />
                 </a>
               </div>
             </div>
@@ -720,8 +720,8 @@ export function ProjectDetail() {
 
       {/* Floating Toast */}
       {toastMsg && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#1E293B] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-[#334155] animate-in slide-in-from-bottom duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#12B5A6]" />
+        <div className="fixed bottom-6 right-6 z-50 bg-[#021217] text-[#f1f3d8] px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs border border-[#e2c09c] animate-in slide-in-from-bottom duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#11e852]" />
           <span>{toastMsg}</span>
         </div>
       )}
@@ -736,8 +736,8 @@ function DetailItem({ icon: Icon, label, value }: {
 }) {
   return (
     <div className="flex items-start gap-2">
-      <div className="w-7 h-7 rounded-lg bg-[#F6F9FC] border border-[#E3EAF2] flex items-center justify-center shrink-0 mt-0.5 text-[#2F6BFF]">
-        <Icon className="w-3.5 h-3.5" />
+      <div className="w-7 h-7 rounded-lg bg-[#FAF7F0] border border-[#e2c09c]/60 flex items-center justify-center shrink-0 mt-0.5 text-[#021217]">
+        <Icon className="w-3.5 h-3.5 text-[#088c2e]" />
       </div>
       <div className="min-w-0">
         <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider">{label}</p>

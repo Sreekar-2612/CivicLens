@@ -10,7 +10,7 @@ export function SubmissionHistory({ data, projectId }: { data: WorkspaceData; pr
       <p className="text-sm text-slate-600">{data.projects.find(project => project.id === item.projectId)?.title} · {item.submissionType} · Reported {item.progressPercent}% · {new Date(item.createdAt).toLocaleString()}</p>
       <p className="text-sm whitespace-pre-wrap">{item.description}</p>
       {item.evidencePath && <EvidencePhoto path={item.evidencePath} alt={`Evidence for ${item.title}`} className="max-h-64 rounded-lg object-contain" />}
-      {data.reviews.filter(review => review.submissionId === item.id).map(review => <div key={review.id} className="bg-slate-50 border-l-4 border-blue-500 p-3 text-sm">
+      {data.reviews.filter(review => review.submissionId === item.id).map(review => <div key={review.id} className="bg-slate-50 border-l-4 border-[#11e852] p-3 text-sm">
         <p className="font-semibold">{review.decision === 'approved' ? 'Approved' : 'Changes requested'} · {new Date(review.createdAt).toLocaleString()}</p>
         <p className="whitespace-pre-wrap">{review.comments || 'No additional comments.'}</p>
       </div>)}

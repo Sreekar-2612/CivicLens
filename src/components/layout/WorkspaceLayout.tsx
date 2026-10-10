@@ -14,17 +14,17 @@ export function WorkspaceLayout({ role }: { role: 'contractor' | 'auditor' }) {
   if (!user || user.role !== role) return <main className="max-w-xl mx-auto p-8 space-y-4">
     <h1 className="text-2xl font-bold">{title}</h1>
     <p>{user ? `Your ${user.role} account does not have access to this workspace. Ask your administrator to verify your role and project assignments.` : 'Sign in with your verified contractor or auditor account to continue.'}</p>
-    {!user && <button className="bg-blue-600 text-white rounded-lg px-4 py-2" onClick={() => void authenticate(signInWithGoogle)}>Sign in with Google</button>}
+    {!user && <button className="bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold rounded-lg px-4 py-2 transition-colors cursor-pointer" onClick={() => void authenticate(signInWithGoogle)}>Sign in with Google</button>}
     {error && <p role="alert" className="text-red-700">{error}</p>}
-    <Link className="block text-blue-700" to="/">Return to public portal</Link>
+    <Link className="block text-[#021217] hover:text-[#11e852] font-semibold" to="/">Return to public portal</Link>
   </main>
-  return <div className="min-h-screen bg-transparent text-slate-800">
-    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200">
+  return <div className="min-h-screen bg-transparent text-[#021217]">
+    <header className="bg-white/95 backdrop-blur-md border-b border-[#e2c09c]/40">
       <div className="max-w-6xl mx-auto p-4 flex flex-wrap items-center justify-between gap-4">
-        <div><h1 className="font-bold text-xl">SpadeWork · {title}</h1><p className="text-sm text-slate-600">{user.displayName} · {departmentMap.get(user.departmentId || '')?.name || user.departmentId || 'Department not assigned'}</p>
+        <div><h1 className="font-bold text-xl text-[#021217]">SpadeWork · {title}</h1><p className="text-sm text-[#536267]">{user.displayName} · {departmentMap.get(user.departmentId || '')?.name || user.departmentId || 'Department not assigned'}</p>
           {user.isDemoUser && <span className="text-xs text-amber-800">Demo account · Changes stay in this browser</span>}
         </div>
-        <div className="flex gap-4 items-center text-sm"><Link to="/" className="text-blue-700">Public portal</Link><button onClick={() => void authenticate(signOut)} className="border rounded-lg px-3 py-2">Sign out</button></div>
+        <div className="flex gap-4 items-center text-sm"><Link to="/" className="text-[#021217] hover:text-[#11e852] font-semibold">Public portal</Link><button onClick={() => void authenticate(signOut)} className="border border-[#CBD5E1] rounded-lg px-3 py-2 hover:bg-[#FAF7F0] cursor-pointer">Sign out</button></div>
       </div>
     </header>
     {error && <p role="alert" className="max-w-6xl mx-auto p-4 text-red-700">{error}</p>}

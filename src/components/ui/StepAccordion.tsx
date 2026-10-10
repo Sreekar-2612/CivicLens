@@ -73,23 +73,23 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
   // If no citizen reports exist for this project
   if (count === 0) {
     return (
-      <div className="bg-white border border-[#E3EAF2] rounded-2xl p-6 sm:p-8 text-center shadow-2xs">
-        <div className="w-12 h-12 rounded-2xl bg-[#EAF1FF] text-[#2F6BFF] flex items-center justify-center mx-auto mb-3.5 shadow-2xs">
-          <Camera className="w-6 h-6" />
+      <div className="bg-white border border-[#e2c09c]/40 rounded-2xl p-6 sm:p-8 text-center shadow-2xs">
+        <div className="w-12 h-12 rounded-2xl bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c]/50 flex items-center justify-center mx-auto mb-3.5 shadow-2xs">
+          <Camera className="w-6 h-6 text-[#021217]" />
         </div>
-        <h3 className="font-['Plus_Jakarta_Sans'] text-base sm:text-lg font-bold text-[#1E293B] mb-1.5">
+        <h3 className="font-['Plus_Jakarta_Sans'] text-base sm:text-lg font-bold text-[#021217] mb-1.5">
           No Citizen Fieldwork Reports Yet
         </h3>
-        <p className="text-xs sm:text-sm text-[#64748B] max-w-md mx-auto mb-5 leading-relaxed">
+        <p className="text-xs sm:text-sm text-[#536267] max-w-md mx-auto mb-5 leading-relaxed">
           Be the first resident to document ground progress or report safety issues, trenching delays, or barricade breaches for this work order.
         </p>
         <Link
           to={`/report?project=${projectId}`}
           className="btn-primary text-xs py-2.5 px-5 shadow-sm inline-flex items-center gap-2 no-underline"
         >
-          <Camera className="w-4 h-4" />
+          <Camera className="w-4 h-4 text-[#11e852]" />
           <span>Upload Field Photo &amp; Report Issue</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3.5 h-3.5 text-[#11e852]" />
         </Link>
       </div>
     )
@@ -146,7 +146,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
                 onClick={() => handleStepClick(idx)}
                 className={`rounded-xl border transition-all duration-300 cursor-pointer overflow-hidden ${
                   isActive
-                    ? 'border-[#2F6BFF] bg-[#F6F9FC] shadow-sm'
+                    ? 'border-[#021217] bg-[#FAF7F0] shadow-sm'
                     : 'border-[#E3EAF2] bg-white hover:border-[#CBD5E1] hover:bg-[#FAFCFE]'
                 }`}
               >
@@ -157,7 +157,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
                     <div
                       className={`relative flex items-center justify-center font-['JetBrains_Mono',monospace] text-xs font-bold transition-all duration-300 rounded-full shrink-0 ${
                         isActive
-                          ? 'bg-[#2F6BFF] text-white px-3 py-1 shadow-2xs min-w-[70px]'
+                          ? 'bg-[#021217] text-[#11e852] border border-[#e2c09c] px-3 py-1 shadow-2xs min-w-[70px]'
                           : 'bg-[#F1F5F9] text-[#64748B] px-2.5 py-1 min-w-[36px]'
                       }`}
                     >
@@ -165,10 +165,10 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
                       {/* Animated Progress indicator inside pill when autoplay is on */}
                       {isActive && isAutoPlay && count > 1 && (
                         <div
-                          className="absolute bottom-0 left-2 right-2 h-0.5 bg-white/70 rounded-full overflow-hidden"
+                          className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#11e852]/70 rounded-full overflow-hidden"
                         >
                           <div
-                            className="h-full bg-white transition-all duration-75"
+                            className="h-full bg-[#11e852] transition-all duration-75"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
@@ -188,7 +188,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
                               : report.status === 'escalated'
                               ? 'bg-[#FFE9EA] text-[#D13B41] border-[#FF5A5F]/30'
                               : report.status === 'acknowledged'
-                              ? 'bg-[#E6F4FE] text-[#1B7FC4] border-[#38A9F5]/30'
+                              ? 'bg-[#e2c09c]/25 text-[#021217] border-[#e2c09c]/40'
                               : 'bg-[#FFF4DB] text-[#9A6200] border-[#FFB020]/30'
                           }`}
                         >
@@ -197,7 +197,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
                       </div>
                       <h4
                         className={`text-xs sm:text-sm font-bold truncate transition-colors ${
-                          isActive ? 'text-[#2F6BFF]' : 'text-[#1E293B]'
+                          isActive ? 'text-[#088c2e]' : 'text-[#021217]'
                         }`}
                       >
                         {report.title}
@@ -207,7 +207,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
 
                   <ChevronDown
                     className={`w-4 h-4 text-[#64748B] shrink-0 transition-transform duration-300 ${
-                      isActive ? 'rotate-180 text-[#2F6BFF]' : ''
+                      isActive ? 'rotate-180 text-[#088c2e]' : ''
                     }`}
                   />
                 </div>
@@ -221,7 +221,7 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-[#64748B] mb-3">
                       <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-[#2F6BFF] shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-[#088c2e] shrink-0" />
                         <span className="truncate">{report.locationDescription}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -232,9 +232,9 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
 
                     {/* Official Municipal Response if present */}
                     {report.officerResponse && (
-                      <div className="p-3 rounded-xl bg-[#EAF1FF] border border-[#2F6BFF]/20 text-xs text-[#1E293B] mt-2">
-                        <div className="flex items-center gap-1.5 text-[#2F6BFF] font-bold text-[11px] mb-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                      <div className="p-3 rounded-xl bg-[#e2c09c]/20 border border-[#e2c09c]/40 text-xs text-[#021217] mt-2">
+                        <div className="flex items-center gap-1.5 text-[#088c2e] font-bold text-[11px] mb-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#088c2e]" />
                           <span>Official Department Response</span>
                         </div>
                         <p className="text-[11px] text-[#334155] leading-relaxed">

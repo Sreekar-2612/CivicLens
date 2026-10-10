@@ -26,26 +26,26 @@ export function PublicLayout() {
     (location.pathname === '/admin' && (location.search.includes('tab=assignment') || location.hash === '#assignment'))
 
   return (
-    <div className={`min-h-screen flex flex-col ${isExcluded ? 'bg-[#F6F9FC]' : 'bg-transparent'} text-[#1E293B] font-['Inter',sans-serif]`}>
-      {/* Header with 3px Electric Blue bottom border */}
-      <header className="bg-white/95 backdrop-blur-md border-b-3 border-[#2F6BFF] sticky top-0 z-50 shadow-xs">
+    <div className={`min-h-screen flex flex-col ${isExcluded ? 'bg-[#f1f3d8]' : 'bg-transparent'} text-[#021217] font-['Inter',sans-serif]`}>
+      {/* Header with 3px warm champagne bottom border */}
+      <header className="bg-white/95 backdrop-blur-md border-b-3 border-[#e2c09c] sticky top-0 z-50 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 text-[#1E293B] no-underline hover:text-[#1E293B]">
-              <div className="w-9 h-9 rounded-xl bg-[#2F6BFF] flex items-center justify-center shadow-xs">
-                <Shield className="w-5 h-5 text-white" />
+            <Link to="/" className="flex items-center gap-2.5 text-[#021217] no-underline hover:text-[#021217]">
+              <div className="w-9 h-9 rounded-xl bg-[#021217] border border-[#e2c09c] flex items-center justify-center shadow-xs">
+                <Shield className="w-5 h-5 text-[#e2c09c]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-lg tracking-tight text-[#1E293B]">
+                  <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-lg tracking-tight text-[#021217]">
                     SpadeWork
                   </span>
-                  <span className="font-bungee bg-[#E3F7F5] text-[#12B5A6] text-[9px] font-normal px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#12B5A6]/20">
+                  <span className="font-bungee bg-[#e5fce9] text-[#088c2e] text-[9px] font-normal px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#11e852]/30">
                     CIVIC LIVE
                   </span>
                 </div>
-                <span className="hidden sm:inline text-xs text-[#64748B] font-medium">
+                <span className="hidden sm:inline text-xs text-[#536267] font-medium">
                   Public Works Transparency &amp; Coordination
                 </span>
               </div>
@@ -60,8 +60,8 @@ export function PublicLayout() {
                   className={({ isActive }) =>
                     `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors no-underline ${
                       isActive
-                        ? 'bg-[#EAF1FF] text-[#2F6BFF] font-bold shadow-2xs'
-                        : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F6F9FC]'
+                        ? 'bg-[#e2c09c]/35 text-[#021217] border border-[#e2c09c] font-bold shadow-2xs'
+                        : 'text-[#536267] hover:text-[#021217] hover:bg-[#f1f3d8]/60'
                     }`
                   }
                 >
@@ -70,21 +70,21 @@ export function PublicLayout() {
                 </NavLink>
               ))}
 
-              <div className="w-px h-5 bg-[#E3EAF2] mx-2" />
+              <div className="w-px h-5 bg-[#e2c09c]/40 mx-2" />
 
               <Link
                 to={workspacePath}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1E293B] bg-[#F6F9FC] hover:bg-[#EAF1FF] hover:text-[#2F6BFF] border border-[#E3EAF2] transition-colors no-underline shadow-2xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#021217] bg-[#f1f3d8]/80 hover:bg-[#e2c09c]/30 hover:text-[#021217] border border-[#e2c09c]/60 transition-colors no-underline shadow-2xs"
               >
-                <Building2 className="w-3.5 h-3.5 text-[#2F6BFF]" />
+                <Building2 className="w-3.5 h-3.5 text-[#021217]" />
                 <span>{workspaceLabel}</span>
               </Link>
 
               {user && !user.isDemoUser ? (
-                <div className="flex items-center gap-2 border-l border-[#E3EAF2] pl-2 ml-1">
-                  <div className="flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-1 rounded-lg">
-                    <User className="w-3.5 h-3.5 text-[#2F6BFF]" />
-                    <span className="text-xs font-semibold text-[#1E293B] max-w-[120px] truncate">{user.displayName}</span>
+                <div className="flex items-center gap-2 border-l border-[#e2c09c]/40 pl-2 ml-1">
+                  <div className="flex items-center gap-1.5 bg-white border border-[#e2c09c]/60 px-2.5 py-1 rounded-lg">
+                    <User className="w-3.5 h-3.5 text-[#088c2e]" />
+                    <span className="text-xs font-semibold text-[#021217] max-w-[120px] truncate">{user.displayName}</span>
                   </div>
                   <button
                     onClick={() => signOut()}
@@ -97,7 +97,7 @@ export function PublicLayout() {
               ) : (
                 <button
                   onClick={() => signInWithGoogle()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-[#2F6BFF] hover:bg-[#1E56E0] transition-all shadow-xs cursor-pointer ml-1"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#f1f3d8] bg-[#021217] hover:bg-[#172a30] border border-[#e2c09c] transition-all shadow-xs cursor-pointer ml-1"
                 >
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -133,12 +133,12 @@ export function PublicLayout() {
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-colors no-underline ${
                       isActive
-                        ? 'bg-[#EAF1FF] text-[#2F6BFF] font-bold'
-                        : 'text-[#64748B] hover:text-[#1E293B] hover:bg-[#F6F9FC]'
+                        ? 'bg-[#e2c09c]/35 text-[#021217] border border-[#e2c09c] font-bold'
+                        : 'text-[#536267] hover:text-[#021217] hover:bg-[#FAF7F0]'
                     }`
                   }
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className="w-4 h-4 text-[#088c2e]" />
                   {item.label}
                   <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-50" />
                 </NavLink>
@@ -147,20 +147,20 @@ export function PublicLayout() {
               <Link
                 to={workspacePath}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-[#2F6BFF] bg-[#EAF1FF] hover:bg-[#D5E4FF] transition-colors no-underline"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-[#021217] bg-[#e2c09c]/30 hover:bg-[#e2c09c]/50 border border-[#e2c09c] transition-colors no-underline"
               >
-                <Building2 className="w-4 h-4" />
+                <Building2 className="w-4 h-4 text-[#088c2e]" />
                 <span>{workspaceLabel}</span>
                 <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-50" />
               </Link>
-              {!user || user.isDemoUser ? <button type="button" onClick={() => { void signInWithGoogle(); setMobileMenuOpen(false) }} className="px-3 py-2 text-sm text-[#2F6BFF]">Sign in with Google</button> : <button type="button" onClick={() => { void signOut(); setMobileMenuOpen(false) }} className="px-3 py-2 text-sm text-rose-600">Sign out ({user.displayName})</button>}
+              {!user || user.isDemoUser ? <button type="button" onClick={() => { void signInWithGoogle(); setMobileMenuOpen(false) }} className="px-3 py-2 text-sm text-[#021217] font-bold hover:text-[#11e852] cursor-pointer">Sign in with Google</button> : <button type="button" onClick={() => { void signOut(); setMobileMenuOpen(false) }} className="px-3 py-2 text-sm text-rose-600 cursor-pointer">Sign out ({user.displayName})</button>}
             </nav>
           </div>
         )}
       </header>
 
       {authError && <p role="alert" className="mx-auto w-full max-w-7xl p-4 text-sm text-red-700">{authError}</p>}
-      {user && !loading && ['contractor', 'auditor', 'officer', 'admin'].includes(user.role) && <div className="max-w-7xl mx-auto w-full px-4 py-2 text-sm"><Link to={user.role === 'admin' ? '/admin' : workspacePath} className="text-[#2F6BFF]">Open your {user.role} workspace</Link></div>}
+      {user && !loading && ['contractor', 'auditor', 'officer', 'admin'].includes(user.role) && <div className="max-w-7xl mx-auto w-full px-4 py-2 text-sm"><Link to={user.role === 'admin' ? '/admin' : workspacePath} className="text-[#021217] font-bold hover:text-[#11e852] hover:underline">Open your {user.role} workspace</Link></div>}
       {user?.isDemoUser && <div className="max-w-7xl mx-auto w-full px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
         <label htmlFor="public-demo-role">Local demo role</label>
         <select id="public-demo-role" value={user.role} onChange={event => setDemoRole(event.target.value as typeof user.role)} className="border rounded-lg p-2">
@@ -181,8 +181,8 @@ export function PublicLayout() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded-lg bg-[#2F6BFF] flex items-center justify-center">
-                  <Shield className="w-3.5 h-3.5 text-white" />
+                <div className="w-6 h-6 rounded-lg bg-[#021217] flex items-center justify-center">
+                  <Shield className="w-3.5 h-3.5 text-[#11e852]" />
                 </div>
                 <span className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">SpadeWork</span>
               </div>
@@ -192,33 +192,33 @@ export function PublicLayout() {
               </p>
             </div>
             <div>
-              <h4 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1E293B] uppercase tracking-wider mb-3">
+              <h4 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#021217] uppercase tracking-wider mb-3">
                 Quick Navigation
               </h4>
               <ul className="space-y-2 text-xs list-none">
-                <li><Link to="/projects" className="hover:text-[#2F6BFF] transition-colors text-[#64748B] no-underline">Projects Explorer</Link></li>
-                <li><Link to="/scorecard" className="hover:text-[#2F6BFF] transition-colors text-[#64748B] no-underline">Accountability Scorecard</Link></li>
-                <li><Link to="/report" className="hover:text-[#2F6BFF] transition-colors text-[#64748B] no-underline">Report Civic Hazard</Link></li>
-                <li><Link to="/reports/track" className="hover:text-[#2F6BFF] transition-colors text-[#64748B] no-underline">Track Grievance</Link></li>
-                <li><Link to="/mock-preview" className="hover:text-[#2F6BFF] transition-colors text-[#2F6BFF] font-semibold no-underline">Interactive Fresh Civic Mock</Link></li>
+                <li><Link to="/projects" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Projects Explorer</Link></li>
+                <li><Link to="/scorecard" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Accountability Scorecard</Link></li>
+                <li><Link to="/report" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Report Civic Hazard</Link></li>
+                <li><Link to="/reports/track" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Track Grievance</Link></li>
+                <li><Link to="/mock-preview" className="hover:text-[#088c2e] transition-colors text-[#021217] font-semibold no-underline">Interactive Fresh Civic Mock</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#1E293B] uppercase tracking-wider mb-3">
+              <h4 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#021217] uppercase tracking-wider mb-3">
                 Demonstration Notice
               </h4>
-              <p className="text-xs leading-relaxed text-[#64748B]">
+              <p className="text-xs leading-relaxed text-[#536267]">
                 SpadeWork is a civic infrastructure platform demonstrating inter-agency coordination,
                 immutable contractual milestones, and public auditability for municipal public works corridors.
               </p>
-              <div className="inline-block mt-2.5 px-2.5 py-1 rounded bg-[#EAF1FF] text-[#2F6BFF] text-[11px] font-semibold border border-[#2F6BFF]/20">
+              <div className="inline-block mt-2.5 px-2.5 py-1 rounded bg-[#faf3eb] text-[#7a5830] text-[11px] font-semibold border border-[#e2c09c]/40">
                 Demonstration Data — Simulated Municipal Work Orders
               </div>
             </div>
           </div>
           <div className="border-t border-[#E3EAF2] mt-8 pt-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-[#94A3B8]">
             <span>© 2026 SpadeWork • Built for Municipal Transparency</span>
-            <span>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-[#64748B] hover:text-[#2F6BFF] no-underline">OpenStreetMap</a> &amp; Esri</span>
+            <span>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-[#64748B] hover:text-[#088c2e] no-underline">OpenStreetMap</a> &amp; Esri</span>
           </div>
         </div>
       </footer>

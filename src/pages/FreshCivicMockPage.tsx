@@ -94,7 +94,7 @@ export function FreshCivicMockPage() {
   return (
     <div className="min-h-screen bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif] flex flex-col">
       {/* Top Banner */}
-      <div className="bg-[#2F6BFF] text-white px-4 py-1.5 text-xs font-medium flex items-center justify-between border-b border-[#2559D6]">
+      <div className="bg-[#021217] text-white px-4 py-1.5 text-xs font-medium flex items-center justify-between border-b border-[#e2c09c]/30">
         <div className="flex items-center gap-2">
           <span className="bg-white/20 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-[10px]">
             Adjusted Fresh Civic Prototype
@@ -108,13 +108,13 @@ export function FreshCivicMockPage() {
         </div>
       </div>
 
-      {/* Main Header with 3px Electric Blue bottom border */}
-      <header className="bg-white border-b-3 border-[#2F6BFF] sticky top-0 z-40 shadow-xs">
+      {/* Main Header with 3px Primary accent bottom border */}
+      <header className="bg-white border-b-3 border-[#e2c09c] sticky top-0 z-40 shadow-xs">
         <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-2.5 flex flex-wrap items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#2F6BFF] text-white flex items-center justify-center font-bold text-base shadow-xs">
+              <div className="w-8 h-8 rounded-lg bg-[#021217] text-white flex items-center justify-center font-bold text-base shadow-xs">
                 CL
               </div>
               <div>
@@ -133,8 +133,8 @@ export function FreshCivicMockPage() {
           {/* Prominent Ward Selector & Prominent Search Bar */}
           <div className="flex items-center gap-3 flex-1 max-w-2xl">
             {/* Prominent Ward Selector */}
-            <div className="flex items-center gap-2 bg-[#F6F9FC] border-2 border-[#2F6BFF]/30 hover:border-[#2F6BFF] transition-colors rounded-xl px-3 py-1.5 text-xs font-bold text-[#1E293B] shadow-xs cursor-pointer">
-              <MapPin className="w-4 h-4 text-[#2F6BFF] shrink-0" />
+            <div className="flex items-center gap-2 bg-[#F6F9FC] border-2 border-[#e2c09c] hover:border-[#021217] transition-colors rounded-xl px-3 py-1.5 text-xs font-bold text-[#1E293B] shadow-xs cursor-pointer">
+              <MapPin className="w-4 h-4 text-[#088c2e] shrink-0" />
               <select
                 value={selectedWard}
                 onChange={(e) => setSelectedWard(e.target.value)}
@@ -149,11 +149,11 @@ export function FreshCivicMockPage() {
 
             {/* Prominent Search Bar */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#2F6BFF] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#088c2e] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search road corridor, permit #, department, or contractor..."
-                className="w-full bg-[#F6F9FC] border border-[#CBD5E1] hover:border-[#2F6BFF] focus:border-[#2F6BFF] focus:bg-white rounded-xl pl-9 pr-14 py-1.5 text-xs font-medium text-[#1E293B] placeholder-[#64748B] focus:outline-none transition-all shadow-xs"
+                className="w-full bg-[#F6F9FC] border border-[#CBD5E1] hover:border-[#021217] focus:border-[#021217] focus:bg-white rounded-xl pl-9 pr-14 py-1.5 text-xs font-medium text-[#1E293B] placeholder-[#64748B] focus:outline-none transition-all shadow-xs"
               />
               <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono bg-white border border-[#E3EAF2] text-[#64748B] px-1.5 py-0.5 rounded shadow-2xs">
                 ⌘K
@@ -173,7 +173,7 @@ export function FreshCivicMockPage() {
                 onClick={() => setViewMode('citizen')}
                 className={`px-2.5 py-1 rounded-md transition-all ${
                   viewMode === 'citizen'
-                    ? 'bg-white text-[#2F6BFF] shadow-xs font-bold'
+                    ? 'bg-white text-[#021217] shadow-xs font-bold'
                     : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
@@ -183,7 +183,7 @@ export function FreshCivicMockPage() {
                 onClick={() => setViewMode('officer')}
                 className={`px-2.5 py-1 rounded-md transition-all ${
                   viewMode === 'officer'
-                    ? 'bg-[#2F6BFF] text-white shadow-xs font-bold'
+                    ? 'bg-[#021217] text-[#f1f3d8] shadow-xs font-bold'
                     : 'text-[#64748B] hover:text-[#1E293B]'
                 }`}
               >
@@ -226,7 +226,7 @@ export function FreshCivicMockPage() {
               <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
                 Taxpayer Outlay
               </span>
-              <span className="text-[10px] font-semibold text-[#2F6BFF] bg-[#EAF1FF] px-1.5 py-0 rounded">
+              <span className="text-[10px] font-semibold text-[#021217] bg-[#e2c09c]/30 px-1.5 py-0 rounded">
                 Ward 07 Escrow
               </span>
             </div>
@@ -374,7 +374,7 @@ export function FreshCivicMockPage() {
                 title="Fit to Ward"
                 className="p-1.5 bg-white hover:bg-[#F6F9FC] text-[#1E293B] border border-[#E3EAF2] rounded-lg shadow-xs text-xs font-semibold flex items-center gap-1"
               >
-                <Maximize2 className="w-3.5 h-3.5 text-[#2F6BFF]" />
+                <Maximize2 className="w-3.5 h-3.5 text-[#088c2e]" />
                 <span className="hidden sm:inline">Fit Ward</span>
               </button>
             </div>
@@ -387,14 +387,14 @@ export function FreshCivicMockPage() {
               <button
                 onClick={() => setActiveLayers(prev => ({ ...prev, water: !prev.water }))}
                 className={`flex items-center justify-between gap-3 px-2 py-1 rounded-lg transition-colors ${
-                  activeLayers.water ? 'bg-[#EAF1FF] text-[#2F6BFF]' : 'text-[#94A3B8] hover:bg-[#F6F9FC]'
+                  activeLayers.water ? 'bg-[#e2c09c]/30 text-[#021217]' : 'text-[#94A3B8] hover:bg-[#F6F9FC]'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
-                  <Droplets className="w-3 h-3 text-[#2F6BFF]" />
+                  <Droplets className="w-3 h-3 text-[#088c2e]" />
                   <span>Water Mains (12)</span>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-[#2F6BFF]"></span>
+                <span className="w-2 h-2 rounded-full bg-[#088c2e]"></span>
               </button>
               <button
                 onClick={() => setActiveLayers(prev => ({ ...prev, road: !prev.road }))}
@@ -568,7 +568,7 @@ export function FreshCivicMockPage() {
                   FC Road Smart Trenching &amp; Utility Ducting
                 </h2>
                 <p className="text-[11px] text-[#64748B] flex items-center gap-1 mt-0.5 font-medium">
-                  <MapPin className="w-3 h-3 text-[#2F6BFF]" />
+                  <MapPin className="w-3 h-3 text-[#088c2e]" />
                   Section: Goodluck Chowk to Dnyaneshwar Paduka (1.4 km)
                 </p>
               </div>
@@ -659,7 +659,7 @@ export function FreshCivicMockPage() {
               <div className="bg-white border border-[#E3EAF2] rounded-xl p-3 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#2F6BFF]" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#088c2e]" />
                     Contractual Milestones
                   </span>
                   <span className="badge delayed text-[10px] py-0 px-1.5">
@@ -676,9 +676,9 @@ export function FreshCivicMockPage() {
                     <span className="text-[#64748B]">Target Completion:</span>
                     <span className="font-semibold text-[#1E293B]">15 Oct 2024</span>
                   </div>
-                  <div className="flex justify-between py-0.5 bg-[#EAF1FF] px-1.5 rounded">
-                    <span className="text-[#2F6BFF] font-semibold">Revised Freeze Date:</span>
-                    <span className="font-bold text-[#2F6BFF]">02 Nov 2024</span>
+                  <div className="flex justify-between py-0.5 bg-[#e2c09c]/25 px-1.5 rounded">
+                    <span className="text-[#021217] font-semibold">Revised Freeze Date:</span>
+                    <span className="font-bold text-[#021217]">02 Nov 2024</span>
                   </div>
                 </div>
 
@@ -749,7 +749,7 @@ export function FreshCivicMockPage() {
               <textarea
                 defaultValue="Mandating joint trench sharing to preserve newly resurfaced asphalt. Penalty of ₹50,000/day applicable for individual digging."
                 rows={3}
-                className="w-full bg-[#F6F9FC] border border-[#E3EAF2] rounded-lg p-2 text-xs text-[#1E293B] focus:border-[#2F6BFF] focus:outline-none"
+                className="w-full bg-[#F6F9FC] border border-[#E3EAF2] rounded-lg p-2 text-xs text-[#1E293B] focus:border-[#021217] focus:outline-none"
               ></textarea>
             </div>
 
@@ -780,7 +780,7 @@ export function FreshCivicMockPage() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-[#E3EAF2] animate-in fade-in zoom-in duration-150">
             <div className="flex items-center justify-between border-b border-[#E3EAF2] pb-3">
               <div className="flex items-center gap-2">
-                <span className="p-2 bg-[#EAF1FF] text-[#2F6BFF] rounded-lg">
+                <span className="p-2 bg-[#e2c09c]/30 text-[#021217] rounded-lg">
                   <Camera className="w-5 h-5" />
                 </span>
                 <div>
@@ -814,12 +814,12 @@ export function FreshCivicMockPage() {
                 <textarea
                   placeholder="Describe ground condition, machinery idle duration, or safety hazards..."
                   rows={3}
-                  className="w-full bg-[#F6F9FC] border border-[#E3EAF2] rounded-lg p-2 text-xs text-[#1E293B] focus:border-[#2F6BFF] focus:outline-none"
+                  className="w-full bg-[#F6F9FC] border border-[#E3EAF2] rounded-lg p-2 text-xs text-[#1E293B] focus:border-[#021217] focus:outline-none"
                 ></textarea>
               </div>
 
-              <div className="border-2 border-dashed border-[#E3EAF2] rounded-xl p-3 text-center text-[#64748B] hover:border-[#2F6BFF] transition-colors cursor-pointer bg-[#F6F9FC]">
-                <Camera className="w-5 h-5 mx-auto text-[#2F6BFF] mb-1" />
+              <div className="border-2 border-dashed border-[#E3EAF2] rounded-xl p-3 text-center text-[#64748B] hover:border-[#088c2e] transition-colors cursor-pointer bg-[#F6F9FC]">
+                <Camera className="w-5 h-5 mx-auto text-[#088c2e] mb-1" />
                 <span className="text-xs font-semibold text-[#1E293B]">Upload Geo-tagged Photo</span>
                 <p className="text-[10px] text-[#94A3B8]">Captures instant GPS coordinates &amp; timestamp</p>
               </div>

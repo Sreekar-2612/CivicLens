@@ -251,7 +251,7 @@ export function ReportPage() {
           <button
             type="button"
             onClick={signInWithGoogle}
-            className="px-4 py-2 bg-[#2F6BFF] hover:bg-[#1E54D8] text-white font-bold text-xs rounded-lg flex items-center gap-2 cursor-pointer shadow-xs border-none"
+            className="px-4 py-2 bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs rounded-lg flex items-center gap-2 cursor-pointer shadow-xs"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -534,8 +534,9 @@ export function ReportPage() {
               type="submit"
               disabled={submitting}
               style={{
-                backgroundColor: '#2F6BFF',
-                color: '#FFFFFF',
+                backgroundColor: '#021217',
+                color: '#f1f3d8',
+                border: '1px solid #e2c09c',
                 padding: '12px 24px',
                 borderRadius: '12px',
                 fontWeight: '700',
@@ -545,13 +546,12 @@ export function ReportPage() {
                 justifyContent: 'center',
                 gap: '8px',
                 cursor: 'pointer',
-                border: 'none',
-                boxShadow: '0 4px 14px rgba(47, 107, 255, 0.35)',
+                boxShadow: '0 4px 14px rgba(2, 18, 23, 0.25)',
                 opacity: submitting ? 0.6 : 1,
               }}
             >
               {submitting ? 'Lodging Report...' : 'Lodge Ground Report'}
-              <ArrowRight className="w-4 h-4 text-white" />
+              <ArrowRight className="w-4 h-4 text-[#11e852]" />
             </button>
           ) : (
             <button

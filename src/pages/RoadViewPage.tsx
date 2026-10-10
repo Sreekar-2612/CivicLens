@@ -79,31 +79,31 @@ export function RoadViewPage() {
       <div>
         <Link
           to="/projects"
-          className="inline-flex items-center text-xs font-bold text-[#64748B] hover:text-[#2F6BFF] mb-2 no-underline"
+          className="inline-flex items-center text-xs font-bold text-[#536267] hover:text-[#11e852] mb-2 no-underline"
         >
-          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Permits Explorer
+          <ArrowLeft className="w-3.5 h-3.5 mr-1 text-[#088c2e]" /> Back to Permits Explorer
         </Link>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EAF1FF] text-[#2F6BFF] border border-[#2F6BFF]/20 mb-1.5">
-              <Layers className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e2c09c]/25 text-[#021217] border border-[#e2c09c]/40 mb-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#088c2e]" />
               <span>Repeat Digging Review</span>
             </div>
-            <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
+            <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#021217] tracking-tight">
               Corridor Timeline: {currentRoad || 'Select Corridor'}
             </h1>
-            <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#536267] mt-0.5 max-w-2xl leading-relaxed">
               Prevent newly paved roads from being dug up again. Track multi-agency utility works and repeat excavation frequency on this transit corridor.
             </p>
           </div>
 
           {/* Quick Corridor Selector dropdown */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#64748B] whitespace-nowrap font-bold">Switch Corridor:</span>
+            <span className="text-xs text-[#536267] whitespace-nowrap font-bold">Switch Corridor:</span>
             <select
               value={currentRoad}
               onChange={(e) => handleSelectRoad(e.target.value)}
-              className="text-xs font-bold rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] px-3 py-2 focus:border-[#2F6BFF] focus:outline-none shadow-2xs cursor-pointer"
+              className="text-xs font-bold rounded-xl border border-[#CBD5E1] bg-white text-[#021217] px-3 py-2 focus:border-[#11e852] focus:outline-none shadow-2xs cursor-pointer"
             >
               {availableRoads.map(r => (
                 <option key={r.road} value={r.road}>
@@ -132,10 +132,10 @@ export function RoadViewPage() {
                   Review Needed
                 </span>
               </div>
-              <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">
+              <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#021217]">
                 Utility excavation is scheduled within 365 days of recorded resurfacing
               </h3>
-              <p className="text-xs text-[#64748B] leading-relaxed">
+              <p className="text-xs text-[#536267] leading-relaxed">
                 The recorded dates indicate a repeat excavation risk on this corridor. Review the work orders and coordinate the schedule before excavation.
               </p>
             </div>
@@ -146,19 +146,19 @@ export function RoadViewPage() {
       {/* Corridor Summary Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
-          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Total Work Orders</span>
-          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#1E293B]">{roadProjects.length}</span>
-          <span className="text-[10px] text-[#64748B] mt-0.5 block">Historical &amp; planned</span>
+          <span className="text-[10px] font-bold text-[#536267] uppercase block">Total Work Orders</span>
+          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#021217]">{roadProjects.length}</span>
+          <span className="text-[10px] text-[#536267] mt-0.5 block">Historical &amp; planned</span>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
-          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Works Marked Active</span>
+          <span className="text-[10px] font-bold text-[#536267] uppercase block">Works Marked Active</span>
           <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#FFB020]">{currentProjects.length}</span>
-          <span className="text-[10px] text-[#64748B] mt-0.5 block">Based on recorded status</span>
+          <span className="text-[10px] text-[#536267] mt-0.5 block">Based on recorded status</span>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
-          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Scheduled Future Digs</span>
-          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#2F6BFF]">{plannedProjects.length}</span>
-          <span className="text-[10px] text-[#64748B] mt-0.5 block">Opportunity to Dig-Once</span>
+          <span className="text-[10px] font-bold text-[#536267] uppercase block">Scheduled Future Digs</span>
+          <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#088c2e]">{plannedProjects.length}</span>
+          <span className="text-[10px] text-[#536267] mt-0.5 block">Opportunity to Dig-Once</span>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
           <span className="text-[10px] font-bold text-[#C41F4F] uppercase block">Clashes Flagged</span>
@@ -202,7 +202,7 @@ export function RoadViewPage() {
                   </div>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="text-xs font-bold text-[#2F6BFF] hover:underline shrink-0 no-underline"
+                    className="text-xs font-bold text-[#021217] hover:text-[#11e852] hover:underline shrink-0 no-underline"
                   >
                     View Project Dossier →
                   </Link>
@@ -270,7 +270,7 @@ export function RoadViewPage() {
                   </div>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="text-xs font-bold text-[#2F6BFF] hover:underline shrink-0 no-underline"
+                    className="text-xs font-bold text-[#021217] hover:text-[#11e852] hover:underline shrink-0 no-underline"
                   >
                     Review Schedule →
                   </Link>

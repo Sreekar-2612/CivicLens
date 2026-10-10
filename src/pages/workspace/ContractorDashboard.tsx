@@ -42,9 +42,9 @@ export function ContractorDashboard() {
   return <div className="space-y-6">
     <section><h2 className="text-2xl font-bold">Assigned work</h2><p className="text-slate-600 mt-1">Submit progress, milestones, and completion evidence for independent review. Corrections are submitted as a new record.</p></section>
     {data.projects.length === 0 && <p className="bg-white border rounded-xl p-6">No projects assigned. Ask your administrator to assign a project to your account.</p>}
-    <div className="grid sm:grid-cols-2 gap-4">{data.projects.map(project => <article key={project.id} className="bg-white border rounded-xl p-4 space-y-2"><h3 className="font-semibold">{project.title}</h3><p className="text-sm text-slate-600">{project.road} · {project.locality}</p><p className="text-sm">{PROJECT_STATUS_LABELS[project.status]} · Recorded progress {project.progressPercent}%</p><Link className="text-sm text-blue-700" to={`/projects/${project.id}`}>View project</Link></article>)}</div>
-    {activeProjects.length > 0 && <section className="bg-white border rounded-xl p-5">
-      <h2 className="text-lg font-bold mb-4">Submit work for review</h2>
+    <div className="grid sm:grid-cols-2 gap-4">{data.projects.map(project => <article key={project.id} className="bg-white border border-[#e2c09c]/40 rounded-xl p-4 space-y-2"><h3 className="font-semibold text-[#021217]">{project.title}</h3><p className="text-sm text-[#536267]">{project.road} · {project.locality}</p><p className="text-sm">{PROJECT_STATUS_LABELS[project.status]} · Recorded progress {project.progressPercent}%</p><Link className="text-sm text-[#021217] hover:text-[#11e852] font-semibold" to={`/projects/${project.id}`}>View project</Link></article>)}</div>
+    {activeProjects.length > 0 && <section className="bg-white border border-[#e2c09c]/40 rounded-xl p-5">
+      <h2 className="text-lg font-bold mb-4 text-[#021217]">Submit work for review</h2>
       <form key={formKey} onSubmit={submit} className="space-y-4">
         <fieldset disabled={busy} className="space-y-4">
           <label className="block text-sm font-medium">Project<select className={inputClass} value={selectedProject?.id || ''} onChange={event => setProjectId(event.target.value)} required>{activeProjects.map(project => <option key={project.id} value={project.id}>{project.title}</option>)}</select></label>
@@ -52,9 +52,9 @@ export function ContractorDashboard() {
             <label className="block text-sm font-medium">Reported progress (%)<input key={`${selectedProject?.id}:${submissionType}`} name="progress" type="number" min="0" max="100" step="1" required readOnly={submissionType === 'completion'} defaultValue={submissionType === 'completion' ? 100 : selectedProject?.progressPercent || 0} className={inputClass} /></label></div>
           <label className="block text-sm font-medium">Title<input name="title" required maxLength={200} className={inputClass} /></label>
           <label className="block text-sm font-medium">Work completed and review context<textarea name="description" required maxLength={5000} rows={4} className={inputClass} /></label>
-          <label className="block text-sm font-medium">Evidence photo {submissionType === 'completion' ? '(required)' : '(optional)'}<input name="evidence" type="file" accept="image/jpeg,image/png,image/webp" required={submissionType === 'completion'} className="block mt-2 text-sm" /><span className="block text-xs text-slate-500 mt-1">JPEG, PNG or WebP, up to 10 MB.</span></label>
-          {submissionType === 'completion' && <p className="text-sm text-slate-600">Completion is recorded only after auditor approval.</p>}
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-60">{busy ? 'Submitting…' : 'Submit for review'}</button>
+          <label className="block text-sm font-medium">Evidence photo {submissionType === 'completion' ? '(required)' : '(optional)'}<input name="evidence" type="file" accept="image/jpeg,image/png,image/webp" required={submissionType === 'completion'} className="block mt-2 text-sm" /><span className="block text-xs text-[#536267] mt-1">JPEG, PNG or WebP, up to 10 MB.</span></label>
+          {submissionType === 'completion' && <p className="text-sm text-[#536267]">Completion is recorded only after auditor approval.</p>}
+          <button type="submit" className="bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold px-4 py-2 rounded-lg disabled:opacity-60 cursor-pointer">{busy ? 'Submitting…' : 'Submit for review'}</button>
         </fieldset>
       </form>
     </section>}

@@ -231,10 +231,10 @@ export function AdminPage() {
                 type="button"
                 onClick={loadData}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#F6F9FC] hover:bg-[#EAF1FF] text-[#2F6BFF] border border-[#CBD5E1] transition-all cursor-pointer shadow-2xs"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#FAF7F0] hover:bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c] transition-all cursor-pointer shadow-2xs"
                 title="Refresh user roster"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 text-[#088c2e] ${loading ? 'animate-spin' : ''}`} />
                 <span>Refresh Roster</span>
               </button>
 
@@ -242,9 +242,9 @@ export function AdminPage() {
                 type="button"
                 onClick={handleExportJSON}
                 disabled={exporting}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[#2F6BFF] hover:bg-[#1E54D8] transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-[#f1f3d8] bg-[#021217] hover:bg-[#172a30] hover:text-[#11e852] border border-[#e2c09c] transition-all cursor-pointer shadow-xs"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-3.5 h-3.5 text-[#11e852]" />
                 <span>{exporting ? 'Exporting...' : 'Export Audit Log'}</span>
               </button>
             </div>
@@ -292,8 +292,8 @@ export function AdminPage() {
             </div>
 
             <div className="bg-[#F8FAFC] border border-[#E3EAF2] rounded-xl p-3 shadow-2xs">
-              <div className="text-[10px] font-bold text-[#2F6BFF] uppercase tracking-wider">Officers</div>
-              <div className="text-xl font-extrabold text-[#2F6BFF] mt-0.5">{kpiStats.officers}</div>
+              <div className="text-[10px] font-bold text-[#021217] uppercase tracking-wider">Officers</div>
+              <div className="text-xl font-extrabold text-[#021217] mt-0.5">{kpiStats.officers}</div>
               <div className="text-[10px] text-[#64748B]">department heads</div>
             </div>
 
@@ -317,13 +317,13 @@ export function AdminPage() {
               onClick={() => handleTabClick('supervision')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'supervision'
-                  ? 'border-[#2F6BFF] text-[#2F6BFF]'
-                  : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+                  ? 'border-[#021217] text-[#021217]'
+                  : 'border-transparent text-[#536267] hover:text-[#021217]'
               }`}
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-4 h-4 text-[#088c2e]" />
               <span>Staff Supervision &amp; Activity</span>
-              <span className="bg-[#EAF1FF] text-[#2F6BFF] text-[10px] px-2 py-0.5 rounded-full font-bold">
+              <span className="bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c]/50 text-[10px] px-2 py-0.5 rounded-full font-bold">
                 {roster.length}
               </span>
             </button>
@@ -333,11 +333,11 @@ export function AdminPage() {
               onClick={() => handleTabClick('assignment')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'assignment'
-                  ? 'border-[#2F6BFF] text-[#2F6BFF]'
-                  : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+                  ? 'border-[#021217] text-[#021217]'
+                  : 'border-transparent text-[#536267] hover:text-[#021217]'
               }`}
             >
-              <Briefcase className="w-4 h-4" />
+              <Briefcase className="w-4 h-4 text-[#088c2e]" />
               <span>Role &amp; Project Assignment Studio</span>
             </button>
 
@@ -346,11 +346,11 @@ export function AdminPage() {
               onClick={() => handleTabClick('system')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'system'
-                  ? 'border-[#2F6BFF] text-[#2F6BFF]'
-                  : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+                  ? 'border-[#021217] text-[#021217]'
+                  : 'border-transparent text-[#536267] hover:text-[#021217]'
               }`}
             >
-              <Database className="w-4 h-4" />
+              <Database className="w-4 h-4 text-[#088c2e]" />
               <span>Database Diagnostic &amp; Logs</span>
             </button>
           </div>
@@ -373,7 +373,7 @@ export function AdminPage() {
                   placeholder="Search staff by name or email..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium text-[#1E293B] placeholder-[#64748B] focus:outline-none focus:bg-white focus:border-[#2F6BFF]"
+                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-xs font-medium text-[#1E293B] placeholder-[#64748B] focus:outline-none focus:bg-white focus:border-[#021217]"
                 />
               </div>
 
@@ -410,7 +410,7 @@ export function AdminPage() {
                 const dept = item.departmentId ? deptMap.get(item.departmentId) : null
                 const roleBadgeColors: Record<UserRole, { bg: string; text: string; border: string }> = {
                   admin: { bg: 'bg-[#7C3AED]/10', text: 'text-[#7C3AED]', border: 'border-[#7C3AED]/30' },
-                  officer: { bg: 'bg-[#2F6BFF]/10', text: 'text-[#2F6BFF]', border: 'border-[#2F6BFF]/30' },
+                  officer: { bg: 'bg-[#021217]/10', text: 'text-[#021217]', border: 'border-[#021217]/30' },
                   contractor: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-300' },
                   auditor: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-300' },
                   resident: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
@@ -450,7 +450,7 @@ export function AdminPage() {
                       <div className="border-t border-[#F1F5F9] pt-2.5 mb-3">
                         <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1.5 flex items-center justify-between">
                           <span>Assigned Work Orders</span>
-                          <span className="text-[#2F6BFF]">{item.assignments.length} projects</span>
+                          <span className="text-[#088c2e] font-semibold">{item.assignments.length} projects</span>
                         </div>
 
                         {item.assignments.length === 0 ? (
@@ -498,10 +498,10 @@ export function AdminPage() {
                         selectUserForEdit(item)
                         setActiveTab('assignment')
                       }}
-                      className="w-full text-center text-xs font-bold text-[#2F6BFF] bg-[#EAF1FF] hover:bg-[#D5E4FF] py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1"
+                      className="w-full text-center text-xs font-bold text-[#021217] bg-[#e2c09c]/30 hover:bg-[#e2c09c]/50 py-2 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1 border border-[#e2c09c]/60"
                     >
                       <span>Manage Role &amp; Assignments</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3.5 h-3.5 text-[#088c2e]" />
                     </button>
                   </div>
                 )
@@ -517,7 +517,7 @@ export function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Column: Select User (4 Cols) */}
             <div className="lg:col-span-4 bg-white border border-[#E3EAF2] rounded-2xl p-4 shadow-sm space-y-3">
-              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B]">
+              <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#021217]">
                 Select User to Configure
               </h2>
 
@@ -531,15 +531,15 @@ export function AdminPage() {
                       onClick={() => selectUserForEdit(u)}
                       className={`w-full text-left p-2.5 rounded-xl transition-all border cursor-pointer flex items-center justify-between gap-2 ${
                         isSelected
-                          ? 'bg-[#EAF1FF] border-[#2F6BFF] shadow-xs'
+                          ? 'bg-[#e2c09c]/35 border-[#021217] shadow-xs'
                           : 'bg-[#F8FAFC] border-[#E2E8F0] hover:bg-white'
                       }`}
                     >
                       <div className="min-w-0">
-                        <div className="font-bold text-xs text-[#1E293B] truncate">
+                        <div className="font-bold text-xs text-[#021217] truncate">
                           {u.displayName}
                         </div>
-                        <div className="text-[11px] text-[#64748B] truncate">
+                        <div className="text-[11px] text-[#536267] truncate">
                           {u.email || 'No email'}
                         </div>
                       </div>
@@ -558,19 +558,19 @@ export function AdminPage() {
                 <form onSubmit={handleSaveAssignment} className="space-y-5">
                   <div className="flex items-start justify-between border-b border-[#F1F5F9] pb-4">
                     <div>
-                      <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
+                      <span className="text-[10px] font-bold text-[#536267] uppercase tracking-wider block">
                         Assignment Studio
                       </span>
-                      <h2 className="text-lg font-bold text-[#1E293B] font-['Plus_Jakarta_Sans'] mt-0.5">
+                      <h2 className="text-lg font-bold text-[#021217] font-['Plus_Jakarta_Sans'] mt-0.5">
                         Configuring: {selectedUser.displayName}
                       </h2>
-                      <p className="text-xs text-[#64748B]">
+                      <p className="text-xs text-[#536267]">
                         Account ID: <code className="bg-[#F1F5F9] px-1 py-0.5 rounded text-[10px] font-mono">{selectedUser.id}</code>
                         {selectedUser.email && <span> • {selectedUser.email}</span>}
                       </p>
                     </div>
 
-                    <span className="text-xs font-bold text-[#2F6BFF] bg-[#EAF1FF] px-2.5 py-1 rounded-lg border border-[#2F6BFF]/20">
+                    <span className="text-xs font-bold text-[#021217] bg-[#e2c09c]/30 px-2.5 py-1 rounded-lg border border-[#e2c09c]/50">
                       Active: {selectedUser.role.toUpperCase()}
                     </span>
                   </div>
@@ -598,7 +598,7 @@ export function AdminPage() {
                       <select
                         value={editRole}
                         onChange={e => setEditRole(e.target.value as UserRole)}
-                        className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:border-[#2F6BFF] focus:outline-none"
+                        className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:border-[#021217] focus:outline-none"
                       >
                         <option value="resident">Resident (Citizen)</option>
                         <option value="contractor">Contractor (Executes Work &amp; Submits Evidence)</option>
@@ -619,7 +619,7 @@ export function AdminPage() {
                         value={editDept}
                         onChange={e => setEditDept(e.target.value)}
                         disabled={!['contractor', 'auditor', 'officer'].includes(editRole)}
-                        className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:border-[#2F6BFF] focus:outline-none disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
+                        className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl border border-[#CBD5E1] bg-white text-[#1E293B] focus:border-[#021217] focus:outline-none disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
                       >
                         {departments.map(d => (
                           <option key={d.id} value={d.id}>{d.name} ({d.shortName})</option>
@@ -648,7 +648,7 @@ export function AdminPage() {
                           <button
                             type="button"
                             onClick={() => setSelectedProjectIds(departmentProjects.map(p => p.id))}
-                            className="text-[10px] font-bold text-[#2F6BFF] hover:underline"
+                            className="text-[10px] font-bold text-[#088c2e] hover:underline"
                           >
                             Select All
                           </button>
@@ -676,7 +676,7 @@ export function AdminPage() {
                                 key={p.id}
                                 className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer text-xs transition-colors ${
                                   isAssigned
-                                    ? 'bg-white border-[#2F6BFF] shadow-xs'
+                                    ? 'bg-white border-[#088c2e] shadow-xs'
                                     : 'bg-white/60 border-slate-200 hover:bg-white'
                                 }`}
                               >
@@ -685,7 +685,7 @@ export function AdminPage() {
                                     type="checkbox"
                                     checked={isAssigned}
                                     onChange={() => toggleProjectId(p.id)}
-                                    className="w-4 h-4 text-[#2F6BFF] rounded focus:ring-0 cursor-pointer"
+                                    className="w-4 h-4 text-[#088c2e] accent-[#11e852] rounded focus:ring-0 cursor-pointer"
                                   />
                                   <div className="min-w-0">
                                     <div className="font-bold text-[#1E293B] truncate">
@@ -747,9 +747,9 @@ export function AdminPage() {
                   type="button"
                   onClick={checkDb}
                   disabled={checkingDb}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#F8FAFC] border border-[#CBD5E1] text-[#2F6BFF] hover:bg-[#EAF1FF] cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#FAF7F0] border border-[#e2c09c] text-[#021217] hover:bg-[#e2c09c]/25 cursor-pointer"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${checkingDb ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-[#088c2e] ${checkingDb ? 'animate-spin' : ''}`} />
                   <span>Test Connection</span>
                 </button>
               </div>

@@ -287,8 +287,8 @@ export function OfficerReports() {
                     onClick={() => handleUpdate('in_review')}
                     className={`px-3 py-2 rounded-lg text-xs font-bold border transition-colors ${
                       selectedReport.status === 'in_review'
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:text-blue-700'
+                        ? 'bg-[#021217] text-[#f1f3d8] border-[#021217]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-[#e2c09c]/20 hover:text-[#021217]'
                     }`}
                   >
                     Under Review

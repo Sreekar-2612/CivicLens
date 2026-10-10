@@ -205,7 +205,7 @@ export function ProjectExplorer() {
                 placeholder="Search any city (e.g. Guntur, Bengaluru) or road name, contractor..."
                 value={filters.search}
                 onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-                className="w-full pl-10 pr-20 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-xs"
+                className="w-full pl-10 pr-20 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#021217] focus:bg-white transition-all shadow-xs"
               />
               <div className="absolute right-2 flex items-center gap-1">
                 {filters.search && (
@@ -219,7 +219,7 @@ export function ProjectExplorer() {
                 )}
                 <button
                   type="submit"
-                  className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg border-none cursor-pointer shadow-xs transition-colors"
+                  className="px-2.5 py-1 bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] text-xs font-semibold rounded-lg cursor-pointer shadow-xs transition-colors"
                 >
                   Find
                 </button>
@@ -231,7 +231,7 @@ export function ProjectExplorer() {
               <select
                 value={filters.ward}
                 onChange={(e) => setFilters(f => ({ ...f, ward: e.target.value }))}
-                className="text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                className="text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs cursor-pointer focus:ring-2 focus:ring-[#11e852] focus:outline-none"
               >
                 {ALL_WARDS.map(w => (
                   <option key={w} value={w === 'All Wards' ? 'all' : w}>{w}</option>
@@ -242,7 +242,7 @@ export function ProjectExplorer() {
               <select
                 value={filters.department}
                 onChange={(e) => setFilters(f => ({ ...f, department: e.target.value }))}
-                className="text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs cursor-pointer focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                className="text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 shadow-xs cursor-pointer focus:ring-2 focus:ring-[#11e852] focus:outline-none"
               >
                 <option value="all">All Departments</option>
                 {departments.map(d => (
@@ -257,12 +257,12 @@ export function ProjectExplorer() {
                   onClick={() => setViewMode('map')}
                   className={`px-3 py-2 rounded-lg text-xs font-bold border-none cursor-pointer flex items-center gap-1.5 transition-all ${
                     viewMode === 'map'
-                      ? 'bg-white text-blue-600 shadow-xs'
+                      ? 'bg-white text-[#021217] shadow-xs'
                       : 'bg-transparent text-slate-600 hover:text-slate-900'
                   }`}
                   title="Interactive Geospatial Map"
                 >
-                  <MapIcon className="w-3.5 h-3.5" />
+                  <MapIcon className="w-3.5 h-3.5 text-[#088c2e]" />
                   <span className="hidden sm:inline">Interactive Map</span>
                 </button>
                 <button
@@ -270,7 +270,7 @@ export function ProjectExplorer() {
                   onClick={() => setViewMode('grid')}
                   className={`px-3 py-2 rounded-lg text-xs font-bold border-none cursor-pointer flex items-center gap-1.5 transition-all ${
                     viewMode === 'grid'
-                      ? 'bg-white text-blue-600 shadow-xs'
+                      ? 'bg-white text-[#021217] shadow-xs'
                       : 'bg-transparent text-slate-600 hover:text-slate-900'
                   }`}
                   title="Directory Cards Grid"
@@ -284,16 +284,16 @@ export function ProjectExplorer() {
 
           {/* Active City Scope Banner if queried from HomePage or Global search */}
           {cityParam && (
-            <div className="mt-4 bg-[#EAF1FF] border-2 border-[#2F6BFF]/30 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2 shadow-xs">
+            <div className="mt-4 bg-[#FAF7F0] border-2 border-[#e2c09c] rounded-xl p-3 flex items-center justify-between flex-wrap gap-2 shadow-xs">
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-[#2F6BFF] text-white">
-                  <MapPin className="w-4 h-4" />
+                <div className="p-1.5 rounded-lg bg-[#021217] text-[#11e852] border border-[#e2c09c]">
+                  <MapPin className="w-4 h-4 text-[#11e852]" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-[#1E293B]">
-                    Active City Filter: <span className="text-[#2F6BFF] font-extrabold">{cityParam}</span>
+                  <div className="text-xs font-bold text-[#021217]">
+                    Active City Filter: <span className="text-[#088c2e] font-extrabold">{cityParam}</span>
                   </div>
-                  <div className="text-[11px] text-[#64748B]">
+                  <div className="text-[11px] text-[#536267]">
                     Displaying localized infrastructure projects around coordinates ({latParam}, {lngParam}) • {filteredProjects.length} active works recorded
                   </div>
                 </div>
@@ -304,7 +304,7 @@ export function ProjectExplorer() {
                   setSearchParams({})
                   setFilters(f => ({ ...f, search: '' }))
                 }}
-                className="text-xs font-bold text-[#2F6BFF] hover:text-[#1E54D8] px-3 py-1.5 rounded-lg bg-white border border-[#2F6BFF]/30 hover:bg-[#F6F9FC] transition-colors cursor-pointer"
+                className="text-xs font-bold text-[#021217] hover:text-[#11e852] px-3 py-1.5 rounded-lg bg-white border border-[#e2c09c] hover:bg-[#f1f3d8] transition-colors cursor-pointer"
               >
                 Reset / View All Cities ✕
               </button>
@@ -322,7 +322,7 @@ export function ProjectExplorer() {
                   onClick={() => setFilters(f => ({ ...f, status: st.key }))}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all border cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                     isSelected
-                      ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold shadow-xs'
+                      ? 'border-[#021217] bg-[#e2c09c]/35 text-[#021217] font-bold shadow-xs'
                       : 'border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
@@ -377,7 +377,7 @@ export function ProjectExplorer() {
                         {selectedProject.title}
                       </h2>
                       <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-[#088c2e] shrink-0" />
                         <span>{selectedProject.road}, {selectedProject.ward}</span>
                       </p>
                     </div>
@@ -387,12 +387,12 @@ export function ProjectExplorer() {
                   {/* Physical Progress Meter */}
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-slate-600">Physical Milestone Progress</span>
-                      <span className="text-emerald-700 font-bold">{selectedProject.progressPercent}% Complete</span>
+                      <span className="text-[#536267]">Physical Milestone Progress</span>
+                      <span className="text-[#088c2e] font-bold">{selectedProject.progressPercent}% Complete</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                       <div
-                        className="bg-emerald-600 h-2 rounded-full transition-all duration-500"
+                        className="bg-[#11e852] h-2 rounded-full transition-all duration-500"
                         style={{ width: `${selectedProject.progressPercent}%` }}
                       />
                     </div>
@@ -401,27 +401,27 @@ export function ProjectExplorer() {
                   {/* Financials & Contractor Details */}
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <span className="text-[11px] text-slate-500 block font-medium">Contractor Agency</span>
-                      <span className="font-bold text-slate-900 mt-0.5 truncate block">{selectedProject.contractor}</span>
+                      <span className="text-[11px] text-[#536267] block font-medium">Contractor Agency</span>
+                      <span className="font-bold text-[#021217] mt-0.5 truncate block">{selectedProject.contractor}</span>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                      <span className="text-[11px] text-slate-500 block font-medium">Sanctioned Budget</span>
-                      <span className="font-bold text-slate-900 mt-0.5 block">₹{selectedProject.budgetLakhs} Lakhs</span>
+                      <span className="text-[11px] text-[#536267] block font-medium">Sanctioned Budget</span>
+                      <span className="font-bold text-[#021217] mt-0.5 block">₹{selectedProject.budgetLakhs} Lakhs</span>
                     </div>
                   </div>
 
                   {/* Timeline Accountability Card */}
-                  <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 text-xs space-y-1.5 text-slate-800">
+                  <div className="p-3.5 rounded-xl bg-[#FAF7F0] border border-[#e2c09c]/60 text-xs space-y-1.5 text-[#021217]">
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Commencement:</span>
-                      <span className="font-semibold text-slate-900">{selectedProject.startDate}</span>
+                      <span className="text-[#536267]">Commencement:</span>
+                      <span className="font-semibold text-[#021217]">{selectedProject.startDate}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Locked Baseline Deadline:</span>
-                      <span className="font-bold text-slate-900">{selectedProject.originalEndDate}</span>
+                      <span className="text-[#536267]">Locked Baseline Deadline:</span>
+                      <span className="font-bold text-[#021217]">{selectedProject.originalEndDate}</span>
                     </div>
                     {selectedProject.revisedEndDate && (
-                      <div className="flex justify-between text-rose-700 font-bold pt-1 border-t border-blue-200/50">
+                      <div className="flex justify-between text-[#c40000] font-bold pt-1 border-t border-[#e2c09c]/40">
                         <span>Current Target Date:</span>
                         <span>{selectedProject.revisedEndDate}</span>
                       </div>
@@ -432,18 +432,18 @@ export function ProjectExplorer() {
                   <div className="pt-2">
                     <Link
                       to={`/projects/${selectedProject.id}`}
-                      className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm no-underline"
+                      className="w-full py-3 px-4 rounded-xl bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm no-underline"
                     >
                       <span>Open Full Transparency Audit</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4 text-[#11e852]" />
                     </Link>
                   </div>
                 </div>
               ) : (
                 <div className="bg-white rounded-2xl border border-slate-200/90 p-8 text-center space-y-3">
                   <MapPin className="w-8 h-8 text-slate-300 mx-auto" />
-                  <h3 className="font-bold text-slate-700 text-sm font-heading">Select a Project</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <h3 className="font-bold text-[#021217] text-sm font-heading">Select a Project</h3>
+                  <p className="text-xs text-[#536267] leading-relaxed">
                     Click any marker on the map to inspect project specifications, contractor accountability, and immutable baseline timelines.
                   </p>
                 </div>
@@ -451,7 +451,7 @@ export function ProjectExplorer() {
 
               {/* Feed of other matching projects */}
               <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700 px-1">
+                <div className="flex items-center justify-between text-xs font-bold text-[#021217] px-1">
                   <span>Filtered Results ({filteredProjects.length})</span>
                   <span className="text-slate-400 font-normal">Click to locate</span>
                 </div>
@@ -464,13 +464,13 @@ export function ProjectExplorer() {
                         onClick={() => setSelectedProject(p)}
                         className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between gap-2 ${
                           isSelected
-                            ? 'bg-blue-50 border-blue-400 ring-1 ring-blue-400'
+                            ? 'bg-[#e2c09c]/30 border-[#021217] ring-1 ring-[#021217]'
                             : 'bg-white border-slate-200/70 hover:bg-slate-50'
                         }`}
                       >
                         <div className="truncate flex-1">
-                          <p className="font-semibold text-slate-900 truncate">{p.title}</p>
-                          <p className="text-[11px] text-slate-500 truncate">{p.road} • {p.ward}</p>
+                          <p className="font-semibold text-[#021217] truncate">{p.title}</p>
+                          <p className="text-[11px] text-[#536267] truncate">{p.road} • {p.ward}</p>
                         </div>
                         <StatusBadge status={p.status} />
                       </div>
@@ -493,7 +493,7 @@ export function ProjectExplorer() {
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs"
+                    className="px-4 py-2 rounded-xl bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs cursor-pointer"
                   >
                     Reset All Filters
                   </button>

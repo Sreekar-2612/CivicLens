@@ -124,35 +124,35 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
       {/* Header Controls Strip */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF1FF] text-[#2F6BFF] text-xs font-bold border border-[#2F6BFF]/20 shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#2F6BFF]" />
-            <span className="font-bungee text-[9px] tracking-wider">CONTINUOUS 3D COVERFLOW</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e2c09c]/25 text-[#021217] text-xs font-bold border border-[#e2c09c]/40 shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#11e852]" />
+            <span className="font-bungee text-[9px] tracking-wider text-[#021217]">CONTINUOUS 3D COVERFLOW</span>
           </div>
-          <span className="text-xs text-[#64748B] hidden sm:inline">
-            Focus: <strong className="text-[#1E293B]">Project {activeNormalizedIndex + 1}</strong> of {count}
+          <span className="text-xs text-[#536267] hidden sm:inline">
+            Focus: <strong className="text-[#021217]">Project {activeNormalizedIndex + 1}</strong> of {count}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           {/* 3D Stage vs Grid View Switcher */}
-          <div className="inline-flex p-1 bg-[#F1F5F9] rounded-xl border border-[#E2E8F0]">
+          <div className="inline-flex p-1 bg-[#F1F5F9] rounded-xl border border-[#e2c09c]/40">
             <button
               onClick={() => setViewMode('depth')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === 'depth'
-                  ? 'bg-white text-[#2F6BFF] shadow-2xs font-bold'
-                  : 'text-[#64748B] hover:text-[#1E293B]'
+                  ? 'bg-white text-[#021217] shadow-2xs font-bold'
+                  : 'text-[#536267] hover:text-[#021217]'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5 text-[#088c2e]" />
               <span>3D Motion</span>
             </button>
             <button
               onClick={() => setViewMode('grid')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === 'grid'
-                  ? 'bg-white text-[#2F6BFF] shadow-2xs font-bold'
-                  : 'text-[#64748B] hover:text-[#1E293B]'
+                  ? 'bg-white text-[#021217] shadow-2xs font-bold'
+                  : 'text-[#536267] hover:text-[#021217]'
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
@@ -166,14 +166,14 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
               <button
                 onClick={() => stepSlide(-1)}
                 aria-label="Previous Project"
-                className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-[#F6F9FC] hover:border-[#2F6BFF] flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
+                className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#021217] hover:bg-[#FAF7F0] hover:border-[#11e852] flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => stepSlide(1)}
                 aria-label="Next Project"
-                className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#1E293B] hover:bg-[#F6F9FC] hover:border-[#2F6BFF] flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
+                className="w-8 h-8 rounded-full bg-white border border-[#CBD5E1] text-[#021217] hover:bg-[#FAF7F0] hover:border-[#11e852] flex items-center justify-center transition-all shadow-2xs cursor-pointer active:scale-95"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -198,7 +198,7 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
           }}
         >
           {/* Stage ambient lighting glow */}
-          <div className="absolute inset-0 bg-radial from-[#EAF1FF]/70 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-radial from-[#e2c09c]/25 via-transparent to-transparent pointer-events-none" />
 
           {/* 3D Transform Container */}
           <div
@@ -259,8 +259,8 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
                   <div
                     className={`relative rounded-2xl transition-all duration-200 ${
                       isCenter
-                        ? 'shadow-[0_24px_50px_-12px_rgba(47,107,255,0.25),0_8px_16px_-4px_rgba(30,41,59,0.08)] ring-2 ring-[#2F6BFF]/40 bg-white'
-                        : 'shadow-[0_12px_30px_-8px_rgba(30,41,59,0.12)] hover:ring-2 hover:ring-[#2F6BFF]/30 bg-white/95'
+                        ? 'shadow-[0_24px_50px_-12px_rgba(2,18,23,0.22),0_8px_16px_-4px_rgba(2,18,23,0.08)] ring-2 ring-[#e2c09c] bg-white'
+                        : 'shadow-[0_12px_30px_-8px_rgba(2,18,23,0.1)] hover:ring-2 hover:ring-[#11e852]/50 bg-white/95'
                     }`}
                   >
                     {/* Frosted Glass Overlay for Receding Cards */}
@@ -274,9 +274,9 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
                       style={{
                         background:
                           diff > 0.3
-                            ? 'linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(227,234,242,0.45) 100%)'
+                            ? 'linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(226,192,156,0.3) 100%)'
                             : diff < -0.3
-                            ? 'linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(227,234,242,0.45) 100%)'
+                            ? 'linear-gradient(to left, rgba(255,255,255,0) 0%, rgba(226,192,156,0.3) 100%)'
                             : 'none'
                       }}
                     />
@@ -293,8 +293,8 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
           </div>
 
           {/* Interactive Hint Pill */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/85 backdrop-blur-md border border-[#E3EAF2] text-[11px] text-[#64748B] pointer-events-none shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-[#2F6BFF] animate-ping" />
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#e2c09c]/60 text-[11px] text-[#536267] pointer-events-none shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-[#11e852] animate-ping" />
             <span>Scroll wheel or drag horizontally to roll carousel</span>
           </div>
         </div>
@@ -321,7 +321,7 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
               aria-label={`Jump to project ${i + 1}`}
               className={`transition-all duration-300 rounded-full cursor-pointer ${
                 i === activeNormalizedIndex
-                  ? 'w-7 h-2 bg-[#2F6BFF]'
+                  ? 'w-7 h-2 bg-[#021217]'
                   : 'w-2 h-2 bg-[#CBD5E1] hover:bg-[#94A3B8]'
               }`}
             />

@@ -17,7 +17,7 @@ export function ProjectCard({ project, department }: ProjectCardProps) {
   return (
     <Link
       to={`/projects/${project.id}`}
-      className="bg-white border border-[#E3EAF2] hover:border-[#2F6BFF]/40 rounded-xl p-3.5 shadow-2xs hover:shadow-xs transition-all block no-underline text-inherit group"
+      className="bg-white border border-[#E3EAF2] hover:border-[#11e852] rounded-xl p-3.5 shadow-2xs hover:shadow-xs transition-all block no-underline text-inherit group"
     >
       <div className="flex items-start justify-between gap-2.5 mb-2.5">
         <div className="flex-1 min-w-0">
@@ -26,12 +26,12 @@ export function ProjectCard({ project, department }: ProjectCardProps) {
               {project.id.toUpperCase()}
             </span>
             {project.budgetLakhs && (
-              <span className="text-[10px] font-bold text-[#2F6BFF] bg-[#EAF1FF] px-1.5 py-0.2 rounded">
+              <span className="text-[10px] font-bold text-[#021217] bg-[#e2c09c]/30 border border-[#e2c09c]/50 px-1.5 py-0.2 rounded">
                 ₹{project.budgetLakhs}L
               </span>
             )}
           </div>
-          <h3 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#1E293B] group-hover:text-[#2F6BFF] transition-colors leading-snug line-clamp-2">
+          <h3 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#021217] group-hover:text-[#088c2e] transition-colors leading-snug line-clamp-2">
             {project.title}
           </h3>
         </div>
@@ -40,8 +40,8 @@ export function ProjectCard({ project, department }: ProjectCardProps) {
 
       <div className="space-y-1.5 text-xs text-[#64748B]">
         <div className="flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-[#2F6BFF] shrink-0" />
-          <span className="truncate font-medium text-[#1E293B]">{project.road}, {project.locality}</span>
+          <MapPin className="w-3.5 h-3.5 text-[#088c2e] shrink-0" />
+          <span className="truncate font-medium text-[#021217]">{project.road}, {project.locality}</span>
         </div>
         {department && (
           <div className="flex items-center gap-1.5">

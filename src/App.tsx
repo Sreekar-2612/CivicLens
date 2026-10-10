@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
-import { GlobalMapBackground } from './components/layout/GlobalMapBackground'
+import { GlobalParticleBackground } from './components/layout/GlobalParticleBackground'
 const PublicLayout = lazy(() => import('./components/layout/PublicLayout').then(module => ({ default: module.PublicLayout })))
 const OfficerLayout = lazy(() => import('./components/layout/OfficerLayout').then(module => ({ default: module.OfficerLayout })))
 const WorkspaceLayout = lazy(() => import('./components/layout/WorkspaceLayout').then(module => ({ default: module.WorkspaceLayout })))
@@ -27,7 +27,7 @@ const FreshCivicMockPage = lazy(() => import('./pages/FreshCivicMockPage').then(
 export default function App() {
   return (
     <>
-      <GlobalMapBackground />
+      <GlobalParticleBackground />
       <Suspense fallback={<div role="status" className="p-6 text-sm text-slate-600">Loading page...</div>}>
       <Routes>
         {/* Fresh Civic Design System Prototype Mock */}

@@ -204,7 +204,7 @@ export function ProjectMap({
           <button
             type="submit"
             disabled={isSearching}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border-none cursor-pointer flex items-center gap-1"
+            className="bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
           >
             {isSearching ? 'Searching...' : 'Go'}
           </button>
@@ -219,7 +219,7 @@ export function ProjectMap({
             onClick={() => setBasemap('satellite')}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 border-none cursor-pointer ${
               basemap === 'satellite'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-[#021217] text-[#11e852] border border-[#e2c09c] shadow-sm font-bold'
                 : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
             title="Ultra-realistic aerial satellite photography"
@@ -233,7 +233,7 @@ export function ProjectMap({
             onClick={() => setBasemap('urban')}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 border-none cursor-pointer ${
               basemap === 'urban'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-[#021217] text-[#11e852] border border-[#e2c09c] shadow-sm font-bold'
                 : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
             title="Lush detailed urban street cartography"
@@ -247,7 +247,7 @@ export function ProjectMap({
             onClick={() => setBasemap('light')}
             className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 border-none cursor-pointer ${
               basemap === 'light'
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-[#021217] text-[#11e852] border border-[#e2c09c] shadow-sm font-bold'
                 : 'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
             title="High contrast clean cartographic canvas"
@@ -264,7 +264,7 @@ export function ProjectMap({
             className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors border-none bg-transparent cursor-pointer"
             title="Fit map to all active projects"
           >
-            <MapPin className="w-4 h-4 text-blue-600" />
+            <MapPin className="w-4 h-4 text-[#088c2e]" />
           </button>
         </div>
       )}
@@ -354,7 +354,7 @@ export function ProjectMap({
                       {project.title}
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
+                      <MapPin className="w-3 h-3 text-[#088c2e] shrink-0" />
                       <span>{project.road}, {project.ward}</span>
                     </p>
                   </div>
@@ -363,11 +363,11 @@ export function ProjectMap({
                   <div>
                     <div className="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
                       <span>Physical Progress</span>
-                      <span className="font-bold text-teal-600">{project.progressPercent}%</span>
+                      <span className="font-bold text-[#088c2e]">{project.progressPercent}%</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-teal-600 h-1.5 rounded-full"
+                        className="bg-[#11e852] h-1.5 rounded-full"
                         style={{ width: `${project.progressPercent}%` }}
                       />
                     </div>
@@ -383,10 +383,10 @@ export function ProjectMap({
                   <div className="pt-1">
                     <Link
                       to={`/projects/${project.id}`}
-                      className="w-full py-1.5 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors no-underline shadow-xs"
+                      className="w-full py-1.5 px-3 rounded-lg bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors no-underline shadow-xs"
                     >
                       <span>Open Project Audit</span>
-                      <ExternalLink className="w-3 h-3" />
+                      <ExternalLink className="w-3 h-3 text-[#11e852]" />
                     </Link>
                   </div>
                 </div>

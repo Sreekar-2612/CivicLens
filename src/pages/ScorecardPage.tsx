@@ -150,7 +150,7 @@ export function ScorecardPage() {
   const gradeStyles = {
     'A+': 'bg-[#E3F7F5] text-[#12B5A6] border-[#12B5A6]/30',
     'A': 'bg-[#E1F8EF] text-[#0E7A55] border-[#22C58B]/30',
-    'B': 'bg-[#EAF1FF] text-[#2F6BFF] border-[#2F6BFF]/30',
+    'B': 'bg-[#e2c09c]/30 text-[#021217] border-[#e2c09c]/50',
     'C': 'bg-[#FFF4DB] text-[#9A6200] border-[#FFB020]/30',
     'D': 'bg-[#FFE9EA] text-[#D13B41] border-[#FF5A5F]/30',
   }
@@ -160,33 +160,33 @@ export function ScorecardPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E3EAF2] pb-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EAF1FF] text-[#2F6BFF] border border-[#2F6BFF]/20 mb-2">
-            <Award className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e2c09c]/25 text-[#021217] border border-[#e2c09c]/40 mb-2">
+            <Award className="w-3.5 h-3.5 text-[#088c2e]" />
             <span>Civic Performance &amp; Accountability</span>
           </div>
-          <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1E293B]">
+          <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold tracking-tight text-[#021217]">
             Municipal Agency Scorecards
           </h1>
-          <p className="text-[#64748B] text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+          <p className="text-[#536267] text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
             Data-driven delivery grades measuring on-time completion rates, repeat digging penalties, and contractor accountability across municipal departments.
           </p>
         </div>
 
         {/* Global Summary Stats */}
-        <div className="grid grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-[#E3EAF2] text-center shadow-2xs">
+        <div className="grid grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-[#e2c09c]/40 text-center shadow-2xs">
           <div>
-            <div className="text-[10px] text-[#64748B] font-bold uppercase">Agencies</div>
-            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#1E293B]">{departments.length}</div>
+            <div className="text-[10px] text-[#536267] font-bold uppercase">Agencies</div>
+            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#021217]">{departments.length}</div>
           </div>
           <div className="border-x border-[#E3EAF2] px-3">
-            <div className="text-[10px] text-[#64748B] font-bold uppercase">Avg On-Time</div>
-            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#12B5A6]">
+            <div className="text-[10px] text-[#536267] font-bold uppercase">Avg On-Time</div>
+            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#088c2e]">
               {deptScorecards.length > 0 ? Math.round(deptScorecards.reduce((acc, s) => acc + s.onTimeRate, 0) / deptScorecards.length) : 0}%
             </div>
           </div>
           <div>
-            <div className="text-[10px] text-[#64748B] font-bold uppercase">Clash Alerts</div>
-            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#C41F4F]">{alerts.length}</div>
+            <div className="text-[10px] text-[#536267] font-bold uppercase">Clash Alerts</div>
+            <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#c40000]">{alerts.length}</div>
           </div>
         </div>
       </div>
@@ -195,10 +195,10 @@ export function ScorecardPage() {
       <div className="flex border-b border-[#E3EAF2] gap-2">
         <button
           onClick={() => setActiveTab('departments')}
-          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'departments'
-              ? 'border-[#2F6BFF] text-[#2F6BFF]'
-              : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+              ? 'border-[#021217] text-[#021217]'
+              : 'border-transparent text-[#536267] hover:text-[#021217]'
           }`}
         >
           <Building2 className="w-3.5 h-3.5" />
@@ -206,10 +206,10 @@ export function ScorecardPage() {
         </button>
         <button
           onClick={() => setActiveTab('contractors')}
-          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'contractors'
-              ? 'border-[#2F6BFF] text-[#2F6BFF]'
-              : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+              ? 'border-[#021217] text-[#021217]'
+              : 'border-transparent text-[#536267] hover:text-[#021217]'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
@@ -217,10 +217,10 @@ export function ScorecardPage() {
         </button>
         <button
           onClick={() => setActiveTab('wards')}
-          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 ${
+          className={`pb-2.5 px-3 text-xs font-bold transition-all border-b-2 flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'wards'
-              ? 'border-[#2F6BFF] text-[#2F6BFF]'
-              : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+              ? 'border-[#021217] text-[#021217]'
+              : 'border-transparent text-[#536267] hover:text-[#021217]'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -306,9 +306,9 @@ export function ScorecardPage() {
                   </span>
                   <Link
                     to={`/projects?department=${sc.department.id}`}
-                    className="inline-flex items-center text-[#2F6BFF] font-bold text-xs hover:underline"
+                    className="inline-flex items-center text-[#021217] hover:text-[#11e852] font-bold text-xs hover:underline"
                   >
-                    View Works <ArrowUpRight className="w-3.5 h-3.5 ml-0.5" />
+                    View Works <ArrowUpRight className="w-3.5 h-3.5 ml-0.5 text-[#088c2e]" />
                   </Link>
                 </div>
               </div>
@@ -319,17 +319,17 @@ export function ScorecardPage() {
           <div className="bg-white rounded-xl border border-[#E3EAF2] overflow-hidden shadow-2xs">
             <div className="px-5 py-3 border-b border-[#E3EAF2] flex justify-between items-center">
               <div>
-                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#1E293B]">
+                <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#021217]">
                   Comparative Agency Delivery Benchmarks
                 </h3>
-                <p className="text-[11px] text-[#64748B] mt-0.5">
+                <p className="text-[11px] text-[#536267] mt-0.5">
                   Inter-departmental performance index against municipal completion targets
                 </p>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#64748B] border-b border-[#E3EAF2] uppercase">
+                <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#536267] border-b border-[#E3EAF2] uppercase">
                   <tr>
                     <th className="px-5 py-2.5">Department</th>
                     <th className="px-3 py-2.5">Grade</th>
@@ -343,7 +343,7 @@ export function ScorecardPage() {
                 <tbody className="divide-y divide-[#E3EAF2]">
                   {deptScorecards.map(sc => (
                     <tr key={sc.department.id} className="hover:bg-[#F6F9FC]/60 transition-colors">
-                      <td className="px-5 py-3 font-semibold text-[#1E293B] flex items-center gap-2">
+                      <td className="px-5 py-3 font-semibold text-[#021217] flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: sc.department.color }} />
                         {sc.department.name}
                       </td>
@@ -352,24 +352,24 @@ export function ScorecardPage() {
                           {sc.grade}
                         </span>
                       </td>
-                      <td className="px-3 py-3 font-bold text-[#1E293B]">
+                      <td className="px-3 py-3 font-bold text-[#021217]">
                         {sc.onTimeRate}%
                       </td>
-                      <td className="px-3 py-3 text-[#64748B]">
+                      <td className="px-3 py-3 text-[#536267]">
                         {sc.activeProjects}
                       </td>
                       <td className="px-3 py-3">
-                        <span className={sc.delayedProjects > 0 ? 'text-[#D13B41] font-bold' : 'text-[#64748B]'}>
+                        <span className={sc.delayedProjects > 0 ? 'text-[#c40000] font-bold' : 'text-[#536267]'}>
                           {sc.delayedProjects}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-[#64748B]">
+                      <td className="px-3 py-3 text-[#536267]">
                         {sc.totalReports} ({sc.resolvedReports} resolved)
                       </td>
                       <td className="px-5 py-3 text-right">
                         <Link
                           to={`/projects?department=${sc.department.id}`}
-                          className="text-xs font-bold text-[#2F6BFF] hover:underline"
+                          className="text-xs font-bold text-[#021217] hover:text-[#11e852] hover:underline"
                         >
                           Explore
                         </Link>
@@ -401,7 +401,7 @@ export function ScorecardPage() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#1E293B]">{c.name}</h3>
+                    <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#021217]">{c.name}</h3>
                     <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${
                       c.status === 'Good Standing'
                         ? 'bg-[#E3F7F5] text-[#0E7A55] border border-[#12B5A6]/20'
@@ -413,26 +413,26 @@ export function ScorecardPage() {
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#1E293B] flex items-center justify-end gap-1">
+                    <div className="font-['Plus_Jakarta_Sans'] text-xl font-extrabold text-[#021217] flex items-center justify-end gap-1">
                       <Star className="w-4 h-4 text-[#FFB020] fill-[#FFB020]" />
                       <span>{c.rating}</span>
                     </div>
-                    <div className="text-[10px] text-[#64748B]">Delivery Score</div>
+                    <div className="text-[10px] text-[#536267]">Delivery Score</div>
                   </div>
                 </div>
 
                 <div className="mt-3 pt-2.5 border-t border-[#F1F5F9] grid grid-cols-3 gap-2 text-center text-xs">
                   <div className="bg-[#F6F9FC] p-1.5 rounded-lg border border-[#E3EAF2]">
-                    <div className="text-[10px] text-[#64748B]">Total</div>
-                    <div className="font-bold text-[#1E293B]">{c.totalProjects}</div>
+                    <div className="text-[10px] text-[#536267]">Total</div>
+                    <div className="font-bold text-[#021217]">{c.totalProjects}</div>
                   </div>
                   <div className="bg-[#F6F9FC] p-1.5 rounded-lg border border-[#E3EAF2]">
-                    <div className="text-[10px] text-[#64748B]">Active</div>
-                    <div className="font-bold text-[#1E293B]">{c.activeProjects}</div>
+                    <div className="text-[10px] text-[#536267]">Active</div>
+                    <div className="font-bold text-[#021217]">{c.activeProjects}</div>
                   </div>
                   <div className="bg-[#F6F9FC] p-1.5 rounded-lg border border-[#E3EAF2]">
-                    <div className="text-[10px] text-[#64748B]">Delayed</div>
-                    <div className={`font-bold ${c.delayedCount > 0 ? 'text-[#D13B41]' : 'text-[#1E293B]'}`}>
+                    <div className="text-[10px] text-[#536267]">Delayed</div>
+                    <div className={`font-bold ${c.delayedCount > 0 ? 'text-[#c40000]' : 'text-[#021217]'}`}>
                       {c.delayedCount}
                     </div>
                   </div>
@@ -440,21 +440,21 @@ export function ScorecardPage() {
 
                 <div className="mt-3">
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-[#64748B] text-[11px]">Average Work Progress</span>
-                    <span className="font-bold text-[#1E293B] text-[11px]">{c.avgProgress}%</span>
+                    <span className="text-[#536267] text-[11px]">Average Work Progress</span>
+                    <span className="font-bold text-[#021217] text-[11px]">{c.avgProgress}%</span>
                   </div>
                   <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#12B5A6] rounded-full" style={{ width: `${c.avgProgress}%` }} />
+                    <div className="h-full bg-[#11e852] rounded-full" style={{ width: `${c.avgProgress}%` }} />
                   </div>
                 </div>
 
                 <div className="mt-3 pt-2.5 border-t border-[#F1F5F9]">
                   <Link
                     to={`/projects?search=${encodeURIComponent(c.name)}`}
-                    className="text-xs font-bold text-[#2F6BFF] hover:underline flex items-center justify-between no-underline"
+                    className="text-xs font-bold text-[#021217] hover:text-[#11e852] hover:underline flex items-center justify-between no-underline"
                   >
                     <span>Inspect Awarded Contracts</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#088c2e]" />
                   </Link>
                 </div>
               </div>
@@ -468,16 +468,16 @@ export function ScorecardPage() {
         <div className="space-y-4">
           <div className="bg-white rounded-xl border border-[#E3EAF2] overflow-hidden shadow-2xs">
             <div className="px-5 py-3 border-b border-[#E3EAF2]">
-              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#1E293B]">
+              <h3 className="font-['Plus_Jakarta_Sans'] font-bold text-sm text-[#021217]">
                 Ward Disruption &amp; Excavation Intensity Index
               </h3>
-              <p className="text-[11px] text-[#64748B] mt-0.5">
+              <p className="text-[11px] text-[#536267] mt-0.5">
                 Composite metric calculated from concurrent active trenches and delayed road works
               </p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#64748B] border-b border-[#E3EAF2] uppercase">
+                <thead className="bg-[#F6F9FC] text-[11px] font-bold text-[#536267] border-b border-[#E3EAF2] uppercase">
                   <tr>
                     <th className="px-5 py-2.5">Municipal Ward</th>
                     <th className="px-3 py-2.5">Disruption Index</th>
@@ -490,7 +490,7 @@ export function ScorecardPage() {
                 <tbody className="divide-y divide-[#E3EAF2]">
                   {wardScorecards.map(w => (
                     <tr key={w.ward} className="hover:bg-[#F6F9FC]/60 transition-colors">
-                      <td className="px-5 py-3 font-bold text-[#1E293B]">
+                      <td className="px-5 py-3 font-bold text-[#021217]">
                         {w.ward}
                       </td>
                       <td className="px-3 py-3">
@@ -502,21 +502,21 @@ export function ScorecardPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-3 font-semibold text-[#1E293B]">
+                      <td className="px-3 py-3 font-semibold text-[#021217]">
                         {w.active} active
                       </td>
                       <td className="px-3 py-3">
-                        <span className={w.delayed > 0 ? 'text-[#D13B41] font-bold' : 'text-[#64748B]'}>
+                        <span className={w.delayed > 0 ? 'text-[#c40000] font-bold' : 'text-[#536267]'}>
                           {w.delayed} delayed
                         </span>
                       </td>
-                      <td className="px-3 py-3 font-semibold text-[#1E293B]">
+                      <td className="px-3 py-3 font-semibold text-[#021217]">
                         ₹{w.budget} Lakhs
                       </td>
                       <td className="px-5 py-3 text-right">
                         <Link
                           to={`/projects?ward=${encodeURIComponent(w.ward)}`}
-                          className="text-xs font-bold text-[#2F6BFF] hover:underline"
+                          className="text-xs font-bold text-[#021217] hover:text-[#11e852] hover:underline"
                         >
                           View Map
                         </Link>
