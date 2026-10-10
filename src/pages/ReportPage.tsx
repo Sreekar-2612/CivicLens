@@ -496,10 +496,10 @@ export function ReportPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="btn-primary text-xs sm:text-sm flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-3 rounded-xl bg-[#2F6BFF] hover:bg-[#1E54D8] text-white font-bold text-sm shadow-md transition-all cursor-pointer border-none flex items-center gap-2 disabled:opacity-50"
           >
             {submitting ? 'Lodging Report...' : 'Lodge Ground Report'}
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-white" />
           </button>
         </div>
       </form>
