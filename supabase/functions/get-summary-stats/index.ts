@@ -6,14 +6,17 @@ Deno.serve(async (req) => {
   if (corsRes) return corsRes
 
   try {
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseClient(req)
 
     const [projectsRes, deptsRes, clashesRes, grievancesRes] = await Promise.all([
       supabase.from('projects').select('status, confidence_indicator').eq('publication_status', 'published'),
       supabase.from('departments').select('id'),
       supabase.from('clashes').select('id, status').eq('status', 'pending_review'),
-      supabase.from('grievances').select('id, status').in('status', ['submitted', 'acknowledged', 'investigating']),
+      supabase.from('public_grievances').select('id, status').in('status', ['submitted', 'acknowledged', 'in_review', 'escalated']),
     ])
+    for (const result of [projectsRes, deptsRes, clashesRes, grievancesRes]) {
+      if (result.error) throw result.error
+    }
 
     const projects = projectsRes.data || []
     const stats = {

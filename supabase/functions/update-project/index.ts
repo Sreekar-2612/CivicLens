@@ -38,7 +38,11 @@ Deno.serve(async (req) => {
     if (updates.confidenceIndicator !== undefined) dbPayload.confidence_indicator = updates.confidenceIndicator
     if (updates.contractor !== undefined) dbPayload.contractor_name = updates.contractor
     if (updates.budgetLakhs !== undefined) dbPayload.budget = updates.budgetLakhs
-    if (hasDeadlineChange) dbPayload.revised_end_date = updates.revisedEndDate
+    dbPayload.last_updated_by = user.id
+    if (hasDeadlineChange) {
+      dbPayload.revised_end_date = updates.revisedEndDate
+      dbPayload.latest_delay_reason = delayReason.trim()
+    }
 
     const { data: updated, error: updateErr } = await supabase
       .from('projects')
@@ -48,21 +52,6 @@ Deno.serve(async (req) => {
       .single()
 
     if (updateErr) throw updateErr
-
-    if (hasDeadlineChange) {
-      await supabase.from('project_updates').insert({
-        project_id: id,
-        update_type: 'deadline_revision',
-        progress_percent: updates.progressPercent ?? current.progress_percent,
-        status: updates.status ?? current.status,
-        notes: delayReason || 'Deadline revised',
-        delay_reason_description: delayReason,
-        previous_end_date: current.revised_end_date || current.original_end_date,
-        revised_end_date: updates.revisedEndDate,
-        created_by: user.id,
-        created_by_name: profile.display_name,
-      })
-    }
 
     return new Response(JSON.stringify({ success: true, project: updated }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

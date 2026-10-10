@@ -1,5 +1,5 @@
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { requireActor, requireDepartment, errorResponse } from '../_shared/supabase.ts'
+import { requireActor, requireDepartment, errorResponse, validEvidencePath } from '../_shared/supabase.ts'
 
 Deno.serve(async (req) => {
   const corsRes = handleCors(req)
@@ -13,15 +13,19 @@ Deno.serve(async (req) => {
     const { data: project, error: projectError } = await supabase.from('projects').select('department_id').eq('id', projectId).single()
     if (projectError || !project) throw new Error('Project not found')
     requireDepartment(profile, project.department_id)
+    if (update.evidenceUrl && (
+      typeof update.evidenceUrl !== 'string' ||
+      !validEvidencePath(update.evidenceUrl, user.id, ['projects', 'inspections'])
+    )) throw new Error('Evidence must belong to the signed-in officer')
 
     const dbPayload = {
       project_id: projectId,
       update_type: update.type || 'progress',
-      progress_percent: update.newValue ? parseInt(update.newValue) : undefined,
+      progress_percent: update.type === 'progress' && update.newValue ? parseInt(update.newValue, 10) : undefined,
       notes: update.description || update.title || 'Progress Update',
       delay_reason_description: update.delayReason,
-      previous_end_date: update.previousValue,
-      revised_end_date: update.newValue,
+      previous_end_date: update.type === 'deadline_revision' ? update.previousValue : undefined,
+      revised_end_date: update.type === 'deadline_revision' ? update.newValue : undefined,
       evidence_path: update.evidenceUrl,
       created_by: user.id,
       created_by_name: profile.display_name,

@@ -165,12 +165,14 @@ export interface Report {
   id: string;
   referenceId: string;       // Human-readable reference
   projectId?: string;        // Optional linked project
+  road?: string;
   category: ReportCategory;
   title: string;
   description: string;
   location: GeoLocation;
   locationDescription: string;
   photoUrl?: string;
+  evidenceUrl?: string;
   status: ReportStatus;
   reporterName?: string;     // Never exposed publicly
   reporterContact?: string;  // Never exposed publicly

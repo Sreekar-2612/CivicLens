@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseClient(req)
     let query = supabase
       .from('projects')
       .select('*')

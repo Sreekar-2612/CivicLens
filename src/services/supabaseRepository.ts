@@ -87,10 +87,12 @@ export function mapDbGrievanceToDomain(row: any): Report {
     title: row.title,
     description: row.description,
     location: {
-      lat: row.latitude || 18.5204,
-      lng: row.longitude || 73.8567,
+      lat: row.latitude ?? 0,
+      lng: row.longitude ?? 0,
     },
-    locationDescription: `${row.road_name || 'Road'}, ${row.locality || 'Locality'} (${row.ward || 'Ward 1'})`,
+    locationDescription: row.road_name
+      ? [row.road_name, row.locality, row.ward].filter(Boolean).join(', ')
+      : 'Location withheld',
     photoUrl: row.evidence_url || undefined,
     status: row.status as any,
     reporterName: row.reporter_name || undefined,
@@ -283,21 +285,12 @@ export class SupabaseDataRepository {
 
   // -- Reports / Grievances (Edge Function: get-grievances) --
   async getReports(): Promise<Report[]> {
-    try {
-      const { data, error } = await this.client.functions.invoke('get-grievances')
-      if (!error && data?.success && Array.isArray(data.grievances)) {
-        return data.grievances.map(mapDbGrievanceToDomain)
-      }
-    } catch (e) {
-      console.warn('Edge function get-grievances fallback to DB:', e)
-    }
-
-    const { data, error } = await this.client
-      .from('grievances')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data, error } = await this.client.functions.invoke('get-grievances')
     if (error) throw error
-    return (data || []).map(mapDbGrievanceToDomain)
+    if (!data?.success || !Array.isArray(data.grievances)) {
+      throw new Error(`get-grievances: ${data?.error || 'Invalid response'}`)
+    }
+    return data.grievances.map(mapDbGrievanceToDomain)
   }
 
   async getReport(id: string): Promise<Report | undefined> {
@@ -317,21 +310,12 @@ export class SupabaseDataRepository {
 
   // -- Alerts / Clashes (Edge Function: get-clashes) --
   async getAlerts(): Promise<CoordinationAlert[]> {
-    try {
-      const { data, error } = await this.client.functions.invoke('get-clashes')
-      if (!error && data?.success && Array.isArray(data.clashes)) {
-        return data.clashes.map(mapDbClashToDomain)
-      }
-    } catch (e) {
-      console.warn('Edge function get-clashes fallback to DB:', e)
-    }
-
-    const { data, error } = await this.client
-      .from('clashes')
-      .select('*')
-      .order('created_at', { ascending: false })
+    const { data, error } = await this.client.functions.invoke('get-clashes')
     if (error) throw error
-    return (data || []).map(mapDbClashToDomain)
+    if (!data?.success || !Array.isArray(data.clashes)) {
+      throw new Error(`get-clashes: ${data?.error || 'Invalid response'}`)
+    }
+    return data.clashes.map(mapDbClashToDomain)
   }
 
   async getAlert(id: string): Promise<CoordinationAlert | undefined> {
@@ -375,50 +359,8 @@ export class SupabaseDataRepository {
       throw new Error(`Project creation rejected: ${validation.errors.join(' ')}`)
     }
 
-    try {
-      const { data: res, error } = await this.client.functions.invoke('create-project', {
-        body: data
-      })
-      if (error) throw error
-      if (res?.success && res.project) {
-        return mapDbProjectToDomain(res.project)
-      }
-    } catch (e) {
-      console.warn('Edge function create-project fallback to DB:', e)
-    }
-
-    // DB Fallback
-    const id = `proj-${Date.now().toString().slice(-6)}`
-    const dbPayload = {
-      id,
-      title: data.title!.trim(),
-      purpose: data.purpose?.trim() || 'Municipal capital works',
-      department_id: data.departmentId!,
-      contractor_name: data.contractor!.trim(),
-      category: data.category || 'road_construction',
-      road_name: data.road!.trim(),
-      locality: data.locality?.trim() || 'Central Zone',
-      ward: data.ward || 'Ward 1',
-      latitude: data.location?.lat || 18.5204,
-      longitude: data.location?.lng || 73.8567,
-      budget: data.budgetLakhs || 0,
-      status: data.status || 'planned',
-      publication_status: 'published',
-      start_date: data.startDate!,
-      original_end_date: data.originalEndDate!,
-      revised_end_date: null,
-      progress_percent: data.progressPercent || 0,
-      confidence_indicator: data.confidenceIndicator || 'on_track',
-    }
-
-    const { data: inserted, error } = await this.client
-      .from('projects')
-      .insert(dbPayload)
-      .select()
-      .single()
-
-    if (error) throw error
-    return mapDbProjectToDomain(inserted)
+    const { data: res, error } = await this.client.functions.invoke('create-project', { body: data })
+    return mapDbProjectToDomain(functionResult('create-project', res, error, 'project'))
   }
 
   // -- Update Project (Edge Function: update-project) --
@@ -438,59 +380,17 @@ export class SupabaseDataRepository {
       }
     }
 
-    let hasDeadlineChange = false
     if (updates.revisedEndDate && updates.revisedEndDate !== (current.revisedEndDate || current.originalEndDate)) {
-      hasDeadlineChange = true
       const dValidation = validateDeadlineRevision(current, updates.revisedEndDate, delayReason)
       if (!dValidation.isValid) {
         throw new Error(`Deadline revision rejected: ${dValidation.errors.join(' ')}`)
       }
     }
 
-    try {
-      const { data: res, error } = await this.client.functions.invoke('update-project', {
-        body: { id, updates, delayReason, authorName }
-      })
-      if (!error && res?.success && res.project) {
-        return mapDbProjectToDomain(res.project)
-      }
-    } catch (e) {
-      console.warn('Edge function update-project fallback to DB:', e)
-    }
-
-    // DB Fallback
-    const dbPayload: any = {}
-    if (updates.status !== undefined) dbPayload.status = updates.status
-    if (updates.progressPercent !== undefined) dbPayload.progress_percent = updates.progressPercent
-    if (updates.confidenceIndicator !== undefined) dbPayload.confidence_indicator = updates.confidenceIndicator
-    if (updates.contractor !== undefined) dbPayload.contractor_name = updates.contractor
-    if (updates.budgetLakhs !== undefined) dbPayload.budget = updates.budgetLakhs
-    if (hasDeadlineChange) dbPayload.revised_end_date = updates.revisedEndDate
-
-    const { data: updated, error } = await this.client
-      .from('projects')
-      .update(dbPayload)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) throw error
-
-    if (hasDeadlineChange) {
-      await this.client.from('project_updates').insert({
-        project_id: id,
-        update_type: 'deadline_revision',
-        progress_percent: updates.progressPercent ?? current.progressPercent,
-        status: updates.status ?? current.status,
-        notes: delayReason || 'Deadline revised',
-        delay_reason_description: delayReason,
-        previous_end_date: current.revisedEndDate || current.originalEndDate,
-        revised_end_date: updates.revisedEndDate,
-        created_by_name: authorName || 'Authorized Officer',
-      })
-    }
-
-    return mapDbProjectToDomain(updated)
+    const { data: res, error } = await this.client.functions.invoke('update-project', {
+      body: { id, updates, delayReason, authorName }
+    })
+    return mapDbProjectToDomain(functionResult('update-project', res, error, 'project'))
   }
 
   // -- Add Progress Update (Edge Function: add-project-update) --
@@ -498,37 +398,10 @@ export class SupabaseDataRepository {
     projectId: string,
     update: Partial<ProjectUpdate>
   ): Promise<ProjectUpdate> {
-    try {
-      const { data: res, error } = await this.client.functions.invoke('add-project-update', {
-        body: { projectId, update }
-      })
-      if (!error && res?.success && res.update) {
-        return mapDbUpdateToDomain(res.update)
-      }
-    } catch (e) {
-      console.warn('Edge function add-project-update fallback to DB:', e)
-    }
-
-    const dbPayload = {
-      project_id: projectId,
-      update_type: update.type || 'progress',
-      progress_percent: update.newValue ? parseInt(update.newValue) : undefined,
-      notes: update.description || update.title || 'Update',
-      delay_reason_description: update.delayReason,
-      previous_end_date: update.previousValue,
-      revised_end_date: update.newValue,
-      evidence_path: update.evidenceUrl,
-      created_by_name: update.authorName || 'Field Engineer',
-    }
-
-    const { data, error } = await this.client
-      .from('project_updates')
-      .insert(dbPayload)
-      .select()
-      .single()
-
-    if (error) throw error
-    return mapDbUpdateToDomain(data)
+    const { data: res, error } = await this.client.functions.invoke('add-project-update', {
+      body: { projectId, update }
+    })
+    return mapDbUpdateToDomain(functionResult('add-project-update', res, error, 'update'))
   }
 
   // -- Add Grievance / Report (Edge Function: create-grievance) --

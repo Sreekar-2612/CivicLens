@@ -6,6 +6,7 @@ import {
   ChevronRight, Calendar, Filter
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
+import { EvidencePhoto } from '../components/EvidencePhoto'
 import type { Report, ReportStatus } from '../types'
 import { REPORT_STATUS_LABELS, REPORT_CATEGORY_LABELS } from '../types'
 import { format } from 'date-fns'
@@ -26,22 +27,26 @@ export function ReportTrackPage() {
   const [reports, setReports] = useState<Report[]>([])
   const [activeReport, setActiveReport] = useState<Report | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadReports() {
-      const all = await dataRepository.getReports()
-      setReports(all)
+      try {
+        const all = await dataRepository.getReports()
+        setReports(all)
+        setLoadError(null)
 
-      const target = refFromQuery || routeId
-      if (target) {
-        const found = all.find(
-          r => r.referenceId.toLowerCase() === target.toLowerCase() || r.id === target
-        )
-        if (found) {
-          setActiveReport(found)
+        const target = refFromQuery || routeId
+        if (target) {
+          const found = all.find(
+            r => r.referenceId.toLowerCase() === target.toLowerCase() || r.id === target
+          )
+          if (found) setActiveReport(found)
+        } else if (all.length > 0) {
+          setActiveReport(all[0])
         }
-      } else if (all.length > 0 && !activeReport) {
-        setActiveReport(all[0])
+      } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Could not load reports.')
       }
     }
     loadReports()
@@ -96,6 +101,11 @@ export function ReportTrackPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] font-sans p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+      {loadError && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+          Could not load reports: {loadError}
+        </div>
+      )}
       {/* Header & Search Bar (Fresh Civic White Card) */}
       <div className="bg-white rounded-xl border border-[var(--border)] p-6 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -129,7 +139,7 @@ export function ReportTrackPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
             <input
               type="text"
-              placeholder="Search by Reference ID (e.g. CL-2026-8821), keyword, or corridor name..."
+              placeholder="Search by Reference ID (e.g. GRV-2026-8821), keyword, or corridor name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-sm text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:bg-white transition-all"
@@ -300,8 +310,8 @@ export function ReportTrackPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">
                     Submitted Evidence Photo
                   </span>
-                  <img
-                    src={activeReport.photoUrl}
+                  <EvidencePhoto
+                    path={activeReport.photoUrl}
                     alt="Citizen evidence photo"
                     className="w-full max-h-56 object-cover rounded-xl border border-[var(--border)]"
                   />

@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
 
     if (!projectId) throw new Error('projectId is required')
 
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseClient(req)
     const { data, error } = await supabase
       .from('project_updates')
       .select('*')

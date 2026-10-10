@@ -5,12 +5,29 @@ const anonKey = () => Deno.env.get('SUPABASE_ANON_KEY') || ''
 const serviceKey = () => Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 
 // Public endpoints use the caller's JWT and database RLS.
-export function getSupabaseClient(req?: Request) {
+export function getSupabaseClient(req: Request) {
   if (!url() || !anonKey()) throw new Error('Supabase is not configured')
   const authorization = req?.headers.get('Authorization')
   return createClient(url(), anonKey(), {
     global: { headers: authorization ? { Authorization: authorization } : {} },
   })
+}
+
+export function getAnonymousClient() {
+  if (!url() || !anonKey()) throw new Error('Supabase is not configured')
+  return createClient(url(), anonKey())
+}
+
+export function hasUserToken(req: Request) {
+  const authorization = req.headers.get('Authorization')
+  if (!authorization) return false
+  const token = authorization.match(/^Bearer\s+(.+)$/i)?.[1]
+  return token !== anonKey()
+}
+
+export function validEvidencePath(path: string, userId: string, folders: string[]) {
+  return folders.some(folder => path.startsWith(`${folder}/${userId}/`)) &&
+    /^[a-z]+\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/i.test(path)
 }
 
 function serviceClient() {

@@ -1,32 +1,32 @@
-# React + TypeScript + Vite
+# CivicLens
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+CivicLens is a prototype for exploring municipal road and utility work. Residents can browse work orders, see corridor timelines, submit and track grievances, and view department scorecards. Officers can create and update projects, review reports, and coordinate overlapping work.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Install dependencies with `npm install`, then run `npm run dev`. On Windows PowerShell installations that block `npm.ps1`, use `npm.cmd install` and `npm.cmd run dev`.
 
-## React Compiler
+Without Supabase credentials, the app uses synthetic Pune records in `src/data` and persists changes in browser local storage. These records are for demonstration only and are not shared between browsers.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+For a Supabase instance, copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Apply the SQL migrations in `supabase/migrations`, seed with `supabase/seed.sql` if desired, and deploy the functions in `supabase/functions`. Configure Google sign-in in Supabase Auth for authenticated resident submissions. Do not place a service role key in a `VITE_` variable or other client-side code.
 
-## Expanding the Oxlint configuration
+## Structure
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+| Path | Purpose |
+| --- | --- |
+| `src/pages` | Public, officer, admin, and data guide screens |
+| `src/components` | Layout, map, and reusable UI |
+| `src/types` | Shared application types and labels |
+| `src/services/dataRepository.ts` | Data access interface and local demo repository |
+| `src/services/supabaseRepository.ts` | Supabase-backed repository |
+| `src/context/AuthContext.tsx` | Authentication state and demo role switcher |
+| `supabase/migrations` | Database schema and access policies |
+| `supabase/functions` | Server-side API operations |
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Checks
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Run `npm run build`, `npm run lint`, and `npm test`. Automated tests cover project validation, the repeat excavation date window, and mocked Supabase repository routing. Live authorization, migrations, storage, and end-to-end workflows also need verification against an isolated Supabase project before production use.
+
+## Prototype boundaries
+
+The data guide uses scripted responses based on available records; it is not a general AI assistant. Coordination alerts and notifications are prototype workflows. A road timeline can flag dates that suggest repeat excavation, but a human must verify location, scope, permits, and applicable rules before treating it as a violation. Demo role switching is for local exploration and must not grant server permissions.

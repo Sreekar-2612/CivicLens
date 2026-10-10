@@ -6,6 +6,7 @@ import {
   ArrowLeft, Search, RefreshCw, ChevronRight
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
+import { hasRepeatExcavationRisk } from '../services/roadRisk'
 import type { Project, Department, CoordinationAlert } from '../types'
 import { StatusBadge } from '../components/ui/StatusBadge'
 import { format } from 'date-fns'
@@ -67,19 +68,7 @@ export function RoadViewPage() {
   const currentProjects = roadProjects.filter(p => p.status === 'in_progress' || p.status === 'delayed')
   const plannedProjects = roadProjects.filter(p => p.status === 'planned')
 
-  const resurfacingProjects = pastProjects.filter(p => p.category === 'road_resurfacing' || p.category === 'road_construction')
-  const excavationProjects = [...currentProjects, ...plannedProjects].filter(
-    p => p.category === 'water_pipeline' || p.category === 'gas_pipeline' || p.category === 'drainage' || p.category === 'telecom'
-  )
-  const hasRepeatExcavationRisk = resurfacingProjects.some(resurfacing => {
-    if (!resurfacing.actualEndDate) return false
-    const completedAt = new Date(`${resurfacing.actualEndDate}T00:00:00`).getTime()
-    if (Number.isNaN(completedAt)) return false
-    return excavationProjects.some(excavation => {
-      const excavationAt = new Date(`${excavation.startDate}T00:00:00`).getTime()
-      return excavationAt >= completedAt && excavationAt - completedAt <= 365 * 24 * 60 * 60 * 1000
-    })
-  })
+  const repeatExcavationRisk = hasRepeatExcavationRisk(pastProjects, [...currentProjects, ...plannedProjects])
 
   const roadProjectIds = new Set(roadProjects.map(p => p.id))
   const roadAlerts = alerts.filter(a => roadProjectIds.has(a.projectAId) || roadProjectIds.has(a.projectBId))
@@ -127,7 +116,7 @@ export function RoadViewPage() {
       </div>
 
       {/* Moratorium / Repeat Excavation Hatch Banner */}
-      {hasRepeatExcavationRisk && (
+      {repeatExcavationRisk && (
         <div className="border border-[#F0386B]/30 rounded-2xl overflow-hidden shadow-2xs">
           <div className="h-2 clash-hatch border-b border-[#F0386B]/20"></div>
           <div className="p-4 bg-[#FFE6EE] flex items-start gap-3">
@@ -162,9 +151,9 @@ export function RoadViewPage() {
           <span className="text-[10px] text-[#64748B] mt-0.5 block">Historical &amp; planned</span>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
-          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Active Digs Right Now</span>
+          <span className="text-[10px] font-bold text-[#64748B] uppercase block">Works Marked Active</span>
           <span className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#FFB020]">{currentProjects.length}</span>
-          <span className="text-[10px] text-[#64748B] mt-0.5 block">Live street trenches</span>
+          <span className="text-[10px] text-[#64748B] mt-0.5 block">Based on recorded status</span>
         </div>
         <div className="bg-white p-3.5 rounded-xl border border-[#E3EAF2] shadow-2xs">
           <span className="text-[10px] font-bold text-[#64748B] uppercase block">Scheduled Future Digs</span>

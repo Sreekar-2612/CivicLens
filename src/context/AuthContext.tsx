@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: session.user.id,
             email: session.user.email,
             displayName: profile?.display_name || session.user.email?.split('@')[0] || 'Authenticated User',
-            role: (profile?.role as UserRole) || 'resident',
+            role: profile?.role === 'department_officer' ? 'officer' : (profile?.role as UserRole) || 'resident',
             departmentId: profile?.department_id,
             isDemoUser: false,
           })
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: session.user.id,
               email: session.user.email,
               displayName: profile?.display_name || session.user.email?.split('@')[0] || 'User',
-              role: (profile?.role as UserRole) || 'resident',
+              role: profile?.role === 'department_officer' ? 'officer' : (profile?.role as UserRole) || 'resident',
               departmentId: profile?.department_id,
               isDemoUser: false,
             })

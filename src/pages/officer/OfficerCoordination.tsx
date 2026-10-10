@@ -18,6 +18,7 @@ export function OfficerCoordination() {
   const [decisionNotes, setDecisionNotes] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastIsError, setToastIsError] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -32,7 +33,10 @@ export function OfficerCoordination() {
         setDecisionNotes(a[0].decisionNotes || '')
       }
     }
-    load()
+    load().catch(err => {
+      setToastIsError(true)
+      setToastMessage(`Could not load alerts: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    })
   }, [])
 
   const handleSelectAlert = (alert: CoordinationAlert) => {
@@ -52,9 +56,15 @@ export function OfficerCoordination() {
       if (updated) {
         setSelectedAlert(updated)
         setAlerts(prev => prev.map(a => a.id === updated.id ? updated : a))
+        setToastIsError(false)
         setToastMessage(`Alert status updated to "${ALERT_STATUS_LABELS[newStatus]}"`)
         setTimeout(() => setToastMessage(null), 3000)
+      } else {
+        throw new Error('Alert was not found.')
       }
+    } catch (err) {
+      setToastIsError(true)
+      setToastMessage(`Could not update alert: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsUpdating(false)
     }
@@ -88,7 +98,7 @@ export function OfficerCoordination() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#1E293B] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm border border-[var(--border)] animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-[var(--teal)]" />
+          {toastIsError ? <AlertTriangle className="w-4 h-4 text-rose-400" /> : <CheckCircle2 className="w-4 h-4 text-[var(--teal)]" />}
           <span>{toastMessage}</span>
         </div>
       )}

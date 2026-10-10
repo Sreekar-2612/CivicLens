@@ -1,27 +1,46 @@
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { getSupabaseClient } from '../_shared/supabase.ts'
+import { getAnonymousClient, requireActor, hasUserToken, errorResponse } from '../_shared/supabase.ts'
 
 Deno.serve(async (req) => {
   const corsRes = handleCors(req)
   if (corsRes) return corsRes
 
   try {
-    const supabase = getSupabaseClient()
-    const { data, error } = await supabase
-      .from('grievances')
-      .select('*')
-      .order('created_at', { ascending: false })
+    let actor: Awaited<ReturnType<typeof requireActor>> | null = null
+    try { actor = await requireActor(req) } catch (error) {
+      if (hasUserToken(req)) throw error
+    }
+    const supabase = actor?.db || getAnonymousClient()
+    let query = actor
+      ? supabase.from('grievances').select('*')
+      : supabase.from('public_grievances').select('*')
+    if (actor?.profile.role === 'department_officer') {
+      const { data: projects, error: projectError } = await supabase.from('projects')
+        .select('id').eq('department_id', actor.profile.department_id)
+      if (projectError) throw projectError
+      const ids = (projects || []).map(p => p.id)
+      query = query.in('project_id', ids.length ? ids : ['__none__'])
+    } else if (actor?.profile.role !== 'admin' && actor) {
+      query = query.eq('owner_id', actor.user.id)
+    }
+    const { data, error } = await query.order('created_at', { ascending: false })
 
     if (error) throw error
 
+    if (actor?.profile.role === 'resident') {
+      const { data: publicRows, error: publicError } = await getAnonymousClient()
+        .from('public_grievances').select('*').order('created_at', { ascending: false })
+      if (publicError) throw publicError
+      const ownIds = new Set((data || []).map(row => row.id))
+      return new Response(JSON.stringify({ success: true, grievances: [...(data || []), ...(publicRows || []).filter(row => !ownIds.has(row.id))] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200,
+      })
+    }
     return new Response(JSON.stringify({ success: true, grievances: data || [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    return errorResponse(err)
   }
 })

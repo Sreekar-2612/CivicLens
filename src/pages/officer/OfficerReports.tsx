@@ -5,6 +5,7 @@ import {
   ArrowRight, Filter, Send, MapPin, ExternalLink, Image
 } from 'lucide-react'
 import { dataRepository } from '../../services/dataRepository'
+import { EvidencePhoto } from '../../components/EvidencePhoto'
 import type { Report, ReportStatus, Project } from '../../types'
 import { REPORT_STATUS_LABELS, REPORT_CATEGORY_LABELS } from '../../types'
 import { format } from 'date-fns'
@@ -17,6 +18,7 @@ export function OfficerReports() {
   const [officerResponseText, setOfficerResponseText] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [toastIsError, setToastIsError] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -31,7 +33,10 @@ export function OfficerReports() {
         setOfficerResponseText(r[0].officerResponse || '')
       }
     }
-    load()
+    load().catch(err => {
+      setToastIsError(true)
+      setToastMessage(`Could not load reports: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    })
   }, [])
 
   const handleSelect = (r: Report) => {
@@ -51,9 +56,15 @@ export function OfficerReports() {
       if (updated) {
         setSelectedReport(updated)
         setReports(prev => prev.map(item => item.id === updated.id ? updated : item))
+        setToastIsError(false)
         setToastMessage(`Report status updated to ${REPORT_STATUS_LABELS[status]}`)
         setTimeout(() => setToastMessage(null), 3000)
+      } else {
+        throw new Error('Report was not found.')
       }
+    } catch (err) {
+      setToastIsError(true)
+      setToastMessage(`Could not update report: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsUpdating(false)
     }
@@ -70,7 +81,7 @@ export function OfficerReports() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8">
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 text-sm border border-gray-700 animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          {toastIsError ? <AlertTriangle className="w-4 h-4 text-rose-400" /> : <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
           <span>{toastMessage}</span>
         </div>
       )}
@@ -212,8 +223,8 @@ export function OfficerReports() {
                 {selectedReport.photoUrl && (
                   <div className="pt-2">
                     <span className="text-xs font-semibold text-gray-500 block mb-1">Attached Evidence:</span>
-                    <img
-                      src={selectedReport.photoUrl}
+                    <EvidencePhoto
+                      path={selectedReport.photoUrl}
                       alt="Citizen evidence"
                       className="rounded-lg max-h-48 w-auto object-cover border"
                     />

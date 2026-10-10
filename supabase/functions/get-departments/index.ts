@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
   if (corsRes) return corsRes
 
   try {
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseClient(req)
     const { data, error } = await supabase
       .from('departments')
       .select('*')

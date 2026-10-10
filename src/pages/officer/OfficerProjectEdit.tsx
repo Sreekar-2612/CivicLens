@@ -123,39 +123,12 @@ export function OfficerProjectEdit() {
         user?.displayName || 'Department Engineer'
       )
 
-      // Add audit logs
-      if (progressPercent !== project.progressPercent) {
-        await dataRepository.addProjectUpdate(project.id, {
-          projectId: project.id,
-          type: 'progress',
-          title: `Progress updated to ${progressPercent}%`,
-          description: `Field milestone adjusted from ${project.progressPercent}% to ${progressPercent}%.`,
-          previousValue: `${project.progressPercent}%`,
-          newValue: `${progressPercent}%`,
-          authorId: user?.id || 'officer',
-          authorName: user?.displayName || 'Department Engineer',
-        })
-      }
+      if (!updated) throw new Error('Work order was not found.')
+      setProject(updated)
+      setToastMessage('Work order modifications saved successfully.')
+      setTimeout(() => setToastMessage(null), 3000)
 
-      if (isDeadlineChanged) {
-        await dataRepository.addProjectUpdate(project.id, {
-          projectId: project.id,
-          type: 'deadline_revision',
-          title: `Deadline Revised to ${revisedEndDate}`,
-          description: `Official schedule adjustment authorized. Justification: ${delayReason}`,
-          previousValue: effectiveCurrentDeadline,
-          newValue: revisedEndDate,
-          delayReason: delayReason.trim(),
-          authorId: user?.id || 'officer',
-          authorName: user?.displayName || 'Department Engineer',
-        })
-      }
-
-      if (updated) {
-        setProject(updated)
-        setToastMessage('Work order modifications saved and audited successfully.')
-        setTimeout(() => setToastMessage(null), 3000)
-      }
+      // Database triggers record progress and deadline changes with the project update.
     } catch (err: any) {
       setErrorMessages([err?.message || 'Failed to update work order.'])
     } finally {
