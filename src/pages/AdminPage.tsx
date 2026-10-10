@@ -256,7 +256,7 @@ export function AdminPage() {
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>Read-Only Preview Mode:</strong> You are currently signed in as a {user?.role || 'visitor'}. Sign in with your registered administrator account (<code>sreekartirumala0706@gmail.com</code>) to save live updates.
+                  <strong>Administrator Access:</strong> Sign in with an authorized administrator account to modify personnel roles and project assignments.
                 </span>
               </div>
               {!user && (
@@ -322,7 +322,7 @@ export function AdminPage() {
               }`}
             >
               <Users className="w-4 h-4 text-[#088c2e]" />
-              <span>Staff Supervision &amp; Activity</span>
+              <span>Personnel &amp; Roles</span>
               <span className="bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c]/50 text-[10px] px-2 py-0.5 rounded-full font-bold">
                 {roster.length}
               </span>
@@ -338,7 +338,7 @@ export function AdminPage() {
               }`}
             >
               <Briefcase className="w-4 h-4 text-[#088c2e]" />
-              <span>Role &amp; Project Assignment Studio</span>
+              <span>Assign Roles &amp; Projects</span>
             </button>
 
             <button
@@ -351,7 +351,7 @@ export function AdminPage() {
               }`}
             >
               <Database className="w-4 h-4 text-[#088c2e]" />
-              <span>Database Diagnostic &amp; Logs</span>
+              <span>System Health</span>
             </button>
           </div>
         </div>

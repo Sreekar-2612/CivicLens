@@ -228,10 +228,10 @@ export function ReportPage() {
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text)] font-heading tracking-tight">
-              Submit Citizen Ground-Truth Report
+              Report an Infrastructure Issue
             </h1>
             <p className="text-xs sm:text-sm text-[var(--muted)] mt-0.5">
-              Empower civic accountability. Report stalled excavations, safety hazards, or broken roads directly to municipal oversight boards.
+              Report stalled excavation, safety hazards, or damaged roads to municipal authorities.
             </p>
           </div>
         </div>

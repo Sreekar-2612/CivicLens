@@ -253,15 +253,15 @@ export function ProjectDetail() {
             </div>
           )}
 
-          {/* 3-Tier Auditor Verification Workflow Card */}
+          {/* Auditor Verification Workflow Card */}
           <div className="bg-white border-2 border-[#e2c09c] rounded-xl p-4 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-['Plus_Jakarta_Sans'] text-sm font-bold text-[#021217] flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#088c2e]" />
-                <span>Auditor &amp; Contractor Lifecycle Action</span>
+                <span>Verification Workflow</span>
               </h2>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#e2c09c]/30 text-[#021217] border border-[#e2c09c]/50">
-                3-Tier Verification
+                Auditor Review
               </span>
             </div>
 
@@ -269,7 +269,7 @@ export function ProjectDetail() {
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
                 <p className="text-xs text-amber-900 font-semibold flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Contractor marked work 100% finished. Awaiting Auditor Approval.</span>
+                  <span>Work marked finished. Awaiting auditor inspection.</span>
                 </p>
                 <button
                   type="button"
@@ -284,18 +284,18 @@ export function ProjectDetail() {
                   className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors border-none cursor-pointer shadow-xs"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Auditor: Approve &amp; Mark Work Completed</span>
+                  <span>Auditor: Verify &amp; Sign Off</span>
                 </button>
               </div>
             ) : project.status === 'completed' ? (
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800 font-semibold flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Auditor Verified &amp; Approved. Cascaded across municipal records.</span>
+                <span>Verified and approved by independent municipal auditor.</span>
               </div>
             ) : (
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
                 <p className="text-xs text-slate-600 font-medium">
-                  Contractor completes physical digging/construction and submits for municipal auditor review.
+                  Submit completed works for independent auditor inspection and sign-off.
                 </p>
                 <button
                   type="button"
@@ -309,7 +309,7 @@ export function ProjectDetail() {
                   className="w-full py-2 px-3 rounded-lg bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                 >
                   <Upload className="w-4 h-4 text-[#11e852]" />
-                  <span>Contractor: Submit Work for Auditor Verification</span>
+                  <span>Submit for Auditor Inspection</span>
                 </button>
               </div>
             )}
@@ -355,7 +355,7 @@ export function ProjectDetail() {
               <div className="mt-3 pt-3 border-t border-[#F1F5F9]">
                 <h3 className="text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-1">
                   <History className="w-3.5 h-3.5 text-[#FFB020]" />
-                  <span>Immutable Revision Audit Log</span>
+                  <span>Revision History</span>
                 </h3>
                 <div className="space-y-2">
                   {deadlineRevisions.map(rev => (
@@ -457,7 +457,7 @@ export function ProjectDetail() {
               <div className="mb-4 p-3.5 rounded-xl bg-[#FAF7F0] border-2 border-[#e2c09c] text-xs space-y-3">
                 <div className="flex items-center justify-between border-b border-[#e2c09c]/40 pb-1.5">
                   <span className="font-bold uppercase tracking-wider text-[#088c2e] text-[11px]">
-                    Submit Official Progress Record
+                    Record Field Update
                   </span>
                   <button
                     type="button"

@@ -125,8 +125,8 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e2c09c]/25 text-[#021217] text-xs font-bold border border-[#e2c09c]/40 shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#11e852]" />
-            <span className="font-bungee text-[9px] tracking-wider text-[#021217]">CONTINUOUS 3D COVERFLOW</span>
+            <span className="w-2 h-2 rounded-full bg-[#11e852]" />
+            <span className="text-[10px] font-bold tracking-wider uppercase text-[#021217]">FEATURED WORKS</span>
           </div>
           <span className="text-xs text-[#536267] hidden sm:inline">
             Focus: <strong className="text-[#021217]">Project {activeNormalizedIndex + 1}</strong> of {count}
@@ -293,9 +293,9 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
           </div>
 
           {/* Interactive Hint Pill */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#e2c09c]/60 text-[11px] text-[#536267] pointer-events-none shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-[#11e852] animate-ping" />
-            <span>Scroll wheel or drag horizontally to roll carousel</span>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#e2c09c]/60 text-[11px] text-[#536267] pointer-events-none shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#11e852]" />
+            <span>Scroll or drag horizontally to browse</span>
           </div>
         </div>
       ) : (

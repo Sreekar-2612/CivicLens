@@ -108,18 +108,18 @@ export function StepAccordion({ reports, projectId, projectTitle }: StepAccordio
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-[#F1F5F9]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-bungee bg-[#E3F7F5] text-[#12B5A6] text-[9px] px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-[#12B5A6]/20">
-              CITIZEN TELEMETRY
+            <span className="text-[10px] font-bold text-[#088c2e] uppercase tracking-wider bg-[#e2c09c]/30 px-2.5 py-0.5 rounded-full border border-[#e2c09c]/40">
+              Citizen Observations
             </span>
             <span className="text-xs text-[#64748B] font-semibold">
-              Step Accordion • {count} Field Observations
+              {count} Report{count === 1 ? '' : 's'}
             </span>
           </div>
           <h2 className="font-['Plus_Jakarta_Sans'] text-lg sm:text-xl font-extrabold text-[#1E293B]">
-            Resident Ground Reports &amp; Photo Evidence
+            Citizen Reports &amp; Photo Evidence
           </h2>
           <p className="text-xs text-[#64748B] mt-0.5">
-            Geotagged photos and observations uploaded by residents for this project corridor
+            Geotagged ground photos and observations submitted for this corridor
           </p>
         </div>
 

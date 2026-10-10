@@ -152,11 +152,11 @@ export function ProjectExplorer() {
     }
   }
 
-  if (loading) return <LoadingState message="Loading high-fidelity geospatial registry..." />
+  if (loading) return <LoadingState message="Loading projects..." />
 
   return (
     <div className="min-h-screen bg-transparent font-sans text-slate-900 pb-12">
-      {/* Spacious, Clean Page Header */}
+      {/* Page Header */}
       <div className="bg-white/95 backdrop-blur-md border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -166,13 +166,12 @@ export function ProjectExplorer() {
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   {cityParam ? `${cityParam} Works Observatory` : 'Municipal Works Observatory'}
                 </span>
-                <span className="text-xs text-slate-400">• Verified Geospatial Registry</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading tracking-tight mt-1">
-                Public Works & Road Projects
+                Public Works &amp; Road Projects
               </h1>
               <p className="text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                Explore active digging permits, road construction timelines, and utility installations across {stats.total} public works projects.
+                Active road excavation, utility works, and construction timelines across {stats.total} monitored projects.
               </p>
             </div>
 
@@ -434,7 +433,7 @@ export function ProjectExplorer() {
                       to={`/projects/${selectedProject.id}`}
                       className="w-full py-3 px-4 rounded-xl bg-[#021217] hover:bg-[#172a30] text-[#f1f3d8] hover:text-[#11e852] border border-[#e2c09c] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm no-underline"
                     >
-                      <span>Open Full Transparency Audit</span>
+                      <span>View Project Details</span>
                       <ArrowRight className="w-4 h-4 text-[#11e852]" />
                     </Link>
                   </div>
@@ -444,7 +443,7 @@ export function ProjectExplorer() {
                   <MapPin className="w-8 h-8 text-slate-300 mx-auto" />
                   <h3 className="font-bold text-[#021217] text-sm font-heading">Select a Project</h3>
                   <p className="text-xs text-[#536267] leading-relaxed">
-                    Click any marker on the map to inspect project specifications, contractor accountability, and immutable baseline timelines.
+                    Click any marker on the map to inspect project specifications, progress, and timelines.
                   </p>
                 </div>
               )}

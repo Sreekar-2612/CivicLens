@@ -198,26 +198,21 @@ export function PublicLayout() {
               <ul className="space-y-2 text-xs list-none">
                 <li><Link to="/projects" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Projects Explorer</Link></li>
                 <li><Link to="/scorecard" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Accountability Scorecard</Link></li>
-                <li><Link to="/report" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Report Civic Hazard</Link></li>
+                <li><Link to="/report" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Report Civic Issue</Link></li>
                 <li><Link to="/reports/track" className="hover:text-[#088c2e] transition-colors text-[#536267] no-underline">Track Grievance</Link></li>
-                <li><Link to="/mock-preview" className="hover:text-[#088c2e] transition-colors text-[#021217] font-semibold no-underline">Interactive Fresh Civic Mock</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-['Plus_Jakarta_Sans'] text-xs font-bold text-[#021217] uppercase tracking-wider mb-3">
-                Demonstration Notice
+                Municipal Oversight
               </h4>
               <p className="text-xs leading-relaxed text-[#536267]">
-                SpadeWork is a civic infrastructure platform demonstrating inter-agency coordination,
-                immutable contractual milestones, and public auditability for municipal public works corridors.
+                A unified spatial registry connecting municipal departments, contractors, and independent auditors to coordinate street excavations and prevent repeat road cutting.
               </p>
-              <div className="inline-block mt-2.5 px-2.5 py-1 rounded bg-[#faf3eb] text-[#7a5830] text-[11px] font-semibold border border-[#e2c09c]/40">
-                Demonstration Data — Simulated Municipal Work Orders
-              </div>
             </div>
           </div>
           <div className="border-t border-[#E3EAF2] mt-8 pt-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-[#94A3B8]">
-            <span>© 2026 SpadeWork • Built for Municipal Transparency</span>
+            <span>© 2026 SpadeWork • Municipal Public Works Platform</span>
             <span>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-[#64748B] hover:text-[#088c2e] no-underline">OpenStreetMap</a> &amp; Esri</span>
           </div>
         </div>

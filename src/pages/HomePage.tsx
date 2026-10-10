@@ -64,11 +64,11 @@ export function HomePage() {
         {/* Content Area with High Readability */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 pointer-events-auto">
           <div className="max-w-3xl">
-            {/* Top Brand Tag with Bungee font */}
-            <div className="inline-flex items-center gap-2 bg-[#FAF7F0]/90 text-[#8B6F55] text-xs font-semibold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-5 border border-[#E5D8C5] shadow-2xs backdrop-blur-xs">
-              <Sparkles className="w-3.5 h-3.5 text-[#8B6F55]" />
-              <span className="font-bungee text-[10px] tracking-widest text-[#5A4834]">
-                CIVIC INTELLIGENCE • LIVE CITY MAP
+            {/* Top Brand Tag */}
+            <div className="inline-flex items-center gap-2 bg-[#FAF7F0]/90 text-[#021217] text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-4 border border-[#E5D8C5] shadow-2xs backdrop-blur-xs">
+              <span className="w-2 h-2 rounded-full bg-[#11e852] animate-pulse" />
+              <span className="text-[11px] font-bold tracking-wide">
+                MUNICIPAL WORKS OBSERVATORY
               </span>
             </div>
 
@@ -131,20 +131,17 @@ export function HomePage() {
 
             {/* Quick links */}
             <div className="flex flex-wrap gap-4 mt-6 text-xs font-semibold text-[#536267]">
-              <Link to="/projects" className="flex items-center gap-1.5 hover:text-[#11e852] transition-colors no-underline">
-                <MapPin className="w-3.5 h-3.5 text-[#8B6F55]" /> Explore GIS Map
+              <Link to="/projects" className="flex items-center gap-1.5 hover:text-[#088c2e] transition-colors no-underline">
+                <MapPin className="w-3.5 h-3.5 text-[#021217]" /> Interactive Map
                 <ChevronRight className="w-3 h-3 opacity-60" />
               </Link>
-              <Link to="/scorecard" className="flex items-center gap-1.5 hover:text-[#11e852] transition-colors no-underline">
-                <BarChart3 className="w-3.5 h-3.5 text-[#8B6F55]" /> Dept Scorecard
+              <Link to="/scorecard" className="flex items-center gap-1.5 hover:text-[#088c2e] transition-colors no-underline">
+                <BarChart3 className="w-3.5 h-3.5 text-[#021217]" /> Agency Scorecards
                 <ChevronRight className="w-3 h-3 opacity-60" />
               </Link>
-              <Link to="/reports/track" className="flex items-center gap-1.5 hover:text-[#11e852] transition-colors no-underline">
-                <Search className="w-3.5 h-3.5 text-[#8B6F55]" /> Track Report
+              <Link to="/reports/track" className="flex items-center gap-1.5 hover:text-[#088c2e] transition-colors no-underline">
+                <Search className="w-3.5 h-3.5 text-[#021217]" /> Track Grievance
                 <ChevronRight className="w-3 h-3 opacity-60" />
-              </Link>
-              <Link to="/mock-preview" className="flex items-center gap-1.5 text-[#021217] hover:text-[#11e852] hover:underline font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-[#11e852]" /> Live Map Prototype (75%)
               </Link>
             </div>
           </div>
@@ -242,18 +239,17 @@ export function HomePage() {
         </section>
       )}
 
-      {/* Problem & Solution Pillars */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="text-center mb-10">
+      {/* Objectives */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-8">
           <span className="text-xs font-bold text-[#088c2e] uppercase tracking-wider">
-            Universal Municipal Coordination
+            Inter-Agency Coordination
           </span>
           <h2 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#021217] mt-1">
-            Why Every Municipality Needs SpadeWork
+            Coordinated Infrastructure. Zero Surprise Digging.
           </h2>
           <p className="text-xs sm:text-sm text-[#536267] max-w-xl mx-auto mt-2">
-            Roads are paved, then sliced open weeks later by water or telecom utilities.
-            SpadeWork brings cross-departmental work orders into a unified spatial registry to coordinate schedules and prevent repeat road digging in any city.
+            Bringing road works and utility permits into a unified spatial registry to align schedules and prevent repeat road cutting.
           </p>
         </div>
 
@@ -266,7 +262,7 @@ export function HomePage() {
               Unified Spatial Registry
             </h3>
             <p className="text-xs text-[#536267] leading-relaxed">
-              Registered road and utility work orders appear together on a map with their recorded coordinates.
+              Every road, water, and telecom permit mapped with verified corridor boundaries and contractor details.
             </p>
           </div>
 
@@ -278,19 +274,19 @@ export function HomePage() {
               Proactive Clash Detection
             </h3>
             <p className="text-xs text-[#536267] leading-relaxed">
-              Recorded work orders can reveal same-road scheduling clashes and possible repeat excavation within 365 days of resurfacing.
+              Automated alerts when separate utility agencies schedule excavations on the same corridor within 365 days of paving.
             </p>
           </div>
 
           <div className="bg-white border border-[#E3EAF2] rounded-xl p-5 shadow-2xs">
-            <div className="w-10 h-10 rounded-xl bg-[#E3F7F5] text-[#12B5A6] flex items-center justify-center mb-3">
+            <div className="w-10 h-10 rounded-xl bg-[#E3F7F5] text-[#088c2e] flex items-center justify-center mb-3">
               <BarChart3 className="w-5 h-5" />
             </div>
             <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#021217] mb-1.5">
-              Immutable Contractual Deadlines
+              Verified Milestones
             </h3>
             <p className="text-xs text-[#536267] leading-relaxed">
-              Original completion dates cannot be secretly overwritten. Every revised date creates an indelible audit record with mandatory engineering delay justifications.
+              Lock original completion targets and enforce independent engineering audit sign-offs before work orders close.
             </p>
           </div>
         </div>
@@ -326,29 +322,29 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Fresh Civic Light Call to Action */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="bg-[#faf7f0] border-2 border-[#e2c09c]/60 rounded-2xl p-8 sm:p-10 text-center shadow-xs">
+      {/* Clean Call to Action */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-[#faf7f0] border border-[#e2c09c] rounded-2xl p-8 text-center shadow-xs">
           <div className="w-10 h-10 mx-auto mb-3 rounded-xl bg-[#021217] text-[#11e852] border border-[#e2c09c] flex items-center justify-center shadow-xs">
             <Shield className="w-5 h-5 text-[#11e852]" />
           </div>
-          <h2 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#021217] mb-2">
-            Your City. Your Infrastructure. Your Right to Know.
+          <h2 className="font-['Plus_Jakarta_Sans'] text-2xl font-extrabold text-[#021217] mb-2">
+            Civic Transparency in Action
           </h2>
-          <p className="text-xs sm:text-sm text-[#536267] max-w-xl mx-auto mb-6 leading-relaxed">
-            Monitor infrastructure corridors in your ward, file geotagged ground reports on stalled machinery, and hold municipal departments accountable.
+          <p className="text-xs sm:text-sm text-[#536267] max-w-lg mx-auto mb-5 leading-relaxed">
+            Monitor active excavation permits in your ward or report stalled trenches directly to municipal officers.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link to="/projects" className="btn-primary text-xs py-2.5 px-5 no-underline">
               <MapPin className="w-4 h-4 text-[#11e852]" />
-              <span>Explore GIS Map</span>
+              <span>Explore Map</span>
             </Link>
             <Link
               to="/report"
               className="bg-white hover:bg-[#FAF7F0] text-[#021217] border border-[#e2c09c] text-xs font-bold py-2.5 px-5 rounded-xl transition-colors no-underline shadow-2xs flex items-center gap-1.5 hover:border-[#11e852]"
             >
               <FileText className="w-4 h-4 text-[#021217]" />
-              <span>Report Stalled Work</span>
+              <span>Report Issue</span>
             </Link>
           </div>
         </div>
