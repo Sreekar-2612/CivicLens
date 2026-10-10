@@ -18,6 +18,17 @@ Deno.serve(async (req) => {
 
     if (fetchErr || !current) throw new Error(`Project ${id} not found`)
     requireDepartment(profile, current.department_id)
+    if ((updates.status === 'completed' && current.status !== 'completed') ||
+        (updates.status === 'pending_audit' && current.status !== 'pending_audit') ||
+        (updates.progressPercent === 100 && current.progress_percent !== 100)) {
+      throw new Error('Completion must use the contractor submission and auditor approval workflow')
+    }
+    if (current.status === 'pending_audit' || current.status === 'completed') {
+      if ((updates.status !== undefined && updates.status !== current.status) ||
+          (updates.progressPercent !== undefined && updates.progressPercent !== current.progress_percent)) {
+        throw new Error('An audited project state cannot be changed through project editing')
+      }
+    }
 
     // Enforce original_end_date immutability check
     if (updates.originalEndDate && updates.originalEndDate !== current.original_end_date) {

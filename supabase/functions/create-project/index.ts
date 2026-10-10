@@ -8,6 +8,9 @@ Deno.serve(async (req) => {
   try {
     const { db: supabase, user, profile } = await requireActor(req, ['department_officer', 'admin'])
     const data = await req.json()
+    if (data.status === 'completed' || data.status === 'pending_audit' || data.progressPercent === 100) {
+      throw new Error('Completion must be submitted by an assigned contractor and approved by an auditor')
+    }
 
     // Validation rules
     if (!data.title || data.title.trim().length < 3) throw new Error('Title must be at least 3 characters')

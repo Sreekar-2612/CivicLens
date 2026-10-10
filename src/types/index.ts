@@ -63,7 +63,7 @@ export type AlertStatus =
   | 'dismissed'
   | 'resolved';
 
-export type UserRole = 'public' | 'resident' | 'officer' | 'admin';
+export type UserRole = 'public' | 'resident' | 'officer' | 'contractor' | 'auditor' | 'admin';
 
 // ---- Core Entities ----
 

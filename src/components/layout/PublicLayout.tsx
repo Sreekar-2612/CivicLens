@@ -16,7 +16,9 @@ const navItems = [
 export function PublicLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
-  const { user, signInWithGoogle, signOut } = useAuth()
+  const { user, loading, authError, signInWithGoogle, signOut, setDemoRole } = useAuth()
+  const workspacePath = user?.role === 'contractor' ? '/contractor' : user?.role === 'auditor' ? '/auditor' : '/officer'
+  const workspaceLabel = user?.role === 'contractor' ? 'Contractor Portal' : user?.role === 'auditor' ? 'Auditor Portal' : 'Officer Portal'
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif]">
@@ -66,11 +68,11 @@ export function PublicLayout() {
               <div className="w-px h-5 bg-[#E3EAF2] mx-2" />
 
               <Link
-                to="/officer"
+                to={workspacePath}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#1E293B] bg-[#F6F9FC] hover:bg-[#EAF1FF] hover:text-[#2F6BFF] border border-[#E3EAF2] transition-colors no-underline shadow-2xs"
               >
                 <Building2 className="w-3.5 h-3.5 text-[#2F6BFF]" />
-                <span>Officer Portal</span>
+                <span>{workspaceLabel}</span>
               </Link>
 
               {user && !user.isDemoUser ? (
@@ -138,18 +140,28 @@ export function PublicLayout() {
               ))}
               <div className="border-t border-[#E3EAF2] my-2" />
               <Link
-                to="/officer"
+                to={workspacePath}
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-[#2F6BFF] bg-[#EAF1FF] hover:bg-[#D5E4FF] transition-colors no-underline"
               >
                 <Building2 className="w-4 h-4" />
-                <span>Officer Portal</span>
+                <span>{workspaceLabel}</span>
                 <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-50" />
               </Link>
+              {!user || user.isDemoUser ? <button type="button" onClick={() => { void signInWithGoogle(); setMobileMenuOpen(false) }} className="px-3 py-2 text-sm text-[#2F6BFF]">Sign in with Google</button> : <button type="button" onClick={() => { void signOut(); setMobileMenuOpen(false) }} className="px-3 py-2 text-sm text-rose-600">Sign out ({user.displayName})</button>}
             </nav>
           </div>
         )}
       </header>
+
+      {authError && <p role="alert" className="mx-auto w-full max-w-7xl p-4 text-sm text-red-700">{authError}</p>}
+      {user && !loading && ['contractor', 'auditor', 'officer', 'admin'].includes(user.role) && <div className="max-w-7xl mx-auto w-full px-4 py-2 text-sm"><Link to={user.role === 'admin' ? '/admin' : workspacePath} className="text-[#2F6BFF]">Open your {user.role} workspace</Link></div>}
+      {user?.isDemoUser && <div className="max-w-7xl mx-auto w-full px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
+        <label htmlFor="public-demo-role">Local demo role</label>
+        <select id="public-demo-role" value={user.role} onChange={event => setDemoRole(event.target.value as typeof user.role)} className="border rounded-lg p-2">
+          <option value="resident">Resident</option><option value="officer">Department officer</option><option value="contractor">Contractor</option><option value="auditor">Auditor</option><option value="admin">Administrator</option>
+        </select><span className="text-[#64748B]">Demo identities apply only in this browser.</span>
+      </div>}
 
       {/* Main content */}
       <main className="flex-1">

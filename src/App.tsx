@@ -2,6 +2,9 @@ import { Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 const PublicLayout = lazy(() => import('./components/layout/PublicLayout').then(module => ({ default: module.PublicLayout })))
 const OfficerLayout = lazy(() => import('./components/layout/OfficerLayout').then(module => ({ default: module.OfficerLayout })))
+const WorkspaceLayout = lazy(() => import('./components/layout/WorkspaceLayout').then(module => ({ default: module.WorkspaceLayout })))
+const ContractorDashboard = lazy(() => import('./pages/workspace/ContractorDashboard').then(module => ({ default: module.ContractorDashboard })))
+const AuditorDashboard = lazy(() => import('./pages/workspace/AuditorDashboard').then(module => ({ default: module.AuditorDashboard })))
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })))
 const ProjectExplorer = lazy(() => import('./pages/ProjectExplorer').then(module => ({ default: module.ProjectExplorer })))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail').then(module => ({ default: module.ProjectDetail })))
@@ -51,6 +54,13 @@ export default function App() {
       </Route>
 
       {/* Admin */}
+      <Route element={<WorkspaceLayout role="contractor" />}>
+        <Route path="/contractor" element={<ContractorDashboard />} />
+      </Route>
+      <Route element={<WorkspaceLayout role="auditor" />}>
+        <Route path="/auditor" element={<AuditorDashboard />} />
+      </Route>
+
       <Route element={<PublicLayout />}>
         <Route path="/admin" element={<AdminPage />} />
       </Route>

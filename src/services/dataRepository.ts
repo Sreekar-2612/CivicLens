@@ -124,6 +124,16 @@ const alertStore: CoordinationAlert[] = loadStore('civiclens_alerts', coordinati
 const updateStore: ProjectUpdate[] = loadStore('civiclens_updates', projectUpdates);
 const milestoneStore: Milestone[] = loadStore('civiclens_milestones', milestones);
 
+// Local simulation only. Real approval is enforced atomically by database RPCs.
+export async function applyDemoWorkflowProjectState(id: string, updates: Partial<Project>): Promise<void> {
+  if (isSupabaseConfigured()) throw new Error('Demo workflow is unavailable with Supabase configured.');
+  const index = projectStore.findIndex(project => project.id === id);
+  if (index < 0) throw new Error('Project not found.');
+  projectStore[index] = { ...projectStore[index], ...updates, id, updatedAt: new Date().toISOString() };
+  saveStore('civiclens_projects', projectStore);
+  syncDetectedClashes();
+}
+
 function syncDetectedClashes(): void {
   const detected = detectClashes(projectStore);
   const currentIds = new Set(detected.map(alert => alert.id));
@@ -302,6 +312,9 @@ export class SeedDataRepository implements DataRepository {
 
   // -- Mutations --
   async addProject(data: Partial<Project>): Promise<Project> {
+    if (data.status === 'completed' || data.status === 'pending_audit') {
+      throw new Error('Completion and audit status must use the contractor submission and auditor review workflow.');
+    }
     // 1. Validation check
     const validation = validateProjectCreation(data);
     if (!validation.isValid) {
@@ -348,6 +361,16 @@ export class SeedDataRepository implements DataRepository {
     if (idx === -1) return undefined;
 
     const current = projectStore[idx];
+    if ((updates.status === 'completed' || updates.status === 'pending_audit') && updates.status !== current.status) {
+      throw new Error('Completion and audit status must use the contractor submission and auditor review workflow.');
+    }
+    if (current.status === 'pending_audit' && updates.status && updates.status !== current.status) {
+      throw new Error('An auditor must review the pending completion submission.');
+    }
+    if (current.status === 'completed' && ((updates.status && updates.status !== current.status) ||
+      (updates.progressPercent !== undefined && updates.progressPercent !== 100))) {
+      throw new Error('Approved completed work cannot be reopened through the project editor.');
+    }
 
     // Check progress validation
     if (updates.progressPercent !== undefined) {

@@ -10,6 +10,9 @@ Deno.serve(async (req) => {
     const { projectId, update } = await req.json()
     if (!projectId) throw new Error('projectId is required')
     if (!update) throw new Error('update payload is required')
+    if (update.type === 'completion' || update.type === 'status_change' || Number(update.newValue) >= 100) {
+      throw new Error('Completion and approval must use the audited task workflow')
+    }
     const { data: project, error: projectError } = await supabase.from('projects').select('department_id').eq('id', projectId).single()
     if (projectError || !project) throw new Error('Project not found')
     requireDepartment(profile, project.department_id)

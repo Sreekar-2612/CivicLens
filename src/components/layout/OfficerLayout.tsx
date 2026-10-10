@@ -18,7 +18,10 @@ const officerNavItems = [
 export function OfficerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
-  const { user, setDemoRole } = useAuth()
+  const { user, loading, setDemoRole } = useAuth()
+
+  if (loading) return <p role="status" className="p-8">Loading your account...</p>
+  if (!user || !['officer', 'admin'].includes(user.role)) return <div className="p-8 space-y-4"><h1 className="text-xl font-bold">Department access required</h1><p>This workspace is available to department officers and administrators.</p><Link to="/">Return to public portal</Link></div>
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif]">
@@ -109,12 +112,15 @@ export function OfficerLayout() {
                     if (r === 'officer') setDemoRole('officer', 'dept-roads', 'Rajesh Patil (Roads Officer)');
                     else if (r === 'resident') setDemoRole('resident', undefined, 'Priya Sharma (Resident)');
                     else if (r === 'admin') setDemoRole('admin', undefined, 'S. Deshmukh (Admin)');
+                    else if (r === 'contractor' || r === 'auditor') setDemoRole(r, 'dept-roads');
                   }}
                   className="w-full text-xs rounded-lg bg-white border border-[#CBD5E1] text-[#1E293B] px-2 py-1 font-medium focus:border-[#2F6BFF] focus:outline-none"
                 >
                   <option value="officer">Department Officer (Roads)</option>
                   <option value="resident">Resident (Citizen - Read Only)</option>
                   <option value="admin">Administrator (Cross-Dept)</option>
+                  <option value="contractor">Contractor (Roads)</option>
+                  <option value="auditor">Auditor (Roads)</option>
                 </select>
               </div>}
 

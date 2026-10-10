@@ -204,13 +204,15 @@ export function OfficerProjectEdit() {
               </label>
               <select
                 value={status}
+                disabled={project.status === 'completed' || project.status === 'pending_audit'}
                 onChange={(e) => setStatus(e.target.value as ProjectStatus)}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[#F8FAFC] text-[var(--text)] focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
               >
-                {Object.entries(PROJECT_STATUS_LABELS).map(([k, v]) => (
+                {Object.entries(PROJECT_STATUS_LABELS).filter(([key]) => !['completed', 'pending_audit'].includes(key) || key === project.status).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
                 ))}
               </select>
+              <p className="text-xs text-[var(--muted)] mt-2">Contractors submit completion evidence; assigned auditors approve completion.</p>
             </div>
 
             <div>
