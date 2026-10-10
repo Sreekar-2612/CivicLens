@@ -8,7 +8,8 @@ import {
 import { dataRepository } from '../../services/dataRepository'
 import { useAuth } from '../../context/AuthContext'
 import { validateProjectCreation } from '../../services/projectValidation'
-import type { Department, ProjectCategory, Project } from '../../types'
+import { detectProjectClash } from '../../services/clashEngine'
+import type { Department, ProjectCategory, Project, CoordinationAlert } from '../../types'
 import { PROJECT_CATEGORY_LABELS } from '../../types'
 
 export function OfficerProjectNew() {
@@ -56,12 +57,22 @@ export function OfficerProjectNew() {
     load()
   }, [user])
 
-  // Live conflict detection on road input
-  const conflictingProjects = road.trim().length > 2
-    ? allProjects.filter(p =>
-        p.road.toLowerCase().includes(road.trim().toLowerCase()) ||
-        road.trim().toLowerCase().includes(p.road.toLowerCase())
-      )
+  const draftProject: Project = {
+    id: 'draft-work-order', title, purpose, departmentId, contractor, category,
+    status: 'planned', confidenceIndicator: 'on_track', road, locality, ward,
+    location: { lat: Number(lat), lng: Number(lng) }, startDate, originalEndDate,
+    progressPercent: 0, isPublished: true, createdAt: '', updatedAt: '',
+  }
+  const conflictingProjects: Array<{ project: Project; alert: CoordinationAlert }> = (
+    road.trim().length > 2 &&
+    Boolean(departmentId) &&
+    Number.isFinite(draftProject.location.lat) &&
+    Number.isFinite(draftProject.location.lng)
+  )
+    ? allProjects.flatMap(project => {
+        const alert = detectProjectClash(draftProject, project)
+        return alert ? [{ project, alert }] : []
+      })
     : []
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -193,17 +204,18 @@ export function OfficerProjectNew() {
           <div className="clash-hatch px-4 py-2 border-b border-[#FFD0DE] flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-[#F0386B]" />
             <span className="text-xs font-bold text-[#C41F4F] uppercase tracking-wider">
-              Live Pre-Flight Coordination Warning: {conflictingProjects.length} existing project(s) on "{road}"
+              Pre-Flight Coordination Warning: {conflictingProjects.length} possible clash(es)
             </span>
           </div>
           <div className="p-4 bg-white text-xs space-y-2">
             <p className="text-[var(--muted)]">
-              Other departments already have permits logged on this road corridor:
+              Recorded dates and locations suggest these cross-department projects need review:
             </p>
             <div className="space-y-1">
-              {conflictingProjects.map(cp => (
+              {conflictingProjects.map(({ project: cp, alert }) => (
                 <div key={cp.id} className="text-xs font-medium pl-3 border-l-2 border-[#F0386B] text-[var(--text)]">
                   <span className="font-bold">{cp.title}</span> ({cp.category.replace('_', ' ')}) • {cp.startDate} to {cp.revisedEndDate || cp.originalEndDate}
+                  <p>Clash score {alert.score}/100: {alert.reasons.map((reason: any) => reason.description).join('; ')}</p>
                 </div>
               ))}
             </div>
