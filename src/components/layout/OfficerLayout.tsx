@@ -144,7 +144,7 @@ export function OfficerLayout() {
         )}
 
         {/* Main content */}
-        <main className="flex-1 min-w-0">
+        <main className="relative z-10 flex-1 min-w-0">
           <div className="page-enter p-4 sm:p-6 lg:p-8" key={location.pathname}>
             <Outlet />
           </div>

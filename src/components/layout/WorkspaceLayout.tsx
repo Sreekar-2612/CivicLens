@@ -28,6 +28,6 @@ export function WorkspaceLayout({ role }: { role: 'contractor' | 'auditor' }) {
       </div>
     </header>
     {error && <p role="alert" className="max-w-6xl mx-auto p-4 text-red-700">{error}</p>}
-    <main className="max-w-6xl mx-auto p-4 sm:p-6"><Outlet key={`${user.id}:${user.role}:${user.departmentId}`} /></main>
+    <main className="relative z-10 max-w-6xl mx-auto p-4 sm:p-6"><Outlet key={`${user.id}:${user.role}:${user.departmentId}`} /></main>
   </div>
 }

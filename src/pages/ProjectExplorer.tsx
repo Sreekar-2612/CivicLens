@@ -155,9 +155,9 @@ export function ProjectExplorer() {
   if (loading) return <LoadingState message="Loading high-fidelity geospatial registry..." />
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 pb-12">
+    <div className="min-h-screen bg-transparent font-sans text-slate-900 pb-12">
       {/* Spacious, Clean Page Header */}
-      <div className="bg-white border-b border-slate-200/80">
+      <div className="bg-white/95 backdrop-blur-md border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>

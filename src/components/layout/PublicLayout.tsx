@@ -169,14 +169,14 @@ export function PublicLayout() {
       </div>}
 
       {/* Main content */}
-      <main className="flex-1">
+      <main className="relative z-10 flex-1">
         <div className="page-enter" key={location.pathname}>
           <Outlet />
         </div>
       </main>
 
       {/* Fresh Civic Light Footer */}
-      <footer className="bg-white/90 backdrop-blur-md border-t border-[#E3EAF2] text-[#64748B] mt-auto">
+      <footer className="relative z-10 bg-white/95 backdrop-blur-md border-t border-[#E3EAF2] text-[#64748B] mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>

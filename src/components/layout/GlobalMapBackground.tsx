@@ -68,13 +68,14 @@ export function GlobalMapBackground() {
         const projects = await dataRepository.getProjects()
         const active = projects.slice(0, 6)
 
-        // Coordinates placed along organic intersections of the spider-web city map
+        // Coordinates placed along organic intersections in open peripheral margins
+        // so they never overlap or interfere with the centered max-w-7xl page content
         const positions = [
-          { xRatio: 0.28, yRatio: 0.32, color: '#8B6F55' }, // Muted brown
-          { xRatio: 0.72, yRatio: 0.26, color: '#B85C43' }, // Terracotta
-          { xRatio: 0.38, yRatio: 0.70, color: '#5E8268' }, // Sage
-          { xRatio: 0.82, yRatio: 0.65, color: '#A07E5A' }, // Warm ochre
-          { xRatio: 0.58, yRatio: 0.44, color: '#8B6F55' },
+          { xRatio: 0.08, yRatio: 0.28, color: '#8B6F55' }, // Left periphery
+          { xRatio: 0.92, yRatio: 0.24, color: '#B85C43' }, // Right periphery
+          { xRatio: 0.06, yRatio: 0.68, color: '#5E8268' }, // Left bottom
+          { xRatio: 0.94, yRatio: 0.62, color: '#A07E5A' }, // Right bottom
+          { xRatio: 0.88, yRatio: 0.85, color: '#8B6F55' }, // Far bottom right
         ]
 
         const mapped: MapMarker[] = active.slice(0, 5).map((p, idx) => {
@@ -476,21 +477,21 @@ export function GlobalMapBackground() {
       className="fixed inset-0 w-screen h-screen overflow-hidden pointer-events-none select-none z-0"
       aria-hidden="true"
     >
-      {/* Base resting delicate spider-web city map */}
+      {/* Base resting delicate spider-web city map strictly at -z-10 behind all page content */}
       <canvas
         ref={baseCanvasRef}
-        className="absolute inset-0 w-full h-full block pointer-events-none"
+        className="absolute inset-0 w-full h-full block pointer-events-none -z-10"
       />
 
-      {/* Dynamic Cursor Mosaic Trail Canvas */}
+      {/* Dynamic Cursor Mosaic Trail Canvas strictly at -z-10 behind all page content */}
       <canvas
         ref={trailCanvasRef}
-        className="absolute inset-0 w-full h-full block pointer-events-none"
+        className="absolute inset-0 w-full h-full block pointer-events-none -z-10"
       />
 
       {/* Subtle soft paper texture vignette overlay */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none -z-10"
         style={{
           background: 'radial-gradient(circle at 50% 40%, transparent 40%, rgba(243, 235, 221, 0.35) 100%)',
         }}
