@@ -191,16 +191,16 @@ export function PublicLayout() {
                 Demonstration Notice
               </h4>
               <p className="text-xs leading-relaxed text-[#64748B]">
-                CivicLens is a civic hackathon prototype demonstrating inter-agency coordination,
-                immutable contractual milestones, and public auditability for Pune Municipal Corporation corridors.
+                SpadeWork is a civic infrastructure platform demonstrating inter-agency coordination,
+                immutable contractual milestones, and public auditability for municipal public works corridors.
               </p>
               <div className="inline-block mt-2.5 px-2.5 py-1 rounded bg-[#EAF1FF] text-[#2F6BFF] text-[11px] font-semibold border border-[#2F6BFF]/20">
-                Demonstration Data — Simulated PMC Work Orders
+                Demonstration Data — Simulated Municipal Work Orders
               </div>
             </div>
           </div>
           <div className="border-t border-[#E3EAF2] mt-8 pt-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-[#94A3B8]">
-            <span>© 2026 CivicLens • Built for Municipal Transparency</span>
+            <span>© 2026 SpadeWork • Built for Municipal Transparency</span>
             <span>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-[#64748B] hover:text-[#2F6BFF] no-underline">OpenStreetMap</a> &amp; Esri</span>
           </div>
         </div>

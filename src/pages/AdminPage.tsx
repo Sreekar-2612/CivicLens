@@ -51,7 +51,7 @@ export function AdminPage() {
     setExporting(true)
     const exportData = {
       exportedAt: new Date().toISOString(),
-      system: 'CivicLens Transparency Core',
+      system: 'SpadeWork Transparency Core',
       stats,
       departments,
       projects,
@@ -62,7 +62,7 @@ export function AdminPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `civiclens-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `spadework-backup-${new Date().toISOString().split('T')[0]}.json`
     a.click()
     URL.revokeObjectURL(url)
     setExporting(false)
@@ -90,7 +90,7 @@ export function AdminPage() {
             <span className="text-xs text-gray-500">• Municipal Data Administration</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1">
-            CivicLens Admin & Database Engine
+            SpadeWork Admin &amp; Database Engine
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Database connection diagnostic, automated migration guides, audit trails, and live dataset exports.

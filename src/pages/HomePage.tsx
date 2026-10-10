@@ -47,7 +47,7 @@ export function HomePage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-[#EAF1FF] text-[#2F6BFF] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 border border-[#2F6BFF]/20">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Pune Municipal Works Registry &amp; Coordination</span>
+              <span>Municipal Works Registry &amp; Coordination</span>
             </div>
 
             <h1 className="font-['Plus_Jakarta_Sans'] text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-[#1E293B] mb-4">
@@ -57,7 +57,7 @@ export function HomePage() {
             </h1>
 
             <p className="text-sm sm:text-base text-[#64748B] leading-relaxed mb-6 max-w-2xl">
-              CivicLens is an open civic registry tracking public excavation permits,
+              SpadeWork is an open civic registry tracking public excavation permits,
               preventing repeat road digging between water, power and telecom utilities,
               and locking baseline deadlines against silent delays.
             </p>

@@ -28,7 +28,7 @@ export function AssistantPage() {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Hello! I can help you find projects, reports, and coordination alerts in CivicLens. Ask about road works, departments, delays, or grievances.",
+      text: "Hello! I can help you find projects, reports, and coordination alerts in SpadeWork. Ask about road works, departments, delays, or grievances.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ])
