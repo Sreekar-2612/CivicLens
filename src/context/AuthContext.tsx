@@ -28,7 +28,7 @@ interface AuthContextType {
 // Default initial user for development demo: Department Officer
 const DEFAULT_DEMO_USER: AuthUser = {
   id: 'usr-demo-officer',
-  email: 'officer.roads@pune.gov.in',
+  email: 'officer.roads@civiclens.gov.in',
   displayName: 'Rajesh Patil (Roads Department)',
   role: 'officer',
   departmentId: 'dept-roads',

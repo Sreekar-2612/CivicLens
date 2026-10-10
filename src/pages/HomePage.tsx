@@ -272,7 +272,7 @@ export function HomePage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-['Plus_Jakarta_Sans'] text-xl sm:text-2xl font-bold text-[#1E293B]">
-                Active Work Orders in Pune
+                Active Municipal Work Orders &amp; Permits
               </h2>
               <p className="text-xs text-[#64748B] mt-0.5">
                 Real-time permits under municipal monitoring
@@ -282,7 +282,7 @@ export function HomePage() {
               to="/projects"
               className="text-xs font-bold text-[#2F6BFF] hover:underline flex items-center gap-1 no-underline"
             >
-              <span>View All 28 Permits</span>
+              <span>View All Registered Permits</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

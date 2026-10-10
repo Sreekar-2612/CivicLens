@@ -35,7 +35,7 @@ export function PublicLayout() {
                     SpadeWork
                   </span>
                   <span className="bg-[#E3F7F5] text-[#12B5A6] text-[10px] font-bold px-2 py-0.2 rounded-full uppercase tracking-wider border border-[#12B5A6]/20">
-                    PMC LIVE
+                    CIVIC LIVE
                   </span>
                 </div>
                 <span className="hidden sm:inline text-xs text-[#64748B] font-medium">

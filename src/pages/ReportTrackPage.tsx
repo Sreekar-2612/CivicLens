@@ -114,7 +114,7 @@ export function ReportTrackPage() {
               <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--teal-soft)] text-[var(--teal)] border border-[var(--teal)]/20">
                 Ground Reality Audit
               </span>
-              <span className="text-xs text-[var(--muted)]">• Pune Municipal Grievance Tracking</span>
+              <span className="text-xs text-[var(--muted)]">• Municipal Grievance Tracking</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text)] font-heading mt-1.5">
               Citizen Grievance & Tracking Portal

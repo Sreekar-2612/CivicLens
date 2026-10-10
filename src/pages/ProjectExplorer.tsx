@@ -15,7 +15,7 @@ import { ProjectCard } from '../components/ui/ProjectCard'
 import { StatusBadge } from '../components/ui/StatusBadge'
 import { EmptyState, LoadingState } from '../components/ui/SharedStates'
 import { ProjectMap } from '../components/map/ProjectMap'
-import { generateCityProjects } from '../config/regionConfig'
+import { generateCityProjects, geocodeCity } from '../config/regionConfig'
 
 const ALL_WARDS = [
   'All Wards', 'Ward 03', 'Ward 07', 'Ward 08', 'Ward 10', 'Ward 11', 'Ward 12',
@@ -136,6 +136,22 @@ export function ProjectExplorer() {
     setSearchParams({})
   }
 
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const query = filters.search.trim()
+    if (!query) return
+
+    const geo = await geocodeCity(query)
+    if (geo) {
+      setSearchParams({
+        city: query,
+        lat: geo.lat.toString(),
+        lng: geo.lng.toString(),
+      })
+      setFilters(f => ({ ...f, search: '' }))
+    }
+  }
+
   if (loading) return <LoadingState message="Loading high-fidelity geospatial registry..." />
 
   return (
@@ -181,26 +197,34 @@ export function ProjectExplorer() {
 
           {/* Unified, Uncongested Toolbar */}
           <div className="mt-6 flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-            {/* Search Input */}
-            <div className="relative flex-1">
+            {/* Search Input with City Geocoding Support */}
+            <form onSubmit={handleSearchSubmit} className="relative flex-1 flex items-center">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search road name, contractor, locality, or keyword..."
+                placeholder="Search any city (e.g. Guntur, Bengaluru) or road name, contractor..."
                 value={filters.search}
                 onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-                className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-xs"
+                className="w-full pl-10 pr-20 py-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-xs"
               />
-              {filters.search && (
+              <div className="absolute right-2 flex items-center gap-1">
+                {filters.search && (
+                  <button
+                    type="button"
+                    onClick={() => setFilters(f => ({ ...f, search: '' }))}
+                    className="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer p-0.5"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
                 <button
-                  type="button"
-                  onClick={() => setFilters(f => ({ ...f, search: '' }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer p-0.5"
+                  type="submit"
+                  className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg border-none cursor-pointer shadow-xs transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  Find
                 </button>
-              )}
-            </div>
+              </div>
+            </form>
 
             {/* Ward Selector */}
             <div className="flex items-center gap-2">
@@ -327,6 +351,14 @@ export function ProjectExplorer() {
                 departments={departments}
                 selectedProject={selectedProject}
                 onSelectProject={setSelectedProject}
+                onCitySearch={(cityName, lat, lng) => {
+                  setSearchParams({
+                    city: cityName,
+                    lat: lat.toString(),
+                    lng: lng.toString(),
+                  })
+                  setFilters(f => ({ ...f, search: '' }))
+                }}
                 center={latParam && lngParam ? [parseFloat(latParam), parseFloat(lngParam)] : undefined}
                 height="100%"
               />

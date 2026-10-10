@@ -267,7 +267,7 @@ VITE_SUPABASE_ANON_KEY=[YOUR_ANON_KEY]`}
                     </td>
                     <td className="px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">{d.shortName}</td>
                     <td className="px-4 py-3 font-bold">{count} work orders</td>
-                    <td className="px-6 py-3 text-gray-500">{d.contactEmail || 'desk@pune.gov.in'}</td>
+                    <td className="px-6 py-3 text-gray-500">{d.contactEmail || 'contact@civiclens.gov.in'}</td>
                   </tr>
                 )
               })}

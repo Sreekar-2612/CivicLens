@@ -79,6 +79,7 @@ interface ProjectMapProps {
   departments: Department[]
   selectedProject?: Project | null
   onSelectProject?: (project: Project | null) => void
+  onCitySearch?: (cityName: string, lat: number, lng: number) => void
   height?: string
   center?: [number, number]
   zoom?: number
@@ -89,14 +90,23 @@ function MapController({
   projects,
   selectedProject,
   customTarget,
+  center,
   resetTrigger
 }: {
   projects: Project[]
   selectedProject?: Project | null
   customTarget?: [number, number] | null
+  center?: [number, number]
   resetTrigger: number
 }) {
   const map = useMap()
+
+  // Fly to center prop whenever it changes
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, 13, { animate: true, duration: 1.0 })
+    }
+  }, [center, map])
 
   // Fly to custom searched target location
   useEffect(() => {
@@ -115,13 +125,13 @@ function MapController({
     }
   }, [selectedProject, map])
 
-  // Fit bounds when reset trigger changes or on initial load with projects
+  // Fit bounds when reset trigger changes or on initial load with projects if no center
   useEffect(() => {
-    if (projects.length > 0) {
+    if (projects.length > 0 && !center && !customTarget) {
       const bounds = L.latLngBounds(projects.map(p => [p.location.lat, p.location.lng]))
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 })
     }
-  }, [resetTrigger, projects, map])
+  }, [resetTrigger, projects, center, customTarget, map])
 
   return null
 }
@@ -131,6 +141,7 @@ export function ProjectMap({
   departments,
   selectedProject,
   onSelectProject,
+  onCitySearch,
   height = '100%',
   center,
   zoom = CURRENT_REGION.defaultZoom,
@@ -167,8 +178,11 @@ export function ProjectMap({
 
     if (result) {
       setCustomTarget([result.lat, result.lng])
+      if (onCitySearch) {
+        onCitySearch(searchQuery.trim(), result.lat, result.lng)
+      }
     } else {
-      alert(`Location "${searchQuery}" not found. Try entering a city, state, or region name.`)
+      alert(`Location "${searchQuery}" not found. Try entering a city name (e.g. Guntur, Bengaluru, Mumbai).`)
     }
   }
 
@@ -267,6 +281,7 @@ export function ProjectMap({
           projects={projects}
           selectedProject={selectedProject}
           customTarget={customTarget}
+          center={center}
           resetTrigger={resetTrigger}
         />
 

@@ -168,7 +168,7 @@ export function ScorecardPage() {
             Municipal Agency Scorecards
           </h1>
           <p className="text-[#64748B] text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-            Data-driven delivery grades measuring on-time completion rates, repeat digging penalties, and contractor accountability across Pune departments.
+            Data-driven delivery grades measuring on-time completion rates, repeat digging penalties, and contractor accountability across municipal departments.
           </p>
         </div>
 

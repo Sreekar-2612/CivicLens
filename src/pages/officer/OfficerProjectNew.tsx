@@ -92,7 +92,7 @@ export function OfficerProjectNew() {
       contractor: contractor.trim(),
       category,
       road: road.trim(),
-      locality: locality.trim() || 'Central Pune',
+      locality: locality.trim() || 'Central Ward / Sector',
       ward: ward.trim(),
       location: {
         lat: parseFloat(lat) || 18.5204,
