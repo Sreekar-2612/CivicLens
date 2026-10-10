@@ -96,6 +96,16 @@ export function AdminPage() {
   useEffect(() => {
     loadData()
     checkDb()
+
+    const handleUpdate = () => {
+      loadData()
+    }
+    window.addEventListener('civic-data-updated', handleUpdate)
+    window.addEventListener('storage', handleUpdate)
+    return () => {
+      window.removeEventListener('civic-data-updated', handleUpdate)
+      window.removeEventListener('storage', handleUpdate)
+    }
   }, [])
 
   const selectUserForEdit = (targetUser: AdminUserRosterItem) => {
@@ -178,7 +188,7 @@ export function AdminPage() {
     setExporting(true)
     const exportData = {
       exportedAt: new Date().toISOString(),
-      system: 'SpadeWork Municipal Governance Engine',
+      system: 'QuickSort Municipal Governance Engine',
       stats,
       roster,
       departments,
@@ -188,7 +198,7 @@ export function AdminPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `spadework-governance-audit-${new Date().toISOString().split('T')[0]}.json`
+    a.download = `quicksort-governance-audit-${new Date().toISOString().split('T')[0]}.json`
     a.click()
     URL.revokeObjectURL(url)
     setExporting(false)

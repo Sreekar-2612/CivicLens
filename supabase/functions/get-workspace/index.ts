@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
     const ids = (assignments || []).map(a => a.project_id)
     if (!ids.length) return Response.json({ success: true, projects: [], assignments: [], submissions: [], reviews: [] }, { headers: corsHeaders })
     const { data: projects, error: projectError } = await db.from('projects').select('*')
-      .in('id', ids).eq('department_id', profile.department_id)
+      .in('id', ids)
     if (projectError) throw projectError
     const allowedIds = (projects || []).map(p => p.id)
     let submissions: any[] = []

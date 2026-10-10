@@ -1,5 +1,5 @@
 -- ============================================================
--- SpadeWork — Admin Supervision & Role Assignment Functions
+-- QuickSort — Admin Supervision & Role Assignment Functions
 -- ============================================================
 
 -- 1. Promote primary administrator email to admin role

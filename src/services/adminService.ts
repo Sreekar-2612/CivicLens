@@ -27,7 +27,7 @@ export interface AdminRosterResponse {
   projects: Project[]
 }
 
-const LOCAL_ADMIN_USERS_KEY = 'spadework_admin_users_v1'
+const LOCAL_ADMIN_USERS_KEY = 'quicksort_admin_users_v1'
 
 const INITIAL_DEMO_USERS: AdminUserRosterItem[] = [
   {
@@ -187,6 +187,9 @@ export const adminService = {
     departmentId?: string,
     projectIds: string[] = []
   ): Promise<{ success: boolean; message?: string }> {
+    let dbSuccess = false
+    let statusMessage = ''
+
     if (supabase) {
       try {
         const { data, error } = await supabase.functions.invoke('admin-users', {
@@ -199,13 +202,15 @@ export const adminService = {
           },
         })
 
-        if (error) throw error
-        if (data?.success) {
-          return { success: true, message: 'User role and assignments successfully updated.' }
+        if (!error && data?.success) {
+          dbSuccess = true
+          statusMessage = 'User role and assignments successfully saved to database.'
         }
       } catch (err: any) {
-        console.warn('Edge function update failed, attempting direct DB query or local update', err)
-        // Try direct RPC if user token has permissions
+        console.warn('Edge function update failed, attempting direct DB query', err)
+      }
+
+      if (!dbSuccess) {
         try {
           const { error: rpcErr } = await supabase.rpc('admin_update_user_assignment', {
             p_target_user_id: targetUserId,
@@ -214,15 +219,16 @@ export const adminService = {
             p_project_ids: projectIds,
           })
           if (!rpcErr) {
-            return { success: true, message: 'Updated via direct database RPC.' }
+            dbSuccess = true
+            statusMessage = 'User assignments successfully updated in Supabase database.'
           }
-        } catch {
-          // fallback to local update below
+        } catch (rpcEx) {
+          console.warn('Direct RPC also failed', rpcEx)
         }
       }
     }
 
-    // Local simulation fallback
+    // Always synchronize local simulation state so UI immediately reflects everywhere
     const users = getStoredLocalUsers()
     const index = users.findIndex(u => u.id === targetUserId)
     const projects = await dataRepository.getProjects()
@@ -257,6 +263,29 @@ export const adminService = {
     }
     saveStoredLocalUsers(users)
 
-    return { success: true, message: 'Assignment updated in local workspace simulation.' }
+    // Synchronize workflow service state
+    try {
+      const workflowKey = 'civiclens_workflow_v1'
+      const rawWf = globalThis.localStorage?.getItem(workflowKey)
+      const wfState = rawWf ? JSON.parse(rawWf) : { submissions: [], reviews: [] }
+      wfState.projectIds = projectIds
+      globalThis.localStorage?.setItem(workflowKey, JSON.stringify(wfState))
+    } catch (e) {
+      console.warn('Failed to sync workflow store', e)
+    }
+
+    // Dispatch global notification event so website components immediately re-render
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('civic-data-updated', {
+        detail: { targetUserId, newRole, projectIds, timestamp: Date.now() }
+      }))
+    }
+
+    return {
+      success: true,
+      message: dbSuccess
+        ? statusMessage
+        : 'Assignment updated and synchronized in workspace.',
+    }
   },
 }

@@ -185,7 +185,7 @@ export function RoadViewPage() {
             <span>1. Completed Works ({pastProjects.length})</span>
           </div>
           {pastProjects.length === 0 ? (
-            <p className="text-xs text-[#94A3B8] italic pl-6">No completed historical records logged in CivicLens for this corridor yet.</p>
+            <p className="text-xs text-[#536267] italic pl-6">No completed historical records logged in QuickSort for this corridor yet.</p>
           ) : (
             <div className="space-y-2.5 pl-3.5 border-l-2 border-[#12B5A6]/40">
               {pastProjects.map(p => (

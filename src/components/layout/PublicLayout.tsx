@@ -39,7 +39,7 @@ export function PublicLayout() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-lg tracking-tight text-[#021217]">
-                    SpadeWork
+                    QuickSort
                   </span>
                   <span className="font-bungee bg-[#e5fce9] text-[#088c2e] text-[9px] font-normal px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#11e852]/30">
                     CIVIC LIVE
@@ -184,7 +184,7 @@ export function PublicLayout() {
                 <div className="w-6 h-6 rounded-lg bg-[#021217] flex items-center justify-center">
                   <Shield className="w-3.5 h-3.5 text-[#11e852]" />
                 </div>
-                <span className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">SpadeWork</span>
+                <span className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">QuickSort</span>
               </div>
               <p className="text-xs leading-relaxed text-[#64748B]">
                 Improving transparency and coordination in public works projects.
@@ -212,7 +212,7 @@ export function PublicLayout() {
             </div>
           </div>
           <div className="border-t border-[#E3EAF2] mt-8 pt-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-[#94A3B8]">
-            <span>© 2026 SpadeWork • Municipal Public Works Platform</span>
+            <span>© 2026 QuickSort • Municipal Public Works Platform</span>
             <span>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-[#64748B] hover:text-[#088c2e] no-underline">OpenStreetMap</a> &amp; Esri</span>
           </div>
         </div>

@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Sparkles, Send, Bot, User, ArrowRight, CornerDownLeft,
-  ExternalLink, Layers, AlertTriangle, Building2, CheckCircle2
+  Sparkles, Send, Bot, User, ArrowRight
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
 import type { Project, Department, CoordinationAlert, Report } from '../types'
@@ -18,7 +17,7 @@ interface Message {
 const INITIAL_SUGGESTIONS = [
   "Which department has the most project delays?",
   "What excavations are active on Indiranagar 100ft Road?",
-  "Show me the worst repeat-digging conflicts detected",
+  "Show me the repeat-digging conflicts detected",
   "How many citizen grievances are currently unresolved?",
   "Who is the lowest rated contractor?",
 ]
@@ -28,7 +27,7 @@ export function AssistantPage() {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Hello! I can help you find projects, reports, and coordination alerts in SpadeWork. Ask about road works, departments, delays, or grievances.",
+      text: "Hello! I can help you find projects, reports, and coordination alerts in QuickSort. Ask about road works, departments, delays, or grievances.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ])
@@ -79,7 +78,7 @@ export function AssistantPage() {
     setTimeout(() => {
       generateResponse(text)
       setIsTyping(false)
-    }, 700)
+    }, 600)
   }
 
   const generateResponse = (prompt: string) => {
@@ -115,12 +114,12 @@ export function AssistantPage() {
         { label: 'Track Existing Grievance', to: '/reports/track' }
       ]
     } else if (q.includes('contractor') || q.includes('rating')) {
-      replyText = `Contractor ratings are not available in this assistant. The scorecard shows the project and contractor information currently recorded.`
+      replyText = `Contractor metrics are maintained across active works. Review the scorecard for performance and delivery audits.`
       links = [
         { label: 'View Contractor Transparency Table', to: '/scorecard' }
       ]
     } else {
-      replyText = `I found ${projects.length} projects, ${departments.length} departments, and ${reports.length} reports in the available records. Try a road name or ask about delays, alerts, or reports.`
+      replyText = `I found ${projects.length} projects, ${departments.length} departments, and ${reports.length} reports in QuickSort. Try a road name or ask about delays, alerts, or reports.`
       links = [
         { label: 'Browse Project Explorer', to: '/projects' },
         { label: 'View Department Scorecards', to: '/scorecard' }
@@ -141,27 +140,27 @@ export function AssistantPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-5rem)] flex flex-col space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-4">
+      <div className="flex items-center justify-between border-b border-[#e2c09c]/40 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-teal-500 text-white flex items-center justify-center shadow-md">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-[#021217] border border-[#e2c09c] text-[#e2c09c] flex items-center justify-center shadow-xs">
+            <Sparkles className="w-5 h-5 text-[#e2c09c]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              CivicLens Data Guide
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                Recorded Data
+            <h1 className="text-xl font-extrabold text-[#021217] flex items-center gap-2">
+              QuickSort Assistant
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1f3d8] text-[#021217] border border-[#e2c09c]/60">
+                Live Repository
               </span>
             </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Natural language intelligence for citizens, journalists, and municipal engineers.
+            <p className="text-xs text-[#536267]">
+              Natural language intelligence for citizens, contractors, and municipal officers.
             </p>
           </div>
         </div>
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 sm:p-6 overflow-y-auto space-y-4">
+      <div className="flex-1 bg-white/90 backdrop-blur-md rounded-2xl border border-[#e2c09c]/50 shadow-sm p-4 sm:p-6 overflow-y-auto space-y-4">
         {messages.map(m => (
           <div
             key={m.id}
@@ -170,18 +169,18 @@ export function AssistantPage() {
             }`}
           >
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs ${
-                m.sender === 'user' ? 'bg-indigo-600' : 'bg-gradient-to-tr from-teal-600 to-indigo-600'
+              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs ${
+                m.sender === 'user' ? 'bg-[#021217] text-[#e2c09c]' : 'bg-[#e2c09c] text-[#021217]'
               }`}
             >
               {m.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
 
             <div
-              className={`rounded-2xl p-4 text-xs sm:text-sm space-y-2 shadow-sm ${
+              className={`rounded-2xl p-4 text-xs sm:text-sm space-y-2 shadow-xs ${
                 m.sender === 'user'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-50 dark:bg-gray-900/60 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700'
+                  ? 'bg-[#021217] text-[#f1f3d8]'
+                  : 'bg-[#faf8f5] text-[#021217] border border-[#e2c09c]/40'
               }`}
             >
               <div className="leading-relaxed whitespace-pre-wrap font-sans">
@@ -189,21 +188,21 @@ export function AssistantPage() {
               </div>
 
               {m.actionLinks && m.actionLinks.length > 0 && (
-                <div className="pt-2 flex flex-wrap gap-2 border-t border-gray-200 dark:border-gray-700/60">
+                <div className="pt-2 flex flex-wrap gap-2 border-t border-[#e2c09c]/30">
                   {m.actionLinks.map((link, idx) => (
                     <Link
                       key={idx}
                       to={link.to}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 border border-indigo-200 dark:border-indigo-900 text-indigo-700 dark:text-indigo-400 text-xs font-semibold hover:shadow transition-shadow"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-[#e2c09c] text-[#021217] text-xs font-bold hover:bg-[#f1f3d8] transition-colors"
                     >
                       <span>{link.label}</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <ArrowRight className="w-3 h-3 text-[#021217]" />
                     </Link>
                   ))}
                 </div>
               )}
 
-              <span className={`text-[10px] block text-right ${m.sender === 'user' ? 'text-indigo-200' : 'text-gray-400'}`}>
+              <span className={`text-[10px] block text-right ${m.sender === 'user' ? 'text-[#e2c09c]' : 'text-[#7d8c90]'}`}>
                 {m.timestamp}
               </span>
             </div>
@@ -212,14 +211,14 @@ export function AssistantPage() {
 
         {isTyping && (
           <div className="flex gap-3 max-w-lg">
-            <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#e2c09c] text-[#021217] flex items-center justify-center shrink-0">
               <Bot className="w-4 h-4" />
             </div>
-            <div className="p-3 rounded-2xl bg-gray-100 dark:bg-gray-900 text-gray-500 text-xs flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-teal-500 animate-bounce" />
-              <span className="w-2 h-2 rounded-full bg-teal-500 animate-bounce [animation-delay:0.2s]" />
-              <span className="w-2 h-2 rounded-full bg-teal-500 animate-bounce [animation-delay:0.4s]" />
-              <span className="ml-1 text-[11px]">Querying CivicLens Data Repository...</span>
+            <div className="p-3 rounded-2xl bg-[#faf8f5] text-[#536267] text-xs flex items-center gap-1.5 border border-[#e2c09c]/40">
+              <span className="w-2 h-2 rounded-full bg-[#11e852] animate-bounce" />
+              <span className="w-2 h-2 rounded-full bg-[#11e852] animate-bounce [animation-delay:0.2s]" />
+              <span className="w-2 h-2 rounded-full bg-[#11e852] animate-bounce [animation-delay:0.4s]" />
+              <span className="ml-1 text-[11px] font-medium text-[#021217]">Querying QuickSort Repository...</span>
             </div>
           </div>
         )}
@@ -229,13 +228,13 @@ export function AssistantPage() {
 
       {/* Suggested Chips */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-        <span className="text-gray-400 font-semibold shrink-0">Try asking:</span>
+        <span className="text-[#536267] font-semibold shrink-0">Try asking:</span>
         {INITIAL_SUGGESTIONS.map((s, idx) => (
           <button
             key={idx}
             type="button"
             onClick={() => handleSend(s)}
-            className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-400 text-gray-600 dark:text-gray-300 whitespace-nowrap transition-colors border border-gray-200 dark:border-gray-700"
+            className="px-3 py-1 rounded-full bg-white hover:bg-[#f1f3d8] text-[#021217] whitespace-nowrap transition-colors border border-[#e2c09c]/50 font-medium cursor-pointer"
           >
             {s}
           </button>
@@ -255,15 +254,15 @@ export function AssistantPage() {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Ask a question about projects, contractors, road digging, or civic delays..."
-          className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 shadow-sm"
+          className="flex-1 px-4 py-3 rounded-xl border border-[#e2c09c] bg-white text-[#021217] text-sm focus:ring-2 focus:ring-[#021217] shadow-xs outline-none"
         />
         <button
           type="submit"
           disabled={!inputValue.trim()}
-          className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow transition-colors flex items-center gap-1.5 disabled:opacity-40"
+          className="px-5 py-3 rounded-xl bg-[#021217] hover:bg-[#021217]/90 text-[#e2c09c] font-bold text-sm shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-40 cursor-pointer"
         >
           <Send className="w-4 h-4" />
-          <span className="hidden sm:inline">Ask AI</span>
+          <span className="hidden sm:inline">Ask</span>
         </button>
       </form>
     </div>

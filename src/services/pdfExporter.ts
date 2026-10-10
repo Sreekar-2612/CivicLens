@@ -59,7 +59,7 @@ export function generateProjectDossierHTML(project: Project, department?: Depart
         </div>
 
         <div class="footer">
-          SpadeWork Infrastructure Dossier — Generated on ${new Date().toLocaleDateString()} — Official Municipal Copy
+          QuickSort Infrastructure Dossier — Generated on ${new Date().toLocaleDateString()} — Official Municipal Copy
         </div>
       </body>
     </html>

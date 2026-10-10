@@ -1,5 +1,5 @@
 // ============================================================
-// SpadeWork — Global Region & Map Configuration
+// QuickSort — Global Region & Map Configuration
 // Generalizes map centering, geocoding, and municipal branding for any city
 // ============================================================
 
@@ -64,7 +64,7 @@ export async function geocodeCity(query: string): Promise<{ lat: number; lng: nu
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-      { headers: { 'User-Agent': 'SpadeWork-CivicTech/1.0' } }
+      { headers: { 'User-Agent': 'QuickSort-CivicTech/1.0' } }
     )
     const data = await res.json()
     if (data && data.length > 0) {

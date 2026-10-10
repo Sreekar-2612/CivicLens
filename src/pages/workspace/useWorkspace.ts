@@ -12,7 +12,19 @@ export function useWorkspace() {
   const activeIdentity = useRef(identity)
   activeIdentity.current = identity
   const mounted = useRef(true)
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+  useEffect(() => {
+    mounted.current = true
+    const handleUpdate = () => {
+      setRevision(v => v + 1)
+    }
+    window.addEventListener('civic-data-updated', handleUpdate)
+    window.addEventListener('storage', handleUpdate)
+    return () => {
+      mounted.current = false
+      window.removeEventListener('civic-data-updated', handleUpdate)
+      window.removeEventListener('storage', handleUpdate)
+    }
+  }, [])
   useEffect(() => {
     let active = true
     setData(undefined); setError(''); setLoading(true)
