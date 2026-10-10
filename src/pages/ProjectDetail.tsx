@@ -14,6 +14,7 @@ import type { Project, Department, ProjectUpdate, Milestone, Report, Coordinatio
 import { PROJECT_CATEGORY_LABELS, PROJECT_STATUS_LABELS } from '../types'
 import { StatusBadge, ConfidenceBadge, SeverityBadge, ReportStatusBadge } from '../components/ui/StatusBadge'
 import { LoadingState, ErrorState } from '../components/ui/SharedStates'
+import { StepAccordion } from '../components/ui/StepAccordion'
 
 export function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -596,6 +597,15 @@ export function ProjectDetail() {
               </div>
             )}
           </div>
+
+          {/* Scrolltide-inspired Step Accordion for Resident Ground Reports & Uploaded Photo Evidence */}
+          <div id="citizen-fieldwork" className="mt-6 scroll-mt-20">
+            <StepAccordion
+              reports={reports}
+              projectId={project.id}
+              projectTitle={project.title}
+            />
+          </div>
         </div>
 
         {/* Sidebar */}
@@ -695,6 +705,13 @@ export function ProjectDetail() {
                     </p>
                   </div>
                 ))}
+                <a
+                  href="#citizen-fieldwork"
+                  className="mt-2 pt-2 border-t border-[#F1F5F9] text-[11px] font-bold text-[#2F6BFF] hover:underline flex items-center justify-between no-underline"
+                >
+                  <span>Inspect Photos in Step Accordion</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </a>
               </div>
             </div>
           )}

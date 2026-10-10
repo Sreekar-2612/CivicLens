@@ -274,7 +274,18 @@ export class SeedDataRepository implements DataRepository {
   }
 
   async getReportsByProject(projectId: string): Promise<Report[]> {
-    return reportStore.filter(r => r.projectId === projectId);
+    const direct = reportStore.filter(r => r.projectId === projectId);
+    if (direct.length > 0) return direct;
+
+    const project = projectStore.find(p => p.id === projectId);
+    if (project?.road) {
+      const roadReports = reportStore.filter(
+        r => r.road?.toLowerCase() === project.road.toLowerCase() ||
+             r.locationDescription?.toLowerCase().includes(project.road.toLowerCase())
+      );
+      if (roadReports.length > 0) return roadReports;
+    }
+    return direct;
   }
 
   // -- Alerts --
