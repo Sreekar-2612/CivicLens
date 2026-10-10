@@ -17,8 +17,8 @@ export function PublicLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
   const { user, loading, authError, signInWithGoogle, signOut, setDemoRole } = useAuth()
-  const workspacePath = user?.role === 'contractor' ? '/contractor' : user?.role === 'auditor' ? '/auditor' : '/officer'
-  const workspaceLabel = user?.role === 'contractor' ? 'Contractor Portal' : user?.role === 'auditor' ? 'Auditor Portal' : 'Officer Portal'
+  const workspacePath = user?.role === 'admin' ? '/admin' : user?.role === 'contractor' ? '/contractor' : user?.role === 'auditor' ? '/auditor' : '/officer'
+  const workspaceLabel = user?.role === 'admin' ? 'Admin Portal' : user?.role === 'contractor' ? 'Contractor Portal' : user?.role === 'auditor' ? 'Auditor Portal' : 'Officer Portal'
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif]">
