@@ -36,7 +36,7 @@ export function PublicLayout() {
                   <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-lg tracking-tight text-[#1E293B]">
                     SpadeWork
                   </span>
-                  <span className="bg-[#E3F7F5] text-[#12B5A6] text-[10px] font-bold px-2 py-0.2 rounded-full uppercase tracking-wider border border-[#12B5A6]/20">
+                  <span className="font-bungee bg-[#E3F7F5] text-[#12B5A6] text-[9px] font-normal px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#12B5A6]/20">
                     CIVIC LIVE
                   </span>
                 </div>

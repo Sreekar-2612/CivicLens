@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* -- Bungee Custom Typography Integration -- */
+@font-face {
+  font-family: 'Bungee';
+  src: url('/fonts/bungee/Bungee-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-bungee: 'Bungee', cursive, sans-serif;
+}
+
+.font-bungee {
+  font-family: 'Bungee', cursive, sans-serif;
+  letter-spacing: 0.04em;
+}
+
 /* ============================================================
    CivicLens — Design System
    ============================================================ */
