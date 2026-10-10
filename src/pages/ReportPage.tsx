@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { dataRepository } from '../services/dataRepository'
 import { NotificationService } from '../services/notificationService'
+import { uploadEvidenceFile } from '../services/storageService'
 import { useAuth } from '../context/AuthContext'
 import type { Project, ReportCategory } from '../types'
 import { REPORT_CATEGORY_LABELS } from '../types'
@@ -37,6 +38,8 @@ export function ReportPage() {
   const [lat, setLat] = useState('18.5204')
   const [lng, setLng] = useState('73.8567')
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [submitError, setSubmitError] = useState('')
   const [reporterName, setReporterName] = useState('')
   const [reporterContact, setReporterContact] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
@@ -79,6 +82,7 @@ export function ReportPage() {
 
   // Sample photo simulator
   const handleSamplePhoto = (type: string) => {
+    setPhotoFile(null)
     if (type === 'trench') {
       setPhotoPreview('https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=600&q=80')
     } else if (type === 'pothole') {
@@ -91,6 +95,7 @@ export function ReportPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setPhotoFile(file)
       const reader = new FileReader()
       reader.onloadend = () => {
         setPhotoPreview(reader.result as string)
@@ -112,10 +117,13 @@ export function ReportPage() {
     if (!title.trim() || !description.trim()) return
 
     setSubmitting(true)
+    setSubmitError('')
     try {
       const selectedProj = projects.find(p => p.id === selectedProjectId)
+      const evidencePath = photoFile ? await uploadEvidenceFile(photoFile) : (photoPreview?.startsWith('https://') ? photoPreview : undefined)
       const newReport = await dataRepository.addReport({
         projectId: selectedProjectId || undefined,
+        road: road.trim(),
         category,
         title: title.trim(),
         description: description.trim(),
@@ -124,7 +132,8 @@ export function ReportPage() {
           lng: parseFloat(lng) || 73.8567,
         },
         locationDescription: locationDescription.trim() || road || 'Public Right-of-Way',
-        photoUrl: photoPreview || undefined,
+        photoUrl: evidencePath,
+        evidenceUrl: evidencePath,
         reporterName: isAnonymous ? 'Anonymous Resident' : (user?.displayName || reporterName.trim() || 'Authenticated Resident'),
         reporterContact: isAnonymous ? undefined : (user?.email || reporterContact.trim() || undefined),
       })
@@ -136,6 +145,8 @@ export function ReportPage() {
       )
 
       setSubmittedReport({ id: newReport.id, referenceId: newReport.referenceId })
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'Could not submit report. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -162,7 +173,7 @@ export function ReportPage() {
               Report Submitted Successfully
             </h2>
             <p className="text-xs sm:text-sm text-[var(--muted)] max-w-md mx-auto">
-              Your ground-truthing report has been routed to the relevant civic engineering team and added to the public transparency log.
+              Your report has been recorded. Save the reference number to check its status.
             </p>
           </div>
 
@@ -447,7 +458,7 @@ export function ReportPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => setPhotoPreview(null)}
+                  onClick={() => { setPhotoPreview(null); setPhotoFile(null) }}
                   className="absolute -top-2 -right-2 bg-[#FF5A5F] text-white rounded-full p-1 text-xs hover:bg-[#D13B41] border-none cursor-pointer"
                 >
                   ✕
@@ -517,6 +528,11 @@ export function ReportPage() {
         </div>
 
         {/* Submit Button */}
+        {submitError && (
+          <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            {submitError}
+          </p>
+        )}
         <div className="pt-4 flex items-center justify-between border-t border-[var(--border)]">
           <p className="text-[11px] text-[var(--muted)] max-w-sm">
             By submitting, you attest that this report reflects genuine civic conditions in good faith.
@@ -525,7 +541,22 @@ export function ReportPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-3 rounded-xl bg-[#2F6BFF] hover:bg-[#1E54D8] text-white font-bold text-sm shadow-md transition-all cursor-pointer border-none flex items-center gap-2 disabled:opacity-50"
+              style={{
+                backgroundColor: '#2F6BFF',
+                color: '#FFFFFF',
+                padding: '12px 24px',
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '14px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                border: 'none',
+                boxShadow: '0 4px 14px rgba(47, 107, 255, 0.35)',
+                opacity: submitting ? 0.6 : 1,
+              }}
             >
               {submitting ? 'Lodging Report...' : 'Lodge Ground Report'}
               <ArrowRight className="w-4 h-4 text-white" />
@@ -534,7 +565,21 @@ export function ReportPage() {
             <button
               type="button"
               onClick={signInWithGoogle}
-              className="px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-md transition-all cursor-pointer border-none flex items-center gap-2"
+              style={{
+                backgroundColor: '#D97706',
+                color: '#FFFFFF',
+                padding: '12px 24px',
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '14px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+                border: 'none',
+                boxShadow: '0 4px 14px rgba(217, 119, 6, 0.35)',
+              }}
             >
               <ShieldCheck className="w-4 h-4 text-white" />
               <span>Sign in with Google to Submit</span>
