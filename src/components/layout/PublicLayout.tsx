@@ -41,9 +41,6 @@ export function PublicLayout() {
                   <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-lg tracking-tight text-[#021217]">
                     QuickSort
                   </span>
-                  <span className="font-bungee bg-[#e5fce9] text-[#088c2e] text-[9px] font-normal px-2 py-0.5 rounded-full uppercase tracking-wider border border-[#11e852]/30">
-                    CIVIC LIVE
-                  </span>
                 </div>
                 <span className="hidden sm:inline text-xs text-[#536267] font-medium">
                   Public Works Transparency &amp; Coordination
@@ -160,7 +157,7 @@ export function PublicLayout() {
       </header>
 
       {authError && <p role="alert" className="mx-auto w-full max-w-7xl p-4 text-sm text-red-700">{authError}</p>}
-      {user && !loading && ['contractor', 'auditor', 'officer', 'admin'].includes(user.role) && <div className="max-w-7xl mx-auto w-full px-4 py-2 text-sm"><Link to={user.role === 'admin' ? '/admin' : workspacePath} className="text-[#021217] font-bold hover:text-[#11e852] hover:underline">Open your {user.role} workspace</Link></div>}
+
       {user?.isDemoUser && <div className="max-w-7xl mx-auto w-full px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
         <label htmlFor="public-demo-role">Local demo role</label>
         <select id="public-demo-role" value={user.role} onChange={event => setDemoRole(event.target.value as typeof user.role)} className="border rounded-lg p-2">

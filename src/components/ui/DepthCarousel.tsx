@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { ChevronLeft, ChevronRight, Grid, Layers, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Layers, Sparkles } from 'lucide-react'
 import type { Project, Department } from '../../types'
 import { ProjectCard } from './ProjectCard'
 
@@ -134,51 +134,21 @@ export function DepthCarousel({ projects, departmentMap }: DepthCarouselProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* 3D Stage vs Grid View Switcher */}
-          <div className="inline-flex p-1 bg-[#F1F5F9] rounded-xl border border-[#e2c09c]/40">
-            <button
-              onClick={() => setViewMode('depth')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === 'depth'
-                  ? 'bg-white text-[#021217] shadow-2xs font-bold'
-                  : 'text-[#536267] hover:text-[#021217]'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 text-[#088c2e]" />
-              <span>3D Motion</span>
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === 'grid'
-                  ? 'bg-white text-[#021217] shadow-2xs font-bold'
-                  : 'text-[#536267] hover:text-[#021217]'
-              }`}
-            >
-              <Grid className="w-3.5 h-3.5" />
-              <span>Grid View</span>
-            </button>
-          </div>
-
           {/* Stepper Chevron Buttons with Hover Effects */}
-          {viewMode === 'depth' && (
-            <div className="flex items-center gap-2 ml-2">
-              <button
-                onClick={() => stepSlide(-1)}
-                aria-label="Previous Project"
-                className="w-8 h-8 rounded-full bg-white border border-[#e2c09c] text-[#021217] hover:border-[#11e852] hover:bg-[#faf7f0] hover:scale-110 hover:shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
-              >
-                <ChevronLeft className="w-4 h-4 text-[#021217]" />
-              </button>
-              <button
-                onClick={() => stepSlide(1)}
-                aria-label="Next Project"
-                className="w-8 h-8 rounded-full bg-white border border-[#e2c09c] text-[#021217] hover:border-[#11e852] hover:bg-[#faf7f0] hover:scale-110 hover:shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
-              >
-                <ChevronRight className="w-4 h-4 text-[#021217]" />
-              </button>
-            </div>
-          )}
+          <button
+            onClick={() => stepSlide(-1)}
+            aria-label="Previous Project"
+            className="w-8 h-8 rounded-full bg-white border border-[#e2c09c] text-[#021217] hover:border-[#11e852] hover:bg-[#faf7f0] hover:scale-110 hover:shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
+          >
+            <ChevronLeft className="w-4 h-4 text-[#021217]" />
+          </button>
+          <button
+            onClick={() => stepSlide(1)}
+            aria-label="Next Project"
+            className="w-8 h-8 rounded-full bg-white border border-[#e2c09c] text-[#021217] hover:border-[#11e852] hover:bg-[#faf7f0] hover:scale-110 hover:shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
+          >
+            <ChevronRight className="w-4 h-4 text-[#021217]" />
+          </button>
         </div>
       </div>
 

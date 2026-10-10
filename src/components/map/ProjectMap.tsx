@@ -327,8 +327,8 @@ export function ProjectMap({
         )}
 
         {reports.filter(report => Number.isFinite(report.location.lat) && Number.isFinite(report.location.lng)).map(report => (
-          <Marker key={`report-${report.id}`} position={[report.location.lat, report.location.lng]}
-            icon={L.divIcon({ className: 'resident-issue-marker', html: '<div style="width:24px;height:24px;border-radius:50%;background:#ea580c;border:3px solid white;box-shadow:0 1px 5px #0005;color:white;text-align:center;font-weight:bold">!</div>', iconSize: [24, 24], iconAnchor: [12, 12] })}>
+          <Marker key={`report-${report.id}`} position={[report.location.lat, report.location.lng]} zIndexOffset={1000}
+            icon={L.divIcon({ className: 'resident-issue-marker', html: '<div style="width:24px;height:24px;border-radius:6px;background:#ea580c;border:3px solid white;box-shadow:0 1px 5px #0005;color:white;text-align:center;font-weight:bold;line-height:18px">!</div>', iconSize: [24, 24], iconAnchor: [12, 12] })}>
             <Popup><div className="space-y-2"><strong>Resident issue: {report.title}</strong><p>{report.referenceId}</p><p>Status: {report.status.replaceAll('_', ' ')}</p><p>{report.description}</p><Link to={`/reports/track?ref=${encodeURIComponent(report.referenceId)}`}>Track issue</Link></div></Popup>
           </Marker>
         ))}
@@ -412,7 +412,7 @@ export function ProjectMap({
 
       {/* Docked Status Legend (Bottom Left Glassmorphism) */}
       {showControls && (
-        <div className="absolute bottom-3 left-3 z-[1000] bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl shadow-md px-3.5 py-2 text-xs font-semibold text-slate-800 flex items-center gap-3">
+        <div className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] z-[1000] bg-white/90 backdrop-blur-md border border-slate-200/80 rounded-xl shadow-md px-3.5 py-2 text-xs font-semibold text-slate-800 flex flex-wrap items-center gap-3">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Status:</span>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#0284C7]" />
@@ -434,6 +434,7 @@ export function ProjectMap({
             <span className="w-2.5 h-2.5 rounded-full bg-[#059669]" />
             <span>Completed</span>
           </div>
+          <div className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded bg-orange-600 text-white text-center leading-none">!</span><span>Resident issue</span></div>
         </div>
       )}
     </div>
