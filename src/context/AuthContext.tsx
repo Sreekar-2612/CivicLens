@@ -33,12 +33,12 @@ const AuthContext = createContext<AuthContextType>({
 })
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isSupabase = isSupabaseConfigured()
-  const [user, setUser] = useState<AuthUser | null>(isSupabase ? null : DEFAULT_DEMO_USER)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null)
   useEffect(() => {
     const client = supabase
-    if (!isSupabase || !client) { setUser(DEFAULT_DEMO_USER); setLoading(false); return }
+    if (!client) { setLoading(false); return }
     let active = true
     let requestVersion = 0
     async function loadIdentity(identity: { id: string; email?: string } | null) {
