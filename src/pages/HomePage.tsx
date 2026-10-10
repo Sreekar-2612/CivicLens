@@ -8,6 +8,7 @@ import {
 import { dataRepository } from '../services/dataRepository'
 import type { Project, SummaryStats, Department } from '../types'
 import { ProjectCard } from '../components/ui/ProjectCard'
+import { DepthCarousel } from '../components/ui/DepthCarousel'
 import { MosaicMapTrail } from '../components/hero/MosaicMapTrail'
 
 import { geocodeCity } from '../config/regionConfig'
@@ -316,15 +317,12 @@ export function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {recentProjects.map(project => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                department={deptMap.get(project.departmentId)}
-              />
-            ))}
-          </div>
+          {recentProjects.length > 0 && (
+            <DepthCarousel
+              projects={recentProjects}
+              departmentMap={deptMap}
+            />
+          )}
         </div>
       </section>
 
