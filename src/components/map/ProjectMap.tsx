@@ -285,11 +285,11 @@ export function ProjectMap({
           </>
         )}
 
-        {/* 2. Detailed Urban Cartography (Carto Voyager) */}
+        {/* 2. Detailed Urban Cartography (OpenStreetMap Standard - No API Key Required) */}
         {basemap === 'urban' && (
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             maxZoom={19}
           />
         )}
