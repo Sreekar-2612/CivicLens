@@ -188,7 +188,7 @@ export function HomePage() {
                 <span className="text-[11px] text-[#64748B]">completed</span>
               </div>
               <p className="text-[10px] text-[#64748B] mt-1 border-t border-[#F1F5F9] pt-1">
-                Under 365d moratorium protection
+                View completion dates on corridor timelines
               </p>
             </div>
           </div>
@@ -206,7 +206,7 @@ export function HomePage() {
           </h2>
           <p className="text-xs sm:text-sm text-[#64748B] max-w-xl mx-auto mt-2">
             Roads are paved, then sliced open weeks later by water or telecom utilities.
-            CivicLens synchronizes departments before physical machinery touches the asphalt.
+            CivicLens shows work orders together so departments can coordinate schedules.
           </p>
         </div>
 
@@ -219,7 +219,7 @@ export function HomePage() {
               Unified Spatial Registry
             </h3>
             <p className="text-xs text-[#64748B] leading-relaxed">
-              Every public works work order—roads, water pipelines, stormwater drainage, MSEDCL power, and 5G fiber—is visible on one synchronized map with verified coordinates.
+              Registered road and utility work orders appear together on a map with their recorded coordinates.
             </p>
           </div>
 
@@ -231,7 +231,7 @@ export function HomePage() {
               Proactive Clash Detection
             </h3>
             <p className="text-xs text-[#64748B] leading-relaxed">
-              Automated spatial-temporal conflict detection flags overlapping permits within 200m and enforces Pune's 365-day road cut moratorium on newly resurfaced corridors.
+              Recorded work orders can reveal same-road scheduling clashes and possible repeat excavation within 365 days of resurfacing.
             </p>
           </div>
 

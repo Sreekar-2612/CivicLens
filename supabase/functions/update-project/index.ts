@@ -1,15 +1,15 @@
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { getSupabaseClient } from '../_shared/supabase.ts'
+import { requireActor, requireDepartment, errorResponse } from '../_shared/supabase.ts'
 
 Deno.serve(async (req) => {
   const corsRes = handleCors(req)
   if (corsRes) return corsRes
 
   try {
-    const { id, updates, delayReason, authorName } = await req.json()
+    const { db: supabase, user, profile } = await requireActor(req, ['department_officer', 'admin'])
+    const { id, updates, delayReason } = await req.json()
     if (!id) throw new Error('Project ID is required')
 
-    const supabase = getSupabaseClient()
     const { data: current, error: fetchErr } = await supabase
       .from('projects')
       .select('*')
@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
       .single()
 
     if (fetchErr || !current) throw new Error(`Project ${id} not found`)
+    requireDepartment(profile, current.department_id)
 
     // Enforce original_end_date immutability check
     if (updates.originalEndDate && updates.originalEndDate !== current.original_end_date) {
@@ -58,7 +59,8 @@ Deno.serve(async (req) => {
         delay_reason_description: delayReason,
         previous_end_date: current.revised_end_date || current.original_end_date,
         revised_end_date: updates.revisedEndDate,
-        created_by_name: authorName || 'Authorized Officer',
+        created_by: user.id,
+        created_by_name: profile.display_name,
       })
     }
 
@@ -67,9 +69,7 @@ Deno.serve(async (req) => {
       status: 200,
     })
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    return errorResponse(err)
   }
 })
+

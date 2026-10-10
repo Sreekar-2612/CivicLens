@@ -1,16 +1,18 @@
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { getSupabaseClient } from '../_shared/supabase.ts'
+import { requireActor, requireDepartment, errorResponse } from '../_shared/supabase.ts'
 
 Deno.serve(async (req) => {
   const corsRes = handleCors(req)
   if (corsRes) return corsRes
 
   try {
+    const { db: supabase, user, profile } = await requireActor(req, ['department_officer', 'admin'])
     const data = await req.json()
 
     // Validation rules
     if (!data.title || data.title.trim().length < 3) throw new Error('Title must be at least 3 characters')
     if (!data.departmentId) throw new Error('Department ID is required')
+    requireDepartment(profile, data.departmentId)
     if (!data.contractor || !data.contractor.trim()) throw new Error('Contractor name is required')
     if (!data.road || !data.road.trim()) throw new Error('Road name is required')
     if (!data.startDate) throw new Error('Start date is required')
@@ -40,9 +42,9 @@ Deno.serve(async (req) => {
       revised_end_date: null,
       progress_percent: data.progressPercent || 0,
       confidence_indicator: data.confidenceIndicator || 'on_track',
+      created_by: user.id,
     }
 
-    const supabase = getSupabaseClient()
     const { data: inserted, error } = await supabase
       .from('projects')
       .insert(dbPayload)
@@ -56,9 +58,7 @@ Deno.serve(async (req) => {
       status: 201,
     })
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    return errorResponse(err)
   }
 })
+

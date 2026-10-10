@@ -13,8 +13,12 @@ import {
   validateDeadlineRevision,
   validateProgressUpdate
 } from './projectValidation'
-import { reports as seedReports, coordinationAlerts as seedAlerts } from '../data/reports'
-import { milestones as seedMilestones } from '../data/updates'
+
+function functionResult<T>(name: string, data: { success?: boolean; error?: string } & T, error: Error | null, key: keyof T): T[keyof T] {
+  if (error) throw new Error(`${name}: ${error.message}`)
+  if (!data?.success || !data[key]) throw new Error(`${name}: ${data?.error || 'Invalid response'}`)
+  return data[key]
+}
 
 // Mappers
 export function mapDbProjectToDomain(row: any): Project {
@@ -260,9 +264,21 @@ export class SupabaseDataRepository {
   }
 
   async getMilestones(projectId: string): Promise<Milestone[]> {
-    return seedMilestones
-      .filter(m => m.projectId === projectId)
-      .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())
+    const { data, error } = await this.client
+      .from('milestones')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('target_date', { ascending: true })
+    if (error) throw error
+    return (data || []).map(row => ({
+      id: row.id,
+      projectId: row.project_id,
+      title: row.title,
+      description: row.description || undefined,
+      targetDate: row.target_date,
+      completedDate: row.completed_date || undefined,
+      status: row.status,
+    }))
   }
 
   // -- Reports / Grievances (Edge Function: get-grievances) --
@@ -280,8 +296,8 @@ export class SupabaseDataRepository {
       .from('grievances')
       .select('*')
       .order('created_at', { ascending: false })
-    if (error || !data || data.length === 0) return seedReports
-    return data.map(mapDbGrievanceToDomain)
+    if (error) throw error
+    return (data || []).map(mapDbGrievanceToDomain)
   }
 
   async getReport(id: string): Promise<Report | undefined> {
@@ -314,8 +330,8 @@ export class SupabaseDataRepository {
       .from('clashes')
       .select('*')
       .order('created_at', { ascending: false })
-    if (error || !data || data.length === 0) return seedAlerts
-    return data.map(mapDbClashToDomain)
+    if (error) throw error
+    return (data || []).map(mapDbClashToDomain)
   }
 
   async getAlert(id: string): Promise<CoordinationAlert | undefined> {
@@ -346,8 +362,8 @@ export class SupabaseDataRepository {
       activeProjects: projects.filter(p => p.status === 'in_progress' || p.status === 'planned').length,
       delayedProjects: projects.filter(p => p.status === 'delayed' || p.confidenceIndicator === 'delayed').length,
       completedProjects: projects.filter(p => p.status === 'completed').length,
-      potentialConflicts: seedAlerts.filter(a => a.status === 'pending_review').length,
-      pendingReports: seedReports.filter(r => r.status === 'submitted' || r.status === 'acknowledged').length,
+      potentialConflicts: (await this.getAlerts()).filter(a => a.status === 'pending_review').length,
+      pendingReports: (await this.getReports()).filter(r => r.status === 'submitted' || r.status === 'acknowledged').length,
       departmentCount: departments.length,
     }
   }
@@ -517,47 +533,24 @@ export class SupabaseDataRepository {
 
   // -- Add Grievance / Report (Edge Function: create-grievance) --
   async addReport(data: Partial<Report>): Promise<Report> {
-    try {
-      const { data: res, error } = await this.client.functions.invoke('create-grievance', {
-        body: data
-      })
-      if (!error && res?.success && res.grievance) {
-        return mapDbGrievanceToDomain(res.grievance)
-      }
-    } catch (e) {
-      console.warn('Edge function create-grievance fallback:', e)
-    }
-    return seedReports[0]
+    const { data: res, error } = await this.client.functions.invoke('create-grievance', { body: data })
+    return mapDbGrievanceToDomain(functionResult('create-grievance', res, error, 'grievance'))
   }
 
   // -- Update Grievance (Edge Function: update-grievance-status) --
   async updateReportStatus(id: string, status: ReportStatus, officerResponse?: string): Promise<Report | undefined> {
-    try {
-      const { data: res, error } = await this.client.functions.invoke('update-grievance-status', {
-        body: { id, status, officerResponse }
-      })
-      if (!error && res?.success && res.grievance) {
-        return mapDbGrievanceToDomain(res.grievance)
-      }
-    } catch (e) {
-      console.warn('Edge function update-grievance-status fallback:', e)
-    }
-    return undefined
+    const { data: res, error } = await this.client.functions.invoke('update-grievance-status', {
+      body: { id, status, officerResponse }
+    })
+    return mapDbGrievanceToDomain(functionResult('update-grievance-status', res, error, 'grievance'))
   }
 
   // -- Resolve Clash (Edge Function: resolve-clash) --
   async updateAlertStatus(id: string, status: AlertStatus, decisionNotes?: string): Promise<CoordinationAlert | undefined> {
-    try {
-      const { data: res, error } = await this.client.functions.invoke('resolve-clash', {
-        body: { id, status, decisionNotes }
-      })
-      if (!error && res?.success && res.clash) {
-        return mapDbClashToDomain(res.clash)
-      }
-    } catch (e) {
-      console.warn('Edge function resolve-clash fallback:', e)
-    }
-    return undefined
+    const { data: res, error } = await this.client.functions.invoke('resolve-clash', {
+      body: { id, status, decisionNotes }
+    })
+    return mapDbClashToDomain(functionResult('resolve-clash', res, error, 'clash'))
   }
 
   async getUniqueRoads(): Promise<{ road: string; count: number; activeCount: number; wards: string[] }[]> {

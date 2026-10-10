@@ -1,14 +1,18 @@
 import { corsHeaders, handleCors } from '../_shared/cors.ts'
-import { getSupabaseClient } from '../_shared/supabase.ts'
+import { requireActor, requireDepartment, errorResponse } from '../_shared/supabase.ts'
 
 Deno.serve(async (req) => {
   const corsRes = handleCors(req)
   if (corsRes) return corsRes
 
   try {
+    const { db: supabase, user, profile } = await requireActor(req, ['department_officer', 'admin'])
     const { projectId, update } = await req.json()
     if (!projectId) throw new Error('projectId is required')
     if (!update) throw new Error('update payload is required')
+    const { data: project, error: projectError } = await supabase.from('projects').select('department_id').eq('id', projectId).single()
+    if (projectError || !project) throw new Error('Project not found')
+    requireDepartment(profile, project.department_id)
 
     const dbPayload = {
       project_id: projectId,
@@ -19,10 +23,10 @@ Deno.serve(async (req) => {
       previous_end_date: update.previousValue,
       revised_end_date: update.newValue,
       evidence_path: update.evidenceUrl,
-      created_by_name: update.authorName || 'Field Engineer',
+      created_by: user.id,
+      created_by_name: profile.display_name,
     }
 
-    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('project_updates')
       .insert(dbPayload)
@@ -36,9 +40,7 @@ Deno.serve(async (req) => {
       status: 201,
     })
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    })
+    return errorResponse(err)
   }
 })
+

@@ -28,7 +28,7 @@ export function AssistantPage() {
     {
       id: 'welcome',
       sender: 'assistant',
-      text: "Hello! I am **CivicLens Assistant**, your AI intelligence guide for public works transparency. Ask me anything about ongoing road digging, department performance, delay audits, or repeat excavation conflicts.",
+      text: "Hello! I can help you find projects, reports, and coordination alerts in CivicLens. Ask about road works, departments, delays, or grievances.",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ])
@@ -89,7 +89,7 @@ export function AssistantPage() {
 
     if (q.includes('delay') || q.includes('most delay') || q.includes('behind')) {
       const delayed = projects.filter(p => p.status === 'delayed' || p.confidenceIndicator === 'delayed')
-      replyText = `Based on current civic audit records, there are **${delayed.length} delayed projects** across the city.\n\nThe most frequent cause of delay is **subsurface utility clashes** and **uncoordinated rain drainage trenching**.\n\nKey delayed projects include:\n${delayed.slice(0, 3).map(p => `• **${p.title}** on ${p.road} (${p.ward})`).join('\n')}`
+      replyText = `There are **${delayed.length} projects** marked delayed in the available records.\n\nExamples:\n${delayed.slice(0, 3).map(p => `• **${p.title}** on ${p.road} (${p.ward})`).join('\n') || 'No delayed projects found.'}`
       links = [
         { label: 'View Department Scorecards', to: '/scorecard' },
         { label: 'Explore All Delayed Projects', to: '/projects?status=delayed' }
@@ -102,25 +102,25 @@ export function AssistantPage() {
       ]
     } else if (q.includes('conflict') || q.includes('repeat') || q.includes('clash')) {
       const criticalAlerts = alerts.filter(a => a.severity === 'critical' || a.severity === 'high')
-      replyText = `CivicLens Conflict Engine has flagged **${alerts.length} total conflicts** (${criticalAlerts.length} high/critical severity).\n\nThe top conflict involves simultaneous work orders on **JM Road** and **Baner Road** where fresh asphalt resurfacing overlaps with pending underground pipeline laying.`
+      replyText = `The available records contain **${alerts.length} coordination alerts** (${criticalAlerts.length} high or critical severity). Review each alert's linked projects and dates before making a scheduling decision.`
       links = [
         { label: 'Inspect Coordination Hub', to: '/officer/coordination' },
         { label: 'Review Agency Scorecards', to: '/scorecard' }
       ]
     } else if (q.includes('report') || q.includes('grievance') || q.includes('citizen')) {
       const pending = reports.filter(r => r.status === 'submitted' || r.status === 'acknowledged')
-      replyText = `There are currently **${reports.length} citizen reports** lodged in the system, with **${pending.length} pending review**.\n\nTop recurring complaints relate to **unbarricaded trenches (safety hazard)** and **stalled works left abandoned for over 2 weeks**.`
+      replyText = `The available records contain **${reports.length} citizen reports**, with **${pending.length} submitted or acknowledged**.`
       links = [
         { label: 'Lodge New Ground Report', to: '/report' },
         { label: 'Track Existing Grievance', to: '/reports/track' }
       ]
     } else if (q.includes('contractor') || q.includes('rating')) {
-      replyText = `Contractor transparency tracking evaluates firms on timeline fidelity and past delays.\n\nTop contractor under review: **Shapoorji Pallonji / Subcontractor Unit** with 2 delayed road works.\nHighest rated contractor: **L&T Infrastructure (4.8★)** with 91% on-time milestone delivery.`
+      replyText = `Contractor ratings are not available in this assistant. The scorecard shows the project and contractor information currently recorded.`
       links = [
         { label: 'View Contractor Transparency Table', to: '/scorecard' }
       ]
     } else {
-      replyText = `I analyzed your inquiry against our live municipal dataset (${projects.length} projects, ${departments.length} departments, ${reports.length} citizen reports).\n\nYou can explore active works on our interactive GIS map, or track department accountability benchmarks on the Scorecards portal.`
+      replyText = `I found ${projects.length} projects, ${departments.length} departments, and ${reports.length} reports in the available records. Try a road name or ask about delays, alerts, or reports.`
       links = [
         { label: 'Browse Project Explorer', to: '/projects' },
         { label: 'View Department Scorecards', to: '/scorecard' }
@@ -148,9 +148,9 @@ export function AssistantPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              CivicLens AI Assistant
+              CivicLens Data Guide
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                Live Data Connected
+                Recorded Data
               </span>
             </h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">

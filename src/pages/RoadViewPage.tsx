@@ -67,11 +67,19 @@ export function RoadViewPage() {
   const currentProjects = roadProjects.filter(p => p.status === 'in_progress' || p.status === 'delayed')
   const plannedProjects = roadProjects.filter(p => p.status === 'planned')
 
-  const hasRecentResurfacing = pastProjects.some(p => p.category === 'road_resurfacing' || p.category === 'road_construction')
-  const hasUpcomingExcavation = [...currentProjects, ...plannedProjects].some(
+  const resurfacingProjects = pastProjects.filter(p => p.category === 'road_resurfacing' || p.category === 'road_construction')
+  const excavationProjects = [...currentProjects, ...plannedProjects].filter(
     p => p.category === 'water_pipeline' || p.category === 'gas_pipeline' || p.category === 'drainage' || p.category === 'telecom'
   )
-  const isMoratoriumViolation = hasRecentResurfacing && hasUpcomingExcavation
+  const hasRepeatExcavationRisk = resurfacingProjects.some(resurfacing => {
+    if (!resurfacing.actualEndDate) return false
+    const completedAt = new Date(`${resurfacing.actualEndDate}T00:00:00`).getTime()
+    if (Number.isNaN(completedAt)) return false
+    return excavationProjects.some(excavation => {
+      const excavationAt = new Date(`${excavation.startDate}T00:00:00`).getTime()
+      return excavationAt >= completedAt && excavationAt - completedAt <= 365 * 24 * 60 * 60 * 1000
+    })
+  })
 
   const roadProjectIds = new Set(roadProjects.map(p => p.id))
   const roadAlerts = alerts.filter(a => roadProjectIds.has(a.projectAId) || roadProjectIds.has(a.projectBId))
@@ -90,7 +98,7 @@ export function RoadViewPage() {
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#EAF1FF] text-[#2F6BFF] border border-[#2F6BFF]/20 mb-1.5">
               <Layers className="w-3.5 h-3.5" />
-              <span>Repeat Digging Radar &amp; Moratorium Tracker</span>
+              <span>Repeat Digging Review</span>
             </div>
             <h1 className="font-['Plus_Jakarta_Sans'] text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
               Corridor Timeline: {currentRoad || 'Select Corridor'}
@@ -119,7 +127,7 @@ export function RoadViewPage() {
       </div>
 
       {/* Moratorium / Repeat Excavation Hatch Banner */}
-      {isMoratoriumViolation && (
+      {hasRepeatExcavationRisk && (
         <div className="border border-[#F0386B]/30 rounded-2xl overflow-hidden shadow-2xs">
           <div className="h-2 clash-hatch border-b border-[#F0386B]/20"></div>
           <div className="p-4 bg-[#FFE6EE] flex items-start gap-3">
@@ -132,14 +140,14 @@ export function RoadViewPage() {
                   CRITICAL REPEAT-EXCAVATION RISK
                 </span>
                 <span className="bg-[#C41F4F] text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded uppercase">
-                  Moratorium Breached
+                  Review Needed
                 </span>
               </div>
               <h3 className="font-['Plus_Jakarta_Sans'] text-base font-bold text-[#1E293B]">
-                Road Resurfaced Recently While Subsurface Utility Trenching Is Scheduled!
+                Utility excavation is scheduled within 365 days of recorded resurfacing
               </h3>
               <p className="text-xs text-[#64748B] leading-relaxed">
-                This corridor underwent asphalt resurfacing in the last 12 months. An upcoming or active utility excavation (water/power/telecom) threatens to slice into the fresh asphalt. Co-ducting or schedule synchronization is required under Pune Section 42 Bylaws.
+                The recorded dates indicate a repeat excavation risk on this corridor. Review the work orders and coordinate the schedule before excavation.
               </p>
             </div>
           </div>
