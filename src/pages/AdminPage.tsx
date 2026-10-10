@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import {
   Shield, Users, HardHat, FileCheck, Building2, Search,
   CheckCircle2, AlertTriangle, Layers, Filter, Check,
@@ -14,6 +14,8 @@ import { dataRepository } from '../services/dataRepository'
 
 export function AdminPage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
   
   // Data state
   const [roster, setRoster] = useState<AdminUserRosterItem[]>([])
@@ -21,7 +23,26 @@ export function AdminPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [stats, setStats] = useState<SummaryStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'supervision' | 'assignment' | 'system'>('supervision')
+
+  const isAssignmentRoute = location.pathname.includes('/assign') || location.pathname.includes('/roles')
+  const initialTab = isAssignmentRoute || searchParams.get('tab') === 'assignment'
+    ? 'assignment'
+    : searchParams.get('tab') === 'system'
+    ? 'system'
+    : 'supervision'
+
+  const [activeTab, setActiveTab] = useState<'supervision' | 'assignment' | 'system'>(initialTab)
+
+  const handleTabClick = (tab: 'supervision' | 'assignment' | 'system') => {
+    setActiveTab(tab)
+    if (tab === 'assignment') {
+      setSearchParams({ tab: 'assignment' })
+    } else if (tab === 'system') {
+      setSearchParams({ tab: 'system' })
+    } else {
+      setSearchParams({})
+    }
+  }
 
   // Search & Filters for Supervision
   const [searchQuery, setSearchQuery] = useState('')
@@ -187,7 +208,7 @@ export function AdminPage() {
   const isAdmin = user?.role === 'admin' || user?.isDemoUser
 
   return (
-    <div className="min-h-screen bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif] pb-16">
+    <div className={`min-h-screen ${activeTab === 'assignment' ? 'bg-[#F6F9FC]' : 'bg-transparent'} text-[#1E293B] font-['Inter',sans-serif] pb-16`}>
       {/* Top Banner & Header */}
       <div className="bg-white border-b border-[#E3EAF2]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -293,7 +314,7 @@ export function AdminPage() {
           <div className="flex border-b border-[#E3EAF2] mt-6 gap-2">
             <button
               type="button"
-              onClick={() => setActiveTab('supervision')}
+              onClick={() => handleTabClick('supervision')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'supervision'
                   ? 'border-[#2F6BFF] text-[#2F6BFF]'
@@ -309,7 +330,7 @@ export function AdminPage() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('assignment')}
+              onClick={() => handleTabClick('assignment')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'assignment'
                   ? 'border-[#2F6BFF] text-[#2F6BFF]'
@@ -322,7 +343,7 @@ export function AdminPage() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('system')}
+              onClick={() => handleTabClick('system')}
               className={`pb-3 px-4 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'system'
                   ? 'border-[#2F6BFF] text-[#2F6BFF]'

@@ -18,8 +18,8 @@ export function WorkspaceLayout({ role }: { role: 'contractor' | 'auditor' }) {
     {error && <p role="alert" className="text-red-700">{error}</p>}
     <Link className="block text-blue-700" to="/">Return to public portal</Link>
   </main>
-  return <div className="min-h-screen bg-slate-50 text-slate-800">
-    <header className="bg-white border-b border-slate-200">
+  return <div className="min-h-screen bg-transparent text-slate-800">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-6xl mx-auto p-4 flex flex-wrap items-center justify-between gap-4">
         <div><h1 className="font-bold text-xl">SpadeWork · {title}</h1><p className="text-sm text-slate-600">{user.displayName} · {departmentMap.get(user.departmentId || '')?.name || user.departmentId || 'Department not assigned'}</p>
           {user.isDemoUser && <span className="text-xs text-amber-800">Demo account · Changes stay in this browser</span>}

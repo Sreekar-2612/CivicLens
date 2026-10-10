@@ -9,7 +9,6 @@ import { dataRepository } from '../services/dataRepository'
 import type { Project, SummaryStats, Department } from '../types'
 import { ProjectCard } from '../components/ui/ProjectCard'
 import { DepthCarousel } from '../components/ui/DepthCarousel'
-import { MosaicMapTrail } from '../components/hero/MosaicMapTrail'
 
 import { geocodeCity } from '../config/regionConfig'
 
@@ -58,34 +57,31 @@ export function HomePage() {
   const deptMap = new Map(departments.map(d => [d.id, d]))
 
   return (
-    <div className="bg-[#F6F9FC] text-[#1E293B]">
-      {/* Cursor-Driven Mosaic Map Trail Hero Section */}
-      <section className="relative min-h-[580px] lg:min-h-[640px] flex items-center bg-[#080F20] text-white overflow-hidden border-b border-[#1E293B]">
-        {/* Dynamic Mosaic Map Background Canvas */}
-        <MosaicMapTrail />
-
-        {/* Stable Scrim Content Area Ensuring Perfect Readability */}
+    <div className="bg-transparent text-[#1E293B]">
+      {/* Light Hero Section showcasing Global Map Background & Mosaic Trail */}
+      <section className="relative min-h-[500px] lg:min-h-[560px] flex items-center bg-transparent text-[#1E293B] overflow-hidden">
+        {/* Content Area with High Readability */}
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 pointer-events-auto">
           <div className="max-w-3xl">
             {/* Top Brand Tag with Bungee font */}
-            <div className="inline-flex items-center gap-2 bg-[#06B6D4]/15 text-[#4CD7F6] text-xs font-semibold px-3 py-1.5 rounded-full uppercase tracking-wider mb-5 border border-[#06B6D4]/30 backdrop-blur-md">
-              <Sparkles className="w-3.5 h-3.5 text-[#06B6D4]" />
-              <span className="font-bungee text-[10px] tracking-widest text-[#4CD7F6]">
-                CIVIC INTELLIGENCE • LIVE MOSAIC MAP
+            <div className="inline-flex items-center gap-2 bg-[#FAF7F0]/90 text-[#8B6F55] text-xs font-semibold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-5 border border-[#E5D8C5] shadow-2xs backdrop-blur-xs">
+              <Sparkles className="w-3.5 h-3.5 text-[#8B6F55]" />
+              <span className="font-bungee text-[10px] tracking-widest text-[#5A4834]">
+                CIVIC INTELLIGENCE • LIVE CITY MAP
               </span>
             </div>
 
             {/* Headline */}
-            <h1 className="font-['Plus_Jakarta_Sans',sans-serif] text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] text-white tracking-tight mb-5 drop-shadow-md">
+            <h1 className="font-['Plus_Jakarta_Sans',sans-serif] text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] text-[#1E293B] tracking-tight mb-5">
               Know What's Happening{' '}
               <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4CD7F6] via-[#38BDF8] to-[#2F6BFF]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2F6BFF] via-[#12B5A6] to-[#8B6F55]">
                 on Your Streets.
               </span>
             </h1>
 
             {/* Supporting Text */}
-            <p className="text-base sm:text-lg text-[#94A3B8] leading-relaxed mb-8 max-w-2xl font-normal drop-shadow-sm">
+            <p className="text-base sm:text-lg text-[#64748B] leading-relaxed mb-8 max-w-2xl font-normal">
               Track public works. Prevent repeated digging. Hold projects accountable.
             </p>
 
@@ -93,7 +89,7 @@ export function HomePage() {
             <div className="flex flex-wrap items-center gap-3.5 mb-8">
               <Link
                 to="/projects"
-                className="btn-primary text-sm py-3 px-6 shadow-lg shadow-[#2F6BFF]/30 whitespace-nowrap inline-flex items-center gap-2 text-white font-bold rounded-xl no-underline hover:scale-[1.02] active:scale-[0.98] transition-transform"
+                className="btn-primary text-sm py-3 px-6 shadow-lg shadow-[#2F6BFF]/25 whitespace-nowrap inline-flex items-center gap-2 text-white font-bold rounded-xl no-underline hover:scale-[1.02] active:scale-[0.98] transition-transform"
               >
                 <MapPin className="w-4 h-4" />
                 <span>Explore Projects</span>
@@ -101,9 +97,9 @@ export function HomePage() {
               </Link>
               <Link
                 to="/report"
-                className="text-sm py-3 px-6 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-bold rounded-xl backdrop-blur-md whitespace-nowrap inline-flex items-center gap-2 no-underline transition-all hover:border-[#4CD7F6]/50"
+                className="text-sm py-3 px-6 bg-white/90 hover:bg-[#FAF7F0] text-[#1E293B] border border-[#E5D8C5] font-bold rounded-xl shadow-2xs backdrop-blur-xs whitespace-nowrap inline-flex items-center gap-2 no-underline transition-all hover:border-[#8B6F55]/50"
               >
-                <FileText className="w-4 h-4 text-[#4CD7F6]" />
+                <FileText className="w-4 h-4 text-[#8B6F55]" />
                 <span>Report an Issue</span>
               </Link>
             </div>
@@ -111,39 +107,39 @@ export function HomePage() {
             {/* Prominent Search bar */}
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2.5 max-w-xl">
               <div className="flex-1 relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4CD7F6]" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B6F55]" />
                 <input
                   type="text"
                   placeholder="Search any city or road (e.g. Guntur, Bengaluru, FC Road)..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0F172A]/85 border border-[#334155] text-white placeholder-[#94A3B8] text-xs font-medium focus:outline-none focus:bg-[#0F172A] focus:border-[#06B6D4] focus:ring-3 focus:ring-[#06B6D4]/25 transition-all shadow-inner backdrop-blur-md"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/95 border border-[#E5D8C5] text-[#1E293B] placeholder-[#94A3B8] text-xs font-medium focus:outline-none focus:bg-white focus:border-[#2F6BFF] focus:ring-3 focus:ring-[#2F6BFF]/15 transition-all shadow-2xs backdrop-blur-xs"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isSearching}
-                className="bg-[#06B6D4] hover:bg-[#0891B2] text-[#080F20] font-bold text-xs py-3 px-6 rounded-xl shadow-md whitespace-nowrap disabled:opacity-75 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="bg-[#2F6BFF] hover:bg-[#1E54D8] text-white font-bold text-xs py-3 px-6 rounded-xl shadow-md whitespace-nowrap disabled:opacity-75 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSearching ? 'Locating City...' : 'Search Works'}
               </button>
             </form>
 
             {/* Quick links */}
-            <div className="flex flex-wrap gap-4 mt-6 text-xs font-semibold text-[#94A3B8]">
-              <Link to="/projects" className="flex items-center gap-1.5 hover:text-[#4CD7F6] transition-colors no-underline">
-                <MapPin className="w-3.5 h-3.5 text-[#4CD7F6]" /> Explore GIS Map
+            <div className="flex flex-wrap gap-4 mt-6 text-xs font-semibold text-[#64748B]">
+              <Link to="/projects" className="flex items-center gap-1.5 hover:text-[#2F6BFF] transition-colors no-underline">
+                <MapPin className="w-3.5 h-3.5 text-[#8B6F55]" /> Explore GIS Map
                 <ChevronRight className="w-3 h-3 opacity-60" />
               </Link>
-              <Link to="/scorecard" className="flex items-center gap-1.5 hover:text-[#4CD7F6] transition-colors no-underline">
-                <BarChart3 className="w-3.5 h-3.5 text-[#4CD7F6]" /> Dept Scorecard
+              <Link to="/scorecard" className="flex items-center gap-1.5 hover:text-[#2F6BFF] transition-colors no-underline">
+                <BarChart3 className="w-3.5 h-3.5 text-[#8B6F55]" /> Dept Scorecard
                 <ChevronRight className="w-3 h-3 opacity-60" />
               </Link>
-              <Link to="/reports/track" className="flex items-center gap-1.5 hover:text-[#4CD7F6] transition-colors no-underline">
-                <Search className="w-3.5 h-3.5 text-[#4CD7F6]" /> Track Report
+              <Link to="/reports/track" className="flex items-center gap-1.5 hover:text-[#2F6BFF] transition-colors no-underline">
+                <Search className="w-3.5 h-3.5 text-[#8B6F55]" /> Track Report
                 <ChevronRight className="w-3 h-3 opacity-60" />
               </Link>
-              <Link to="/mock-preview" className="flex items-center gap-1.5 text-[#4CD7F6] hover:underline font-bold">
+              <Link to="/mock-preview" className="flex items-center gap-1.5 text-[#2F6BFF] hover:underline font-bold">
                 <Sparkles className="w-3.5 h-3.5" /> Live Map Prototype (75%)
               </Link>
             </div>

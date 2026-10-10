@@ -24,9 +24,9 @@ export function OfficerLayout() {
   if (!user || !['officer', 'admin'].includes(user.role)) return <div className="p-8 space-y-4"><h1 className="text-xl font-bold">Department access required</h1><p>This workspace is available to department officers and administrators.</p><Link to="/">Return to public portal</Link></div>
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif]">
+    <div className="min-h-screen flex flex-col bg-transparent text-[#1E293B] font-['Inter',sans-serif]">
       {/* Top bar with 3px Electric Blue accent */}
-      <header className="bg-white border-b-3 border-[#2F6BFF] text-[#1E293B] sticky top-0 z-50 shadow-xs">
+      <header className="bg-white/95 backdrop-blur-md border-b-3 border-[#2F6BFF] text-[#1E293B] sticky top-0 z-50 shadow-xs">
         <div className="px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">

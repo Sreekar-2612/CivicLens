@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
+import { GlobalMapBackground } from './components/layout/GlobalMapBackground'
 const PublicLayout = lazy(() => import('./components/layout/PublicLayout').then(module => ({ default: module.PublicLayout })))
 const OfficerLayout = lazy(() => import('./components/layout/OfficerLayout').then(module => ({ default: module.OfficerLayout })))
 const WorkspaceLayout = lazy(() => import('./components/layout/WorkspaceLayout').then(module => ({ default: module.WorkspaceLayout })))
@@ -25,49 +26,54 @@ const FreshCivicMockPage = lazy(() => import('./pages/FreshCivicMockPage').then(
 
 export default function App() {
   return (
-    <Suspense fallback={<div role="status" className="p-6 text-sm text-slate-600">Loading page...</div>}>
-    <Routes>
-      {/* Fresh Civic Design System Prototype Mock */}
-      <Route path="/mock-preview" element={<FreshCivicMockPage />} />
+    <>
+      <GlobalMapBackground />
+      <Suspense fallback={<div role="status" className="p-6 text-sm text-slate-600">Loading page...</div>}>
+      <Routes>
+        {/* Fresh Civic Design System Prototype Mock */}
+        <Route path="/mock-preview" element={<FreshCivicMockPage />} />
 
-      {/* Public routes */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/projects" element={<ProjectExplorer />} />
-        <Route path="/projects/:id" element={<ProjectDetail />} />
-        <Route path="/roads/:id" element={<RoadViewPage />} />
-        <Route path="/scorecard" element={<ScorecardPage />} />
-        <Route path="/report" element={<ReportPage />} />
-        <Route path="/reports/track" element={<ReportTrackPage />} />
-        <Route path="/reports/:id" element={<ReportTrackPage />} />
-        <Route path="/assistant" element={<AssistantPage />} />
-      </Route>
+        {/* Public routes */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/projects" element={<ProjectExplorer />} />
+          <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="/roads/:id" element={<RoadViewPage />} />
+          <Route path="/scorecard" element={<ScorecardPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/reports/track" element={<ReportTrackPage />} />
+          <Route path="/reports/:id" element={<ReportTrackPage />} />
+          <Route path="/assistant" element={<AssistantPage />} />
+        </Route>
 
-      {/* Officer / Department routes */}
-      <Route element={<OfficerLayout />}>
-        <Route path="/officer" element={<OfficerDashboard />} />
-        <Route path="/officer/projects/new" element={<OfficerProjectNew />} />
-        <Route path="/officer/projects/:id/edit" element={<OfficerProjectEdit />} />
-        <Route path="/officer/coordination" element={<OfficerCoordination />} />
-        <Route path="/officer/reports" element={<OfficerReports />} />
-        <Route path="/officer/notifications" element={<OfficerNotifications />} />
-      </Route>
+        {/* Officer / Department routes */}
+        <Route element={<OfficerLayout />}>
+          <Route path="/officer" element={<OfficerDashboard />} />
+          <Route path="/officer/projects/new" element={<OfficerProjectNew />} />
+          <Route path="/officer/projects/:id/edit" element={<OfficerProjectEdit />} />
+          <Route path="/officer/coordination" element={<OfficerCoordination />} />
+          <Route path="/officer/reports" element={<OfficerReports />} />
+          <Route path="/officer/notifications" element={<OfficerNotifications />} />
+        </Route>
 
-      {/* Admin */}
-      <Route element={<WorkspaceLayout role="contractor" />}>
-        <Route path="/contractor" element={<ContractorDashboard />} />
-      </Route>
-      <Route element={<WorkspaceLayout role="auditor" />}>
-        <Route path="/auditor" element={<AuditorDashboard />} />
-      </Route>
+        {/* Admin */}
+        <Route element={<WorkspaceLayout role="contractor" />}>
+          <Route path="/contractor" element={<ContractorDashboard />} />
+        </Route>
+        <Route element={<WorkspaceLayout role="auditor" />}>
+          <Route path="/auditor" element={<AuditorDashboard />} />
+        </Route>
 
-      <Route element={<PublicLayout />}>
-        <Route path="/admin" element={<AdminPage />} />
-      </Route>
+        <Route element={<PublicLayout />}>
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/assign" element={<AdminPage />} />
+          <Route path="/admin/roles" element={<AdminPage />} />
+        </Route>
 
-      {/* 404 */}
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
-    </Suspense>
+        {/* 404 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+      </Suspense>
+    </>
   )
 }

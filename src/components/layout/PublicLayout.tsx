@@ -20,10 +20,15 @@ export function PublicLayout() {
   const workspacePath = user?.role === 'admin' ? '/admin' : user?.role === 'contractor' ? '/contractor' : user?.role === 'auditor' ? '/auditor' : '/officer'
   const workspaceLabel = user?.role === 'admin' ? 'Admin Portal' : user?.role === 'contractor' ? 'Contractor Portal' : user?.role === 'auditor' ? 'Auditor Portal' : 'Officer Portal'
 
+  const isExcluded = location.pathname.startsWith('/report') || 
+    location.pathname === '/admin/assign' ||
+    location.pathname === '/admin/roles' ||
+    (location.pathname === '/admin' && (location.search.includes('tab=assignment') || location.hash === '#assignment'))
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#F6F9FC] text-[#1E293B] font-['Inter',sans-serif]">
+    <div className={`min-h-screen flex flex-col ${isExcluded ? 'bg-[#F6F9FC]' : 'bg-transparent'} text-[#1E293B] font-['Inter',sans-serif]`}>
       {/* Header with 3px Electric Blue bottom border */}
-      <header className="bg-white border-b-3 border-[#2F6BFF] sticky top-0 z-50 shadow-xs">
+      <header className="bg-white/95 backdrop-blur-md border-b-3 border-[#2F6BFF] sticky top-0 z-50 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -171,7 +176,7 @@ export function PublicLayout() {
       </main>
 
       {/* Fresh Civic Light Footer */}
-      <footer className="bg-white border-t border-[#E3EAF2] text-[#64748B] mt-auto">
+      <footer className="bg-white/90 backdrop-blur-md border-t border-[#E3EAF2] text-[#64748B] mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
